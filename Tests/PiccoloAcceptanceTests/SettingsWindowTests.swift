@@ -63,9 +63,9 @@ extension DesktopAcceptanceTests {
                 }
                 _ = try await PiccoloWindows.waitForWindow(pid: pid)
                 try await eventually("Piccolo to be the frontmost application", timeout: 5) {
-                    let front = Frontmost.bundleID()
-                    return front == piccoloBundleID
-                        ? .satisfied(()) : .unsatisfied("frontmost app is \(front ?? "unknown")")
+                    let front = Frontmost.state()
+                    return front == .application(piccoloBundleID)
+                        ? .satisfied(()) : .unsatisfied(Frontmost.explain(front, wanted: piccoloBundleID))
                 }
                 #expect(try piccolo.pid() == pid, "launching again started a second Piccolo")
             }

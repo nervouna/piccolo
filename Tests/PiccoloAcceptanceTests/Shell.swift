@@ -1,3 +1,4 @@
+import CoreGraphics
 import Foundation
 
 /// Runs the few system tools the acceptance support needs.
@@ -70,5 +71,74 @@ enum Frontmost {
             return value.isEmpty || value == "[ NULL ]" ? nil : value
         }
         return nil
+    }
+
+    static let loginWindow = "com.apple.loginwindow"
+
+    /// Whether the screen is locked, from the session dictionary (`CGSSessionScreenIsLocked`, which
+    /// is there only while it is). Reading it needs no permission.
+    static func isScreenLocked() -> Bool {
+        guard let session = CGSessionCopyCurrentDictionary() as? [String: Any],
+            let value = session["CGSSessionScreenIsLocked"]
+        else { return false }
+        if let flag = value as? Bool { return flag }
+        if let number = value as? NSNumber { return number.boolValue }
+        return false
+    }
+
+    /// `loginwindow` is what LaunchServices reports both behind the lock screen and when no
+    /// application is frontmost, so the lock is looked at first.
+    static func state() -> FrontState {
+        if isScreenLocked() { return .locked }
+        guard let id = bundleID(), id != loginWindow else { return .noApplication }
+        return .application(id)
+    }
+
+    /// Why `wanted` is not frontmost, for a failure message.
+    static func explain(_ state: FrontState, wanted: String) -> String {
+        switch state {
+        case .locked:
+            return "the screen is locked (CGSSessionScreenIsLocked): no application can be brought to the front "
+                + "until the owner unlocks it"
+        case .noApplication:
+            return "no application is frontmost: LaunchServices reports \(loginWindow) while the screen is not locked "
+                + "(after an open of a Piccolo that was already gone failed with -600, the window server can be left "
+                + "waiting for that instance, and no other application can be activated until a live one is)"
+        case .application(let id):
+            return "frontmost app is \(id), wanted \(wanted)"
+        }
+    }
+
+    /// Clears "no application is frontmost" by activating Finder, a live process, through
+    /// LaunchServices. Activating Piccolo would clear it too, but a Piccolo that has been active no
+    /// longer fires simulated hotkeys (see ``PiccoloProcess``).
+    static func clearNoApplication() throws {
+        print("Frontmost: no application was frontmost; handed the front to Finder through LaunchServices")
+        try Shell.open(["-b", "com.apple.finder"])
+    }
+}
+
+/// Who has the front of the desktop, in the three states that need telling apart.
+enum FrontState: Equatable {
+    /// The screen is locked (`CGSSessionScreenIsLocked`). Nothing here can unlock it.
+    case locked
+    /// No application is frontmost: LaunchServices reports `com.apple.loginwindow`, or nothing,
+    /// while the screen is not locked.
+    case noApplication
+    /// This application is frontmost (its bundle ID).
+    case application(String)
+}
+
+/// What LaunchServices says about running apps, as `lsappinfo` reports it.
+enum LaunchServicesRegistry {
+    /// The application serial numbers LaunchServices lists as running for `bundleID`. Empty when it
+    /// lists none, and when `lsappinfo` does not answer.
+    static func instances(of bundleID: String) -> [String] {
+        guard let result = try? Shell.run("/usr/bin/lsappinfo", ["find", "bundleid=\(bundleID)"]),
+            result.status == 0
+        else { return [] }
+        return result.output.split(whereSeparator: \.isNewline)
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { $0.hasPrefix("ASN:") }
     }
 }

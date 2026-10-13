@@ -145,13 +145,18 @@ final class SettingsSession {
                 attempts += 1
                 try Shell.open([bundle])
             }
-            let front = Frontmost.bundleID()
-            if front == piccoloBundleID {
+            let front = Frontmost.state()
+            if front == .application(piccoloBundleID) {
                 // For the log: how often LaunchServices had to be asked.
                 print("bringPiccoloForward: frontmost after \(attempts) open call(s), \(start.duration(to: clock.now))")
                 return
             }
-            lastSeen = "frontmost app is \(front ?? "unknown"), wanted \(piccoloBundleID)"
+            if front == .locked {
+                throw AcceptanceFailure(
+                    "Piccolo cannot be brought forward: \(Frontmost.explain(front, wanted: piccoloBundleID))",
+                    isRetryable: false)
+            }
+            lastSeen = Frontmost.explain(front, wanted: piccoloBundleID)
             if start.duration(to: clock.now) >= .seconds(timeout) {
                 throw AcceptanceFailure(
                     "Piccolo did not become the frontmost application within \(Int(timeout)) s after being opened through LaunchServices; last observed: \(lastSeen)"
