@@ -205,19 +205,6 @@ struct ExecutorMoveToDisplayTests {
 
 @Suite("ActionExecutor: errors")
 struct ExecutorErrorTests {
-    @Test("arrangeGrid is not implemented, and nothing is looked up or changed")
-    func arrangeGrid() {
-        let window = Rig.window(at: Rig.onPrimary)
-        let calls = Calls()
-
-        #expect(throws: ActionExecutionError.notImplemented(actionType: "arrangeGrid")) {
-            try executor(window: window, calls: calls)
-                .run(.arrangeGrid(GridSpec(count: 4, rows: 2, columns: 2)))
-        }
-        #expect(window.calls.isEmpty)
-        #expect(calls.windows == 0 && calls.displays == 0)
-    }
-
     @Test("moveDivider is not implemented, and nothing is looked up or changed", arguments: Direction.allCases)
     func moveDivider(direction: Direction) {
         let window = Rig.window(at: Rig.onPrimary)
@@ -232,8 +219,8 @@ struct ExecutorErrorTests {
 
     @Test("the not implemented error says so in words")
     func notImplementedMessage() {
-        let error = ActionExecutionError.notImplemented(actionType: "arrangeGrid")
-        #expect(error.errorDescription == "the arrangeGrid action is not implemented yet")
+        let error = ActionExecutionError.notImplemented(actionType: "moveDivider")
+        #expect(error.errorDescription == "the moveDivider action is not implemented yet")
     }
 
     @Test("a missing focused window is passed through unchanged", arguments: [

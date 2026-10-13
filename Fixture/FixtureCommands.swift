@@ -31,6 +31,16 @@ enum FixtureCommands {
             return try onMain { try windows.close(id: id) }
         }
 
+        router.register("miniaturize") { params in
+            let id = try params.decode(WindowID.self).id
+            return try onMain { try windows.miniaturize(id: id) }
+        }
+
+        router.register("deminiaturize") { params in
+            let id = try params.decode(WindowID.self).id
+            return try onMain { try windows.deminiaturize(id: id) }
+        }
+
         router.register("closeAll") { _ in
             onMain { windows.closeAll() }
         }

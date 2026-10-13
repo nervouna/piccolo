@@ -14,6 +14,8 @@ public enum WindowError: Error, Equatable, LocalizedError {
     /// on the calling thread, and AppKit stops a window change that does not come from the main
     /// thread, where actions never run.
     case ownWindow
+    /// The window no longer exists, for example because it was closed after it was listed.
+    case windowGone
     /// The window refuses changes to this attribute (for example `AXSize` of a
     /// window that cannot be resized).
     case attributeNotSettable(String)
@@ -41,8 +43,10 @@ public enum WindowError: Error, Equatable, LocalizedError {
             return "the frontmost application has no focused window"
         case .ownWindow:
             return "the frontmost application is Piccolo itself, which does not move its own windows"
+        case .windowGone:
+            return "the window no longer exists"
         case .attributeNotSettable(let attribute):
-            return "the focused window does not allow changing \(attribute)"
+            return "the window does not allow changing \(attribute)"
         case .accessibility(let operation, let code):
             return "Accessibility call failed: \(operation) (AXError \(code))"
         }

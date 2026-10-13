@@ -332,17 +332,19 @@ extension DesktopAcceptanceTests {
 
         // MARK: 8. Actions that are refused
 
-        @Test("actions 8. arrangeGrid and malformed params are refused, and the window stays put")
+        @Test("actions 8. moveDivider, an impossible grid and malformed params are refused, and the window stays put")
         func refusedActions() async throws {
             let (screens, _) = try await loadScreens()
             let start = Layout.frame(in: screens[0], offset: CGPoint(x: 120, y: 80), size: CGSize(width: 640, height: 420))
 
             // Each request, the words its refusal must contain.
             let requests: [(name: String, params: [String: JSONValue], words: [String])] = [
+                // Refused before any window is touched. A valid grid would arrange the windows on
+                // screen, which no test may do without `onlyPid` (see ArrangeGridTests).
                 (
-                    "arrangeGrid",
-                    ["type": "arrangeGrid", "count": 4, "rows": 2, "columns": 2],
-                    ["not implemented"]
+                    "a grid that cannot hold its count",
+                    ["type": "arrangeGrid", "count": 5, "rows": 2, "columns": 2],
+                    ["count", "rows * columns"]
                 ),
                 (
                     "moveDivider",
