@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
-# Builds build/Piccolo.app with xcodebuild.
+# Builds build/Piccolo.app with xcodebuild. A Debug build also builds the acceptance
+# fixture, build/PiccoloFixture.app; a Release build never does.
 #
 # Usage: scripts/build.sh [debug|release]   (default: debug)
 #
 # Signing comes from the signing env file (see scripts/common.sh); without one the
-# app is signed ad-hoc. All intermediate products live under build/.
+# apps are signed ad-hoc. All intermediate products live under build/.
 #
 # PICCOLO_NOTARIZABLE=1 (set by scripts/release.sh) makes a signed Release build
 # acceptable to the notary service: no get-task-allow entitlement and a secure
@@ -48,27 +49,38 @@ else
 fi
 
 derived_data="$BUILD_DIR/DerivedData"
-log_file="$BUILD_DIR/xcodebuild-$CONFIGURATION.log"
 mkdir -p "$BUILD_DIR"
 
-log "Building $CONFIGURATION (full log: ${log_file#"$PICCOLO_ROOT"/})"
-if ! xcodebuild \
-    -project "$PICCOLO_ROOT/Piccolo.xcodeproj" \
-    -scheme "$APP_NAME" \
-    -configuration "$CONFIGURATION" \
-    -derivedDataPath "$derived_data" \
-    "${signing_overrides[@]}" \
-    build >"$log_file" 2>&1; then
-    tail -n 40 "$log_file" >&2
-    die "xcodebuild failed (full log: $log_file)"
+# build_app <scheme> <log file name>: builds the scheme's app (the app is named like
+# the scheme) and copies it to build/<scheme>.app.
+build_app() {
+    local scheme="$1" log_file="$BUILD_DIR/$2" product
+    log "Building $scheme ($CONFIGURATION, full log: ${log_file#"$PICCOLO_ROOT"/})"
+    if ! xcodebuild \
+        -project "$PICCOLO_ROOT/Piccolo.xcodeproj" \
+        -scheme "$scheme" \
+        -configuration "$CONFIGURATION" \
+        -derivedDataPath "$derived_data" \
+        "${signing_overrides[@]}" \
+        build >"$log_file" 2>&1; then
+        tail -n 40 "$log_file" >&2
+        die "xcodebuild failed (full log: $log_file)"
+    fi
+
+    product="$derived_data/Build/Products/$CONFIGURATION/$scheme.app"
+    [[ -d "$product" ]] || die "build succeeded but '$product' does not exist"
+
+    # ditto keeps the bundle byte-identical, so the code signature stays valid.
+    rm -rf "${BUILD_DIR:?}/$scheme.app"
+    ditto "$product" "$BUILD_DIR/$scheme.app"
+
+    codesign --verify --strict --deep "$BUILD_DIR/$scheme.app"
+    log "Built ${BUILD_DIR#"$PICCOLO_ROOT"/}/$scheme.app ($CONFIGURATION)"
+}
+
+build_app "$APP_NAME" "xcodebuild-$CONFIGURATION.log"
+
+# The fixture is a test support app: Debug only, never built for or shipped in a release.
+if [[ "$CONFIGURATION" == "Debug" ]]; then
+    build_app "$FIXTURE_NAME" "xcodebuild-$FIXTURE_NAME-$CONFIGURATION.log"
 fi
-
-product="$derived_data/Build/Products/$CONFIGURATION/$APP_NAME.app"
-[[ -d "$product" ]] || die "build succeeded but '$product' does not exist"
-
-# ditto keeps the bundle byte-identical, so the code signature stays valid.
-rm -rf "${BUILD_DIR:?}/$APP_NAME.app"
-ditto "$product" "$BUILD_DIR/$APP_NAME.app"
-
-codesign --verify --strict --deep "$BUILD_DIR/$APP_NAME.app"
-log "Built ${BUILD_DIR#"$PICCOLO_ROOT"/}/$APP_NAME.app ($CONFIGURATION)"
