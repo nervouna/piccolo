@@ -113,7 +113,7 @@ extension DebugControlServer {
 
     /// Runs `body` on the main thread and waits for it. The control server's handlers run on
     /// their own queue; the app's state belongs to the main thread.
-    private nonisolated static func onMainActor<T: Sendable>(
+    nonisolated static func onMainActor<T: Sendable>(
         _ body: @MainActor () throws -> T
     ) rethrows -> T {
         if Thread.isMainThread {
@@ -125,7 +125,7 @@ extension DebugControlServer {
     }
 
     /// Posts a key-down and a key-up for `shortcut` with its modifiers as event flags.
-    private nonisolated static func postKeyPress(_ shortcut: Shortcut) throws {
+    nonisolated static func postKeyPress(_ shortcut: Shortcut) throws {
         guard let keyCode = CGKeyCode(exactly: shortcut.keyCode) else {
             throw ControlCommandError.failed("key code \(shortcut.keyCode) cannot be posted")
         }

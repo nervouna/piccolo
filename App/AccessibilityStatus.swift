@@ -5,6 +5,9 @@ import PiccoloSystem
 @MainActor
 @Observable
 final class AccessibilityStatus {
+    /// The state the menu and the Settings window both show.
+    static let shared = AccessibilityStatus()
+
     private(set) var isTrusted: Bool
 
     @ObservationIgnored private let permission: AccessibilityPermission

@@ -25,7 +25,8 @@ public enum ValidationError: Error, Equatable, Sendable, CustomStringConvertible
     }
 }
 
-// Validation is internal: `ConfigStore` applies it on save and on load.
+// Validation is internal, except for `Config.validate()`: `ConfigStore` applies it on save and on
+// load, and an editor can check a candidate config with it before offering it to the store.
 
 extension FractionalRect {
     /// Slack on the `x + width <= 1` and `y + height <= 1` bounds, for rounding noise in fractions.
@@ -89,7 +90,9 @@ extension KeyBinding {
 }
 
 extension Config {
-    func validate() throws(ValidationError) {
+    /// Checks every rule of the model: the version, the `resizeStep` range, each binding's action
+    /// and shortcut, and unique binding IDs. `ConfigStore.save(_:)` applies the same check.
+    public func validate() throws(ValidationError) {
         guard version == Config.currentVersion else { throw .unsupportedVersion(version) }
         try Config.validateResizeStep(resizeStep)
         var seen: Set<UUID> = []

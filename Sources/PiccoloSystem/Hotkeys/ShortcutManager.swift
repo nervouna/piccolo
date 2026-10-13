@@ -8,6 +8,11 @@ import PiccoloCore
 /// ``status``. Every call replaces the previous state completely. A hotkey press calls
 /// `onAction` with the action of its binding, on the main thread; the closure must return
 /// quickly and run the action somewhere else.
+///
+/// ``save(_:)`` writes an edited config to the file that is loaded and applies it.
+/// ``setSuspended(_:)`` releases every hotkey for a while, for example while a shortcut is being
+/// recorded, and registers them again afterwards; loads and saves during that time register
+/// nothing, and the suspension outlives them.
 @MainActor
 public final class ShortcutManager {
     /// What the last ``load(from:)`` came to.
@@ -46,9 +51,20 @@ public final class ShortcutManager {
     private let registrar: HotkeyRegistrar
     private let onAction: @MainActor (_ action: Action, _ bindingID: UUID) -> Void
     private var actions: [UUID: Action] = [:]
+    /// The file the last ``load(from:)`` read, and where ``save(_:)`` writes.
+    private var url: URL
+    /// The problems the last load found in the file itself, before the shortcuts were looked at.
+    private var loadIssues: [String] = []
 
     /// Nothing is registered until the first ``load(from:)``.
     public private(set) var status: Status
+
+    /// The config the last ``load(from:)`` read: `Config.default` before any load, for a missing
+    /// file and for one that could not be used.
+    public private(set) var config: Config = .default
+
+    /// Whether the hotkeys are released for the time being. See ``setSuspended(_:)``.
+    public private(set) var isSuspended = false
 
     /// - Parameters:
     ///   - initialURL: The file reported by ``status`` before anything is loaded.
@@ -60,6 +76,7 @@ public final class ShortcutManager {
     ) {
         self.registrar = registrar
         self.onAction = onAction
+        self.url = initialURL
         self.status = Status(path: initialURL.path)
     }
 
@@ -77,11 +94,41 @@ public final class ShortcutManager {
         } catch {
             issues.append("\(url.lastPathComponent) could not be read: \(error.localizedDescription)")
         }
+        self.url = url
+        self.config = config
+        loadIssues = issues
+        return register()
+    }
 
+    /// Writes `config` to the file that was loaded last (the initial file before any load),
+    /// creating its folder when needed, and loads it again, so that the shortcuts take effect at
+    /// once and ``status`` describes the saved file.
+    ///
+    /// - Throws: `ConfigStoreError` when the config is invalid or the file is from a newer
+    ///   version, and the I/O error when it cannot be written. Nothing changes then.
+    @discardableResult
+    public func save(_ config: Config) throws -> Status {
+        try ConfigStore(url: url).save(config)
+        return load(from: url)
+    }
+
+    /// Releases every hotkey (`true`) or registers the loaded config's shortcuts again (`false`).
+    /// While suspended, ``status`` lists nothing as registered, and neither a load nor a save
+    /// registers anything. Asking for the state that is already in force changes nothing.
+    @discardableResult
+    public func setSuspended(_ suspended: Bool) -> Status {
+        guard suspended != isSuspended else { return status }
+        isSuspended = suspended
+        return register()
+    }
+
+    /// Registers what the loaded config allows (nothing while suspended) and records the outcome.
+    private func register() -> Status {
+        var issues = loadIssues
         let plan = ShortcutPlan.resolve(config.bindings)
         issues += plan.issues
 
-        let refusals = registrar.apply(plan.registrations) { [weak self] bindingID in
+        let refusals = registrar.apply(isSuspended ? [] : plan.registrations) { [weak self] bindingID in
             self?.pressed(bindingID)
         }
         for refusal in refusals {

@@ -12,7 +12,8 @@ import Testing
 @Suite(
     "Desktop acceptance",
     .serialized,
-    .enabled(if: Acceptance.isEnabled, "set \(Acceptance.environmentVariable)=1 (scripts/accept.sh does)")
+    .enabled(if: Acceptance.isEnabled, "set \(Acceptance.environmentVariable)=1 (scripts/accept.sh does)"),
+    .piccoloRunning
 )
 struct DesktopAcceptanceTests {
     private let piccolo = PiccoloClient()

@@ -41,9 +41,17 @@ final class DebugControlServer {
         var height: Double
     }
 
-    nonisolated static func makeRouter(executor: ActionExecutor = .live) -> ControlRouter {
+    /// - Parameter executor: Where the commands that run actions get their executor, asked for at
+    ///   each command. The default is the live one, which is not touched before a command needs it:
+    ///   its first use starts the focus tracker, and that must not happen as a side effect of the
+    ///   control server starting, or the acceptance tests could not tell the app's own start of the
+    ///   tracker from this one.
+    nonisolated static func makeRouter(
+        executor: @escaping @Sendable () -> ActionExecutor = { .live }
+    ) -> ControlRouter {
         var router = ControlRouter()
         registerConfigCommands(in: &router)
+        registerSettingsCommands(in: &router)
 
         router.register("status") { _ in
             let report = SelfCheck.makeReport()

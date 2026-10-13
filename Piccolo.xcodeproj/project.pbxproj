@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		A10000000000000000000140 /* PiccoloCore in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000170 /* PiccoloCore */; };
 		A10000000000000000000150 /* PiccoloSystem in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000180 /* PiccoloSystem */; };
+		A10000000000000000000155 /* PiccoloUI in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000185 /* PiccoloUI */; };
 		B10000000000000000000140 /* PiccoloControl in Frameworks */ = {isa = PBXBuildFile; productRef = B10000000000000000000170 /* PiccoloControl */; };
 		B10000000000000000000150 /* PiccoloCore in Frameworks */ = {isa = PBXBuildFile; productRef = B10000000000000000000180 /* PiccoloCore */; };
 /* End PBXBuildFile section */
@@ -37,6 +38,7 @@
 			files = (
 				A10000000000000000000140 /* PiccoloCore in Frameworks */,
 				A10000000000000000000150 /* PiccoloSystem in Frameworks */,
+				A10000000000000000000155 /* PiccoloUI in Frameworks */,
 			);
 		};
 		B10000000000000000000120 /* Frameworks */ = {
@@ -90,6 +92,7 @@
 			packageProductDependencies = (
 				A10000000000000000000170 /* PiccoloCore */,
 				A10000000000000000000180 /* PiccoloSystem */,
+				A10000000000000000000185 /* PiccoloUI */,
 			);
 			productName = Piccolo;
 			productReference = A10000000000000000000030 /* Piccolo.app */;
@@ -446,6 +449,10 @@
 		A10000000000000000000180 /* PiccoloSystem */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = PiccoloSystem;
+		};
+		A10000000000000000000185 /* PiccoloUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = PiccoloUI;
 		};
 		A10000000000000000000190 /* PiccoloControl */ = {
 			isa = XCSwiftPackageProductDependency;

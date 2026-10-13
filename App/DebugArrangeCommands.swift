@@ -17,15 +17,17 @@ extension DebugControlServer {
     ///   `{"target", "achieved"}` for a placement, `{"nothingToDo": true}`, or for `arrangeGrid`
     ///   `{"display": index, "windows": [{"window", "target", "achieved"} | {"window", "target", "error"}]}`.
     /// - `focus.history`: `{"windows": [window numbers]}`, most recently focused first.
-    nonisolated static func registerArrangeCommands(in router: inout ControlRouter, executor: ActionExecutor) {
+    nonisolated static func registerArrangeCommands(
+        in router: inout ControlRouter, executor: @escaping @Sendable () -> ActionExecutor
+    ) {
         router.register("action.run") { params in
             let action = try params.decode(Action.self)
-            let outcome = try executor.run(action, onlyPid: try onlyPid(in: params))
+            let outcome = try executor().run(action, onlyPid: try onlyPid(in: params))
             return json(for: outcome)
         }
 
         router.register("focus.history") { _ in
-            ["windows": .array(executor.focusHistory.map { .int(Int($0.rawValue)) })]
+            ["windows": .array(executor().focusHistory.map { .int(Int($0.rawValue)) })]
         }
     }
 

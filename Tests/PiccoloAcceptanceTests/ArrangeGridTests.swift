@@ -283,5 +283,25 @@ extension DesktopAcceptanceTests {
                 try await run.waitForHistory(of: [windows[0], windows[2], windows[3], windows[1]])
             }
         }
+
+        // MARK: 10. The tracker starts at launch
+
+        @Test("arrange 10. a freshly launched Piccolo that has run no action yet has the history of the windows focused since it started")
+        func trackerStartsAtLaunch() async throws {
+            let screen = try await ArrangeRun.screens()[0]
+
+            try await withFixture { fixture in
+                let run = ArrangeRun(fixture: fixture)
+                let windows = try await run.open(["W1", "W2"], on: screen)
+
+                // A new process, which nobody has asked for anything: no action has run, and nothing
+                // has asked for the history either. Only what the app itself does at launch can have
+                // started the tracker.
+                try await PiccoloProcess.restart()
+
+                // Focused W1, then W2: the history lists W2, W1 (waited for inside).
+                try await run.focus(windows)
+            }
+        }
     }
 }

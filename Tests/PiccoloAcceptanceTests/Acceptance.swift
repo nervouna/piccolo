@@ -27,6 +27,19 @@ enum Acceptance {
         ProcessInfo.processInfo.environment[environmentVariable] == "1"
     }
 
+    /// The stress tests repeat one operation many times to catch what fails once in a while. They
+    /// take minutes and are not part of a normal acceptance run.
+    static let stressEnvironmentVariable = "PICCOLO_STRESS"
+
+    static var isStressEnabled: Bool {
+        ProcessInfo.processInfo.environment[stressEnvironmentVariable] == "1"
+    }
+
+    /// How many rounds a stress test makes: `PICCOLO_STRESS_COUNT`, 30 by default.
+    static var stressCount: Int {
+        ProcessInfo.processInfo.environment["PICCOLO_STRESS_COUNT"].flatMap { Int($0) }.map { max($0, 1) } ?? 30
+    }
+
     /// The number of active displays. Read through CoreGraphics so that it can be asked
     /// from a test trait, off the main thread.
     static var displayCount: Int {

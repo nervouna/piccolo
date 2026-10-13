@@ -9,6 +9,11 @@ public enum WindowError: Error, Equatable, LocalizedError {
     case noFrontmostApplication
     /// The frontmost application has no focused window.
     case noFocusedWindow
+    /// The frontmost application is Piccolo itself (its Settings window has the focus). Piccolo
+    /// never moves its own windows: an Accessibility request to the calling process is answered
+    /// on the calling thread, and AppKit stops a window change that does not come from the main
+    /// thread, where actions never run.
+    case ownWindow
     /// The window no longer exists, for example because it was closed after it was listed.
     case windowGone
     /// The window refuses changes to this attribute (for example `AXSize` of a
@@ -36,6 +41,8 @@ public enum WindowError: Error, Equatable, LocalizedError {
             return "no application is frontmost"
         case .noFocusedWindow:
             return "the frontmost application has no focused window"
+        case .ownWindow:
+            return "the frontmost application is Piccolo itself, which does not move its own windows"
         case .windowGone:
             return "the window no longer exists"
         case .attributeNotSettable(let attribute):
