@@ -161,28 +161,51 @@ struct DisplayMoveTests {
     func leftHalfWindow() {
         // leftHalf on the primary's visible frame (0, 25, 1440, 875) is (0, 25, 720, 875).
         let leftHalfOnPrimary = CGRect(x: 0, y: 25, width: 720, height: 875)
-        // Scaled to the odd frame: x = -1728 + 0.5 * 1727 = -864.5, which rounds to -865 for the
+        // Scaled to the odd frame: x = -1728 + 0.5 * 1727 = -864.5, which rounds up to -864 for the
         // right edge; the window keeps the left edge at -1728.
         let moved = DisplayLayout.frame(moving: leftHalfOnPrimary, from: Screens.primary, to: Screens.oddLeft)
-        #expect(moved == CGRect(x: -1728, y: 355, width: 863, height: 1085))
+        #expect(moved == CGRect(x: -1728, y: 355, width: 864, height: 1085))
         #expect(moved == FrameResolver.frame(
             for: .preset(.leftHalf), visibleFrame: Screens.oddLeft.visibleFrame, currentFrame: .zero))
     }
 
     @Test("a left-half window moved from the odd frame to the primary lands on the primary's leftHalf")
     func leftHalfWindowBack() {
-        let leftHalfOnOdd = CGRect(x: -1728, y: 355, width: 863, height: 1085)
+        // leftHalf on the odd frame: x -1728 to round(-864.5) = -864.
+        let leftHalfOnOdd = CGRect(x: -1728, y: 355, width: 864, height: 1085)
         let moved = DisplayLayout.frame(moving: leftHalfOnOdd, from: Screens.oddLeft, to: Screens.primary)
         #expect(moved == CGRect(x: 0, y: 25, width: 720, height: 875))
         #expect(moved == FrameResolver.frame(
             for: .preset(.leftHalf), visibleFrame: Screens.primary.visibleFrame, currentFrame: .zero))
     }
 
+    @Test(
+        "a left-half window moved between two displays of the same odd size lands on the frame leftHalf resolves to on the target, in both directions",
+        arguments: [
+            CGPoint(x: 0, y: 0),
+            CGPoint(x: 1440, y: -900),
+            CGPoint(x: -3001, y: -777),
+        ])
+    func leftHalfBetweenEqualOddDisplays(origin: CGPoint) {
+        let odd = Screens.oddLeft
+        let other = Display(
+            frame: CGRect(origin: origin, size: odd.frame.size),
+            visibleFrame: CGRect(origin: origin, size: odd.visibleFrame.size))
+        for (source, target) in [(odd, other), (other, odd)] {
+            let onSource = FrameResolver.frame(
+                for: .preset(.leftHalf), visibleFrame: source.visibleFrame, currentFrame: .zero)
+            let onTarget = FrameResolver.frame(
+                for: .preset(.leftHalf), visibleFrame: target.visibleFrame, currentFrame: .zero)
+            #expect(DisplayLayout.frame(moving: onSource, from: source, to: target) == onTarget)
+        }
+    }
+
     @Test("a right-half window lands on the frame rightHalf resolves to on the target")
     func rightHalfWindow() {
         let rightHalfOnPrimary = CGRect(x: 720, y: 25, width: 720, height: 875)
+        // Scaled to the odd frame: x = -1728 + 0.5 * 1727 = -864.5, which rounds up to -864.
         let moved = DisplayLayout.frame(moving: rightHalfOnPrimary, from: Screens.primary, to: Screens.oddLeft)
-        #expect(moved == CGRect(x: -865, y: 355, width: 864, height: 1085))
+        #expect(moved == CGRect(x: -864, y: 355, width: 863, height: 1085))
         #expect(moved == FrameResolver.frame(
             for: .preset(.rightHalf), visibleFrame: Screens.oddLeft.visibleFrame, currentFrame: .zero))
     }

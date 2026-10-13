@@ -8,7 +8,7 @@ import Testing
 /// `plain` is 1440x900 with a 25 point menu bar: its halves, thirds and quarters are whole
 /// numbers. `odd` is 1727x1085 at (-1728, 355): every half and third has a fractional edge,
 /// so the rounding rule decides the expected values. Those values were worked out by hand,
-/// with ties rounded away from zero.
+/// with halves rounded up (`EdgeRounding`).
 private enum VisibleFrame {
     static let plain = CGRect(x: 0, y: 25, width: 1440, height: 875)
     static let odd = CGRect(x: -1728, y: 355, width: 1727, height: 1085)
@@ -44,18 +44,18 @@ private let expectedOnPlain: [Preset: CGRect] = [
 
 /// Expected frames on the odd visible frame, worked out by hand.
 ///
-/// Horizontal edges: -1728 + 0.5 * 1727 = -864.5 rounds to -865; -1728 + 1727 = -1.
+/// Horizontal edges: -1728 + 0.5 * 1727 = -864.5 rounds up to -864; -1728 + 1727 = -1.
 /// Thirds: -1728 + 1727/3 = -1152.33 rounds to -1152; -1728 + 2 * 1727/3 = -576.67 rounds to -577.
 /// Vertical edges: 355 + 0.5 * 1085 = 897.5 rounds to 898; 355 + 1085 = 1440.
 private let expectedOnOdd: [Preset: CGRect] = [
-    .leftHalf: CGRect(x: -1728, y: 355, width: 863, height: 1085),
-    .rightHalf: CGRect(x: -865, y: 355, width: 864, height: 1085),
+    .leftHalf: CGRect(x: -1728, y: 355, width: 864, height: 1085),
+    .rightHalf: CGRect(x: -864, y: 355, width: 863, height: 1085),
     .topHalf: CGRect(x: -1728, y: 355, width: 1727, height: 543),
     .bottomHalf: CGRect(x: -1728, y: 898, width: 1727, height: 542),
-    .topLeft: CGRect(x: -1728, y: 355, width: 863, height: 543),
-    .topRight: CGRect(x: -865, y: 355, width: 864, height: 543),
-    .bottomLeft: CGRect(x: -1728, y: 898, width: 863, height: 542),
-    .bottomRight: CGRect(x: -865, y: 898, width: 864, height: 542),
+    .topLeft: CGRect(x: -1728, y: 355, width: 864, height: 543),
+    .topRight: CGRect(x: -864, y: 355, width: 863, height: 543),
+    .bottomLeft: CGRect(x: -1728, y: 898, width: 864, height: 542),
+    .bottomRight: CGRect(x: -864, y: 898, width: 863, height: 542),
     .leftThird: CGRect(x: -1728, y: 355, width: 576, height: 1085),
     .centerThird: CGRect(x: -1152, y: 355, width: 575, height: 1085),
     .rightThird: CGRect(x: -577, y: 355, width: 576, height: 1085),
@@ -210,11 +210,11 @@ struct CenterFrameTests {
 
     @Test("a smaller window is centred and keeps its size, on the odd visible frame")
     func smallerWindowOdd() {
-        // x: -1728 + (1727 - 800) / 2 = -1264.5, which rounds away from zero to -1265.
+        // x: -1728 + (1727 - 800) / 2 = -1264.5, which rounds up to -1264.
         // y: 355 + (1085 - 600) / 2 = 597.5, which rounds to 598.
         let current = CGRect(x: 0, y: 0, width: 800, height: 600)
         #expect(resolve(.preset(.center), on: VisibleFrame.odd, current: current)
-            == CGRect(x: -1265, y: 598, width: 800, height: 600))
+            == CGRect(x: -1264, y: 598, width: 800, height: 600))
     }
 
     @Test("a window wider than the visible frame is capped in width only")
@@ -278,9 +278,14 @@ struct CustomFrameTests {
 
     @Test("the width is the difference of the rounded edges, not the rounded width")
     func widthFromRoundedEdges() {
-        // Left edge -1728, right edge round(-864.5) = -865, so the width is 863, not round(863.5) = 864.
-        let spec = FrameSpec.custom(FractionalRect(x: 0, y: 0, width: 0.5, height: 1))
-        #expect(resolve(spec, on: VisibleFrame.odd).width == 863)
+        // Left edge -1728, right edge round(-864.5) = -864, so the width is 864. The rounded width,
+        // round(863.5), is 864 too, so this case does not tell the two apart.
+        let half = FrameSpec.custom(FractionalRect(x: 0, y: 0, width: 0.5, height: 1))
+        #expect(resolve(half, on: VisibleFrame.odd).width == 864)
+        // Left edge round(-1296.25) = -1296, right edge round(-432.75) = -433, so the width is 863,
+        // not round(863.5) = 864.
+        let offsetHalf = FrameSpec.custom(FractionalRect(x: 0.25, y: 0, width: 0.5, height: 1))
+        #expect(resolve(offsetHalf, on: VisibleFrame.odd).width == 863)
     }
 
     @Test(
@@ -298,8 +303,8 @@ struct CustomFrameTests {
         // Plain: x 720 to 1440, y 25 + 437.5 rounds to 463, then 900.
         let spec = FrameSpec.custom(FractionalRect(x: 0.5, y: 0.5, width: 0.5, height: 0.5))
         #expect(resolve(spec, on: VisibleFrame.plain) == CGRect(x: 720, y: 463, width: 720, height: 437))
-        // Odd: x -865 to -1, y 898 to 1440.
-        #expect(resolve(spec, on: VisibleFrame.odd) == CGRect(x: -865, y: 898, width: 864, height: 542))
+        // Odd: x -864 to -1, y 898 to 1440.
+        #expect(resolve(spec, on: VisibleFrame.odd) == CGRect(x: -864, y: 898, width: 863, height: 542))
     }
 
     @Test("a custom rect equal to a preset resolves to the same frame")

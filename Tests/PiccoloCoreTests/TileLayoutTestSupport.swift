@@ -39,7 +39,7 @@ enum TileLayoutSupport {
     static let primaryVisible = CGRect(x: 0, y: 25, width: 1440, height: 875)
 
     /// A negative-origin, odd-sized visible frame. Several boundaries land on `.5`,
-    /// which exercises the ties-away-from-zero rule.
+    /// which exercises the round-half-up rule.
     static let oddVisible = CGRect(x: -1728, y: 355, width: 1727, height: 1085)
 
     static let visibleFrames = [primaryVisible, oddVisible]

@@ -8,7 +8,7 @@ import Testing
 /// from the visible frame.
 ///
 /// Odd-frame worked values: the x boundary of a 2-column row is -1728 + 863.5 = -864.5,
-/// which rounds away from zero to -865. The y boundary of a 2-row grid is 355 + 542.5 = 897.5,
+/// which rounds up to -864. The y boundary of a 2-row grid is 355 + 542.5 = 897.5,
 /// which rounds to 898. The 3-row grid's boundaries are 355 + 361.67 = 716.67 -> 717 and
 /// 355 + 723.33 = 1078.33 -> 1078. The hand-built layout's boundary is 355 + 325.5 -> 681.
 @Suite("TileLayout frames")
@@ -41,10 +41,10 @@ struct TileLayoutFramesTests {
             layout: TileLayout.grid(windowCount: 4, rows: 2, columns: 2),
             visible: odd,
             frames: [
-                CGRect(x: -1728, y: 355, width: 863, height: 543),
-                CGRect(x: -865, y: 355, width: 864, height: 543),
-                CGRect(x: -1728, y: 898, width: 863, height: 542),
-                CGRect(x: -865, y: 898, width: 864, height: 542),
+                CGRect(x: -1728, y: 355, width: 864, height: 543),
+                CGRect(x: -864, y: 355, width: 863, height: 543),
+                CGRect(x: -1728, y: 898, width: 864, height: 542),
+                CGRect(x: -864, y: 898, width: 863, height: 542),
             ]),
         Expectation(
             name: "3 in 2x2 on the primary frame",
@@ -60,8 +60,8 @@ struct TileLayoutFramesTests {
             layout: TileLayout.grid(windowCount: 3, rows: 2, columns: 2),
             visible: odd,
             frames: [
-                CGRect(x: -1728, y: 355, width: 863, height: 543),
-                CGRect(x: -865, y: 355, width: 864, height: 543),
+                CGRect(x: -1728, y: 355, width: 864, height: 543),
+                CGRect(x: -864, y: 355, width: 863, height: 543),
                 CGRect(x: -1728, y: 898, width: 1727, height: 542),
             ]),
         Expectation(
@@ -83,8 +83,8 @@ struct TileLayoutFramesTests {
                 CGRect(x: -1728, y: 355, width: 576, height: 543),
                 CGRect(x: -1152, y: 355, width: 575, height: 543),
                 CGRect(x: -577, y: 355, width: 576, height: 543),
-                CGRect(x: -1728, y: 898, width: 863, height: 542),
-                CGRect(x: -865, y: 898, width: 864, height: 542),
+                CGRect(x: -1728, y: 898, width: 864, height: 542),
+                CGRect(x: -864, y: 898, width: 863, height: 542),
             ]),
         Expectation(
             name: "3 in 1x3 on the primary frame",

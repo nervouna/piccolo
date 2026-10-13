@@ -5,9 +5,9 @@ extension TileLayout {
     /// each row from left to right.
     ///
     /// Each interior boundary is its cumulative fraction scaled to the visible frame, then
-    /// rounded to the nearest whole point (ties away from zero) on its own. The outermost
-    /// boundaries are the rounded edges of `visibleFrame`. Neighbouring cells therefore share
-    /// exact edges, with no gaps and no overlaps.
+    /// rounded to a whole point on its own with `EdgeRounding.round`. The outermost boundaries
+    /// are the rounded edges of `visibleFrame`. Neighbouring cells therefore share exact edges,
+    /// with no gaps and no overlaps.
     ///
     /// The layout is assumed to be valid (see `validate()`), and `visibleFrame` to have a
     /// non-negative size.
@@ -48,10 +48,10 @@ extension TileLayout {
         edges.reserveCapacity(fractions.count + 1)
         var cumulative = 0.0
         for fraction in fractions {
-            edges.append((start + CGFloat(cumulative) * extent).rounded())
+            edges.append(EdgeRounding.round(start + CGFloat(cumulative) * extent))
             cumulative += fraction
         }
-        edges.append(end.rounded())
+        edges.append(EdgeRounding.round(end))
         return edges
     }
 }
