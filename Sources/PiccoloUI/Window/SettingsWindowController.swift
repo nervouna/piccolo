@@ -16,6 +16,7 @@ public final class SettingsWindowController: NSObject, NSWindowDelegate {
     private var window: NSWindow?
     private var keyMonitor: Any?
     private var deactivationObserver: (any NSObjectProtocol)?
+    private var activationObserver: (any NSObjectProtocol)?
 
     private static let frameAutosaveName = "PiccoloSettings"
     private static let defaultContentSize = NSSize(width: 640, height: 580)
@@ -32,11 +33,22 @@ public final class SettingsWindowController: NSObject, NSWindowDelegate {
                 self?.model.cancelRecording()
             }
         }
+        // Back from System Settings, where the user may have allowed or removed the login item.
+        activationObserver = NotificationCenter.default.addObserver(
+            forName: NSApplication.didBecomeActiveNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.model.refreshLoginItem()
+            }
+        }
     }
 
     isolated deinit {
         if let deactivationObserver {
             NotificationCenter.default.removeObserver(deactivationObserver)
+        }
+        if let activationObserver {
+            NotificationCenter.default.removeObserver(activationObserver)
         }
     }
 
@@ -68,6 +80,7 @@ public final class SettingsWindowController: NSObject, NSWindowDelegate {
             window.deminiaturize(nil)
         }
         installKeyMonitor()
+        model.refreshLoginItem()
         NSApp.activate()
         window.makeKeyAndOrderFront(nil)
     }

@@ -27,6 +27,15 @@ enum Acceptance {
         ProcessInfo.processInfo.environment[environmentVariable] == "1"
     }
 
+    /// The login item test registers Piccolo as a login item and unregisters it again. That is a
+    /// change to the machine's Login Items, and the system shows a notification for it, so it runs
+    /// only when asked to, and puts the login item back as it found it.
+    static let loginItemEnvironmentVariable = "PICCOLO_LOGIN_ITEM"
+
+    static var isLoginItemEnabled: Bool {
+        ProcessInfo.processInfo.environment[loginItemEnvironmentVariable] == "1"
+    }
+
     /// The stress tests repeat one operation many times to catch what fails once in a while. They
     /// take minutes and are not part of a normal acceptance run.
     static let stressEnvironmentVariable = "PICCOLO_STRESS"

@@ -23,9 +23,11 @@ struct SettingsViewRenderTests {
         revealConfigInFinder: {},
         appVersion: "0.1.0 (1)")
 
-    private func model(_ bindings: [KeyBinding], issues: [String] = []) -> SettingsModel {
+    private func model(
+        _ bindings: [KeyBinding], issues: [String] = [], loginItem: FakeLoginItem = FakeLoginItem()
+    ) -> SettingsModel {
         let backend = InMemorySettingsBackend(config: Config(bindings: bindings), issues: issues)
-        return SettingsModel(backend: backend) { code in ["0": "a", "11": "b"][String(code)] }
+        return SettingsModel(backend: backend, loginItem: loginItem) { code in ["0": "a", "11": "b"][String(code)] }
     }
 
     /// Renders `view` at `size` with the given appearance and returns the bitmap.
@@ -162,5 +164,35 @@ struct SettingsViewRenderTests {
         let notGranted = try render(GeneralTab(model: missingModel, host: missing), dark: true)
         #expect(hasContent(notGranted))
         keep(notGranted, as: "general-not-granted-dark")
+    }
+
+    @Test("the General tab renders every login item status, and the approval note and the error change what it shows")
+    func generalTabLoginItem() throws {
+        var images: [LoginItemStatus: Data] = [:]
+        for status in LoginItemStatus.allCases {
+            let model = model([], loginItem: FakeLoginItem(status: status))
+            for dark in [false, true] {
+                let bitmap = try render(GeneralTab(model: model, host: host), dark: dark)
+                #expect(hasContent(bitmap), "the General tab is blank with the status \(status)")
+                keep(bitmap, as: "general-login-\(status.rawValue)\(dark ? "-dark" : "")")
+                if !dark { images[status] = png(bitmap) }
+            }
+        }
+        #expect(images[.enabled] != images[.notRegistered], "the switch looks the same on and off")
+        #expect(
+            images[.requiresApproval] != images[.enabled],
+            "requires approval looks like enabled: the note and the button are missing")
+        #expect(images[.notRegistered] == images[.notFound], "not found changes the tab although it has no note")
+
+        // A refused change shows its message under the switch and puts the switch back.
+        let refusing = FakeLoginItem(status: .notRegistered)
+        refusing.failure = LoginItemError(message: "Operation not permitted")
+        let failing = model([], loginItem: refusing)
+        failing.setLaunchAtLogin(true)
+        #expect(failing.loginItemError != nil)
+        let failed = try render(GeneralTab(model: failing, host: host))
+        #expect(hasContent(failed))
+        keep(failed, as: "general-login-error")
+        #expect(png(failed) != images[.notRegistered], "the failed change does not show its message")
     }
 }

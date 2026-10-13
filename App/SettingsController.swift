@@ -18,7 +18,8 @@ final class SettingsController {
     private let windowController: SettingsWindowController
 
     private init() {
-        let model = SettingsModel(backend: ConfigSettingsBackend(controller: .shared))
+        let model = SettingsModel(
+            backend: ConfigSettingsBackend(controller: .shared), loginItem: SystemLoginItemBackend())
         self.model = model
         windowController = SettingsWindowController(
             model: model,
@@ -92,5 +93,23 @@ final class ConfigSettingsBackend: SettingsBackend {
 
     func setShortcutsSuspended(_ suspended: Bool) {
         controller.setShortcutsSuspended(suspended)
+    }
+}
+
+/// The Settings model's view of the login item: Piccolo's `SMAppService.mainApp`.
+@MainActor
+final class SystemLoginItemBackend: LoginItemBackend {
+    private let loginItem = LoginItem()
+
+    var status: LoginItemStatus {
+        loginItem.status
+    }
+
+    func setEnabled(_ enabled: Bool) throws(LoginItemError) {
+        try loginItem.setEnabled(enabled)
+    }
+
+    func openSystemSettings() {
+        loginItem.openSystemSettings()
     }
 }

@@ -3,7 +3,8 @@ import Observation
 import PiccoloCore
 
 /// What the Settings window shows and edits: the bindings, the resize step, the problems with the
-/// config, which binding is selected and which is recording a shortcut.
+/// config, which binding is selected and which is recording a shortcut, and whether Piccolo
+/// launches at login (not part of the config: the system keeps it, see ``LoginItemBackend``).
 ///
 /// The window and the debug control commands call the same methods. Every accepted change is
 /// persisted through the ``SettingsBackend`` before it shows: the model never holds a config that
@@ -35,20 +36,31 @@ public final class SettingsModel {
     /// How many key presses recording has taken (Escape and Delete included). A caller that
     /// posts a key press can tell by it that the press arrived.
     public private(set) var pressesTaken = 0
+    /// What the system last said about starting Piccolo at login. ``refreshLoginItem()`` reads it
+    /// again; ``setLaunchAtLogin(_:)`` does after every change.
+    public private(set) var loginItemStatus: LoginItemStatus
+    /// Why the last change of the login item failed, until the next one succeeds. Separate from
+    /// ``error``: it is shown next to the switch it belongs to.
+    public private(set) var loginItemError: String?
 
     @ObservationIgnored private let backend: any SettingsBackend
+    @ObservationIgnored private let loginItem: any LoginItemBackend
     @ObservationIgnored private let characterForKeyCode: @MainActor (Int) -> String?
 
     /// - Parameters:
     ///   - backend: Where the config is read from and saved to.
+    ///   - loginItem: The system's login item for Piccolo.
     ///   - characterForKeyCode: The character a key produces on the current keyboard layout;
     ///     ``KeyboardLayout`` is the live lookup.
     public init(
         backend: any SettingsBackend,
+        loginItem: any LoginItemBackend,
         characterForKeyCode: @escaping @MainActor (Int) -> String? = { KeyboardLayout.character(forKeyCode: $0) }
     ) {
         self.backend = backend
+        self.loginItem = loginItem
         self.characterForKeyCode = characterForKeyCode
+        loginItemStatus = loginItem.status
         let snapshot = backend.current()
         bindings = snapshot.config.bindings
         resizeStep = snapshot.config.resizeStep
@@ -155,9 +167,47 @@ public final class SettingsModel {
         return commit(candidate)
     }
 
-    /// Forgets the error, for example when the window closes.
+    /// Forgets the errors, for example when the window closes.
     public func clearError() {
         error = nil
+        loginItemError = nil
+    }
+
+    // MARK: Launch at login
+
+    /// Whether the "Launch at login" switch is on: Piccolo is a login item, also while the system
+    /// waits for the user to allow it (``LoginItemStatus/requiresApproval``), so that the switch
+    /// can still be turned off.
+    public var launchesAtLogin: Bool {
+        loginItemStatus.isRegistered
+    }
+
+    /// Reads the login item's status from the system again, for example when the tab appears or
+    /// the app is activated: the user can change it in System Settings at any time.
+    public func refreshLoginItem() {
+        loginItemStatus = loginItem.status
+    }
+
+    /// Registers (`true`) or unregisters (`false`) Piccolo as a login item and reads the status
+    /// back, whatever came of it. Answers whether the system accepted; on a refusal
+    /// ``loginItemError`` says why and the status is the one the system reports, so the switch
+    /// is back where it was.
+    @discardableResult
+    public func setLaunchAtLogin(_ enabled: Bool) -> Bool {
+        defer { loginItemStatus = loginItem.status }
+        do {
+            try loginItem.setEnabled(enabled)
+        } catch {
+            loginItemError = SettingsMessages.loginItemFailed(enabling: enabled, reason: error.message)
+            return false
+        }
+        loginItemError = nil
+        return true
+    }
+
+    /// Opens Login Items in System Settings.
+    public func openLoginItemsSettings() {
+        loginItem.openSystemSettings()
     }
 
     // MARK: Recording

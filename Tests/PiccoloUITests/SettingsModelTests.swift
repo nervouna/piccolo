@@ -13,7 +13,7 @@ struct SettingsModelTests {
     ) -> (model: SettingsModel, backend: InMemorySettingsBackend) {
         let backend = InMemorySettingsBackend(config: config, issues: issues)
         // A layout in which key code 0 is A and 11 is B; everything else produces nothing.
-        let model = SettingsModel(backend: backend) { code in
+        let model = SettingsModel(backend: backend, loginItem: FakeLoginItem()) { code in
             ["0": "a", "11": "b"][String(code)]
         }
         return (model, backend)

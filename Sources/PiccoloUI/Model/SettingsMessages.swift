@@ -46,6 +46,12 @@ enum SettingsMessages {
         "\(text) cannot be a global shortcut: it needs ⌃, ⌥ or ⌘, or has to be a function key."
     }
 
+    /// The system refused to register (`enabling`) or unregister Piccolo as a login item.
+    static func loginItemFailed(enabling: Bool, reason: String) -> String {
+        let sentence = "Launch at login could not be turned \(enabling ? "on" : "off")"
+        return reason.isEmpty ? "\(sentence)." : "\(sentence): \(reason)"
+    }
+
     static func alreadyUsed(_ text: String, by summary: String) -> String {
         "\(text) is already used by \(summary)."
     }
