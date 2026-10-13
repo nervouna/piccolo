@@ -21,11 +21,11 @@ func withFixture<Result>(
 
 /// Test frames, derived from the real displays so that they fit whatever is attached.
 enum Layout {
-    @MainActor
+    /// The displays as Piccolo sees them (its `displays` command), the primary display first.
+    /// Not as this test process does: a command line process can read slightly different
+    /// visible frames than the app, and the app's numbers are the ones its actions use.
     static func screens() throws -> [ScreenInfo] {
-        let screens = Screens.current()
-        guard !screens.isEmpty else { throw AcceptanceFailure("no display is attached") }
-        return screens
+        try PiccoloClient().displays()
     }
 
     /// A frame of `size` that starts `offset` points inside the top-left corner of the

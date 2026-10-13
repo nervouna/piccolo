@@ -4,6 +4,7 @@ import SwiftUI
 
 struct MenuContent: View {
     let accessibility: AccessibilityStatus
+    let config: ConfigController
 
     var body: some View {
         if accessibility.isTrusted {
@@ -13,6 +14,18 @@ struct MenuContent: View {
             Button("Open Accessibility Settings…") {
                 AccessibilityPermission().openSettings()
             }
+        }
+
+        Divider()
+
+        Label(
+            config.status.summary,
+            systemImage: config.status.issues.isEmpty ? "keyboard" : "exclamationmark.triangle")
+        Button("Reload Config") {
+            config.reload()
+        }
+        Button("Reveal Config in Finder") {
+            config.revealInFinder()
         }
 
         Divider()
