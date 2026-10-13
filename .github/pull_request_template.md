@@ -14,6 +14,6 @@ Closes #
 
 <!-- Filled in by the orchestrator at merge. -->
 
-| Implementer model | Rework rounds | Dispatch to merge | Defects found in review | Defects found in acceptance |
-|---|---|---|---|---|
-| | | | | |
+| Implementer model | Implementer tokens | Rework rounds | Dispatch to merge | Defects found in review | Defects found in acceptance |
+|---|---|---|---|---|---|
+| | | | | | |
