@@ -3,6 +3,7 @@ import Foundation
 import PiccoloControl
 import PiccoloCore
 import PiccoloSystem
+import Testing
 
 /// The bundle ID of the Debug Piccolo, as LaunchServices reports it.
 let piccoloBundleID = "io.damao.piccolo"
@@ -82,6 +83,25 @@ final class SettingsSession {
         try await PiccoloProcess.restart()
         needsFreshProcess = false
         try piccolo.loadConfig(at: url)
+    }
+
+    /// Restarts Piccolo if the session brought it forward, so that the tests after it find a
+    /// Piccolo that fires simulated hotkeys.
+    func restartIfActivated() async throws {
+        guard needsFreshProcess else { return }
+        try await PiccoloProcess.restart()
+        needsFreshProcess = false
+    }
+
+    /// The restart that ends a session whose test has failed already. Its own failure is recorded
+    /// as an issue of the test, next to the error that is about to be thrown: neither hides the
+    /// other.
+    func restartAfterFailure() async {
+        do {
+            try await restartIfActivated()
+        } catch {
+            Issue.record("restarting Piccolo after the failed test failed as well: \(error)")
+        }
     }
 
     // MARK: The files
@@ -212,21 +232,20 @@ func withSettingsSession<Result>(
             result = try await body(session)
         } catch {
             session.cleanUp()
-            if session.needsFreshProcess { try? await PiccoloProcess.restart() }
+            await session.restartAfterFailure()
             throw error
         }
         session.cleanUp()
         let state = try piccolo.settingsState()
         guard !state.isOpen, state.recordingBindingID == nil else {
-            if session.needsFreshProcess { try? await PiccoloProcess.restart() }
+            await session.restartAfterFailure()
             throw AcceptanceFailure(
                 "after the test Settings is still open or recording (isOpen: \(state.isOpen), recording: \(String(describing: state.recordingBindingID)))"
             )
         }
         try await PiccoloWindows.waitForNoWindow(pid: try piccolo.pid())
-        if session.needsFreshProcess {
-            try await PiccoloProcess.restart()
-        }
+        // A failed restart fails the test with its own reason: it is not swallowed.
+        try await session.restartIfActivated()
         return result
     }
 }
