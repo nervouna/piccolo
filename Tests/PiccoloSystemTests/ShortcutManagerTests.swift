@@ -42,6 +42,14 @@ struct ShortcutManagerTests {
             try ConfigStore(url: url).save(Config(bindings: bindings))
             return url
         }
+
+        /// A `config.json` whose bindings are `entries`, as JSON text and in this order. An entry
+        /// that is not a valid binding stays in the file, so that the loader skips it.
+        func writeEntries(_ entries: [String]) throws -> URL {
+            let url = directory.appending(path: "config.json")
+            try Data(#"{"version": 1, "bindings": [\#(entries.joined(separator: ", "))]}"#.utf8).write(to: url)
+            return url
+        }
     }
 
     private func shortcut(_ keyCode: Int, _ modifiers: Modifier...) -> Shortcut {
@@ -255,6 +263,88 @@ struct ShortcutManagerTests {
         let issue = try #require(status.issues.first)
         #expect(issue.contains("bindings[1]"))
         #expect(issue.contains("taken by the system"))
+    }
+
+    // MARK: Positions in the file
+
+    /// The text of `binding` as a config file holds it.
+    private func json(_ binding: KeyBinding) throws -> String {
+        String(decoding: try JSONEncoder().encode(binding), as: UTF8.self)
+    }
+
+    /// A binding entry the loader skips: its ID is not a UUID.
+    private let undecodableEntry = #"{"id": "not-a-uuid"}"#
+
+    @Test("after a skipped binding, the load issue and the duplicate name the positions in the file")
+    func duplicateAfterSkippedBinding() throws {
+        let fixture = try Fixture()
+        let first = binding(FunctionKey.f13)
+        let second = binding(FunctionKey.f14)
+        let duplicate = binding(FunctionKey.f14, .placeWindow(.preset(.maximize)))
+        let url = try fixture.writeEntries([
+            try json(first), undecodableEntry, try json(second), try json(duplicate),
+        ])
+
+        let status = fixture.manager.load(from: url)
+
+        #expect(status.registered.map(\.id) == [first.id, second.id])
+        #expect(status.issues.count == 2)
+        #expect(status.issues.first?.hasPrefix("bindings[1]") == true)
+        let duplicateIssue = try #require(status.issues.last)
+        #expect(duplicateIssue.hasPrefix("bindings[3]"), "the duplicate issue is \"\(duplicateIssue)\"")
+        #expect(duplicateIssue.contains("bindings[2]"), "the duplicate issue is \"\(duplicateIssue)\"")
+        #expect(!duplicateIssue.contains("bindings[1]"), "the duplicate issue is \"\(duplicateIssue)\"")
+    }
+
+    @Test("a shortcut that may not be registered, after a skipped binding, is named by its position in the file")
+    func unregistrableAfterSkippedBinding() throws {
+        let fixture = try Fixture()
+        let first = binding(FunctionKey.f13)
+        let plainA = KeyBinding(action: .placeWindow(.preset(.center)), shortcut: shortcut(0))
+        let url = try fixture.writeEntries([try json(first), undecodableEntry, try json(plainA)])
+
+        let status = fixture.manager.load(from: url)
+
+        #expect(status.registered.map(\.id) == [first.id])
+        #expect(status.issues.count == 2)
+        let issue = try #require(status.issues.last)
+        #expect(issue.hasPrefix("bindings[2]"), "the issue is \"\(issue)\"")
+    }
+
+    @Test("a shortcut the system refuses, after a skipped binding, is named by its position in the file")
+    func refusedAfterSkippedBinding() throws {
+        let fixture = try Fixture()
+        let good = binding(FunctionKey.f13)
+        let refused = binding(FunctionKey.f14)
+        fixture.backend.refuse(refused.shortcut!, reason: "taken by the system")
+        let url = try fixture.writeEntries([try json(good), undecodableEntry, try json(refused)])
+
+        let status = fixture.manager.load(from: url)
+
+        #expect(status.registered.map(\.id) == [good.id])
+        #expect(status.issues.count == 2)
+        let issue = try #require(status.issues.last)
+        #expect(issue.hasPrefix("bindings[2]"), "the issue is \"\(issue)\"")
+        #expect(issue.contains("taken by the system"))
+    }
+
+    @Test("after a save from Settings the issues name the bindings by their position in the saved list")
+    func positionsAfterSave() throws {
+        let fixture = try Fixture()
+        let first = binding(FunctionKey.f13)
+        let second = binding(FunctionKey.f14)
+        let url = try fixture.writeEntries([try json(first), undecodableEntry, try json(second)])
+        fixture.manager.load(from: url)
+
+        // Settings appends a binding that shares the shortcut of the second one.
+        let added = binding(FunctionKey.f14, .moveToDisplay(.next))
+        let status = try fixture.manager.save(Config(bindings: fixture.manager.config.bindings + [added]))
+
+        #expect(status.registered.map(\.id) == [first.id, second.id])
+        #expect(status.issues.count == 1)
+        let issue = try #require(status.issues.first)
+        #expect(issue.hasPrefix("bindings[2]"), "the issue is \"\(issue)\"")
+        #expect(issue.contains("bindings[1]"), "the issue is \"\(issue)\"")
     }
 
     // MARK: Pressing

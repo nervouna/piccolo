@@ -181,4 +181,54 @@ struct ShortcutPlanTests {
             }
         }
     }
+
+    // MARK: Positions in the file
+
+    @Test("without positions, the issues name the position in the list, as they always did")
+    func listPositionsByDefault() {
+        let first = binding(shortcut(aKey, .command))
+        let duplicate = binding(shortcut(aKey, .command))
+        let bindings = [binding(nil), first, duplicate]
+
+        let plan = ShortcutPlan.resolve(bindings)
+
+        #expect(
+            plan.issues == [
+                "bindings[2] has the same shortcut as bindings[1], which keeps it; bindings[2] is not registered"
+            ])
+        #expect(ShortcutPlan.resolve(bindings, sourceIndices: [:]) == plan)
+    }
+
+    @Test("with positions, every issue names the position in the file, not the position in the list")
+    func filePositions() {
+        // The file had a binding at index 1 that was skipped, so each position is one more than
+        // the list position of the binding that follows the gap.
+        let command = binding(shortcut(aKey, .command))  // file 0
+        let shiftA = binding(shortcut(aKey, .shift))  // file 2: not registrable
+        let f2 = binding(shortcut(FunctionKey.f2))  // file 3
+        let f2Duplicate = binding(shortcut(FunctionKey.f2))  // file 4
+        let positions = [command.id: 0, shiftA.id: 2, f2.id: 3, f2Duplicate.id: 4]
+
+        let plan = ShortcutPlan.resolve([command, shiftA, f2, f2Duplicate], sourceIndices: positions)
+
+        #expect(plan.registrations == [registration(command), registration(f2)])
+        #expect(
+            plan.issues == [
+                "bindings[2] shortcut needs command, option or control, or a function key; it is not registered",
+                "bindings[4] has the same shortcut as bindings[3], which keeps it; bindings[4] is not registered",
+            ])
+    }
+
+    @Test("a binding missing from the positions is named by its position in the list")
+    func missingPositionFallsBack() {
+        let first = binding(shortcut(FunctionKey.f5))
+        let duplicate = binding(shortcut(FunctionKey.f5))
+
+        let plan = ShortcutPlan.resolve([first, duplicate], sourceIndices: [first.id: 7])
+
+        #expect(
+            plan.issues == [
+                "bindings[1] has the same shortcut as bindings[7], which keeps it; bindings[1] is not registered"
+            ])
+    }
 }

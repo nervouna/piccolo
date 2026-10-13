@@ -34,10 +34,14 @@ struct ConfigStoreTests {
     @Test("saving and then loading returns an equal config with no issues")
     func saveThenLoad() throws {
         let config = Config(resizeStep: 0.2, bindings: allKindsBindings)
+        // Nothing is skipped, so each binding sits at its position in the saved list.
+        let positions = Dictionary(
+            uniqueKeysWithValues: config.bindings.enumerated().map { index, binding in (binding.id, index) })
         try withTemporaryDirectory { directory in
             let store = ConfigStore(url: directory.appending(path: "config.json"))
             try store.save(config)
-            #expect(try store.load() == LoadResult(config: config, issues: []))
+            #expect(
+                try store.load() == LoadResult(config: config, issues: [], sourceIndices: positions))
         }
     }
 
@@ -303,6 +307,55 @@ struct ConfigStoreTests {
             #expect(result.issues.count == 1)
             #expect(result.issues[0].contains("bindings[1]"))
             #expect(result.issues[0].contains("duplicate"))
+        }
+    }
+
+    // MARK: Positions in the file
+
+    @Test("each loaded binding carries its position in the file, counting the skipped ones")
+    func sourceIndices() throws {
+        try withTemporaryDirectory { directory in
+            let url = directory.appending(path: "config.json")
+            try writeText(
+                """
+                {
+                  "bindings": [
+                    { "action": { "frame": { "preset": "leftHalf" }, "type": "placeWindow" },
+                      "id": "5E0B7C1E-6C0A-4C55-9C5B-0B6C1D2E3F40" },
+                    { "action": { "frame": { "preset": "bigHalf" }, "type": "placeWindow" },
+                      "id": "7A1F3C2D-8B4E-4F6A-9C0D-1E2F3A4B5C6D" },
+                    { "action": { "direction": "previous", "type": "moveToDisplay" },
+                      "id": "0D9E8F7A-6B5C-4D3E-8F2A-1B0C9D8E7F6A" },
+                    { "action": { "direction": "next", "type": "moveToDisplay" },
+                      "id": "5E0B7C1E-6C0A-4C55-9C5B-0B6C1D2E3F40" },
+                    { "action": { "direction": "next", "type": "moveToDisplay" },
+                      "id": "2C4D6E8F-1A3B-4C5D-9E7F-0A1B2C3D4E5F" }
+                  ],
+                  "version": 1
+                }
+                """,
+                to: url)
+
+            let result = try ConfigStore(url: url).load()
+
+            // Index 1 is undecodable and index 3 repeats the ID of index 0, so the first one wins.
+            #expect(result.config.bindings.map(\.id) == [Fixture.idA, Fixture.idC, Fixture.idD])
+            #expect(result.sourceIndices == [Fixture.idA: 0, Fixture.idC: 2, Fixture.idD: 4])
+        }
+    }
+
+    @Test("a config that did not come from a file has no positions")
+    func noPositionsWithoutFile() throws {
+        try withTemporaryDirectory { directory in
+            #expect(try ConfigStore(url: directory.appending(path: "missing.json")).load().sourceIndices.isEmpty)
+
+            let newer = directory.appending(path: "newer.json")
+            try writeText(#"{"bindings":[{"action":{"type":"teleport"},"id":"7A1F3C2D-8B4E-4F6A-9C0D-1E2F3A4B5C6D"}],"version":2}"#, to: newer)
+            #expect(try ConfigStore(url: newer).load().sourceIndices.isEmpty)
+
+            let corrupt = directory.appending(path: "corrupt.json")
+            try writeText("not json", to: corrupt)
+            #expect(try ConfigStore(url: corrupt).load().sourceIndices.isEmpty)
         }
     }
 
