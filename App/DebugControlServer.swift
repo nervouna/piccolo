@@ -3,6 +3,7 @@ import CoreGraphics
 import Foundation
 import OSLog
 import PiccoloControl
+import PiccoloCore
 import PiccoloSystem
 
 /// The Debug-only control channel: lets scripts and tests query the running app and
@@ -40,7 +41,7 @@ final class DebugControlServer {
         var height: Double
     }
 
-    nonisolated static func makeRouter() -> ControlRouter {
+    nonisolated static func makeRouter(executor: ActionExecutor = .live) -> ControlRouter {
         var router = ControlRouter()
 
         router.register("status") { _ in
@@ -74,6 +75,21 @@ final class DebugControlServer {
             let achieved = try window.setFrame(
                 CGRect(x: frame.x, y: frame.y, width: frame.width, height: frame.height))
             return ["frame": JSONValue(rect: achieved)]
+        }
+
+        // The params are an action exactly as the config file writes it, for example
+        // {"type": "placeWindow", "frame": {"preset": "leftHalf"}}.
+        router.register("action.run") { params in
+            let action = try params.decode(Action.self)
+            switch try executor.run(action) {
+            case .placed(let target, let achieved):
+                return [
+                    "target": JSONValue(rect: target),
+                    "achieved": JSONValue(rect: achieved),
+                ]
+            case .nothingToDo:
+                return ["nothingToDo": .bool(true)]
+            }
         }
 
         return router

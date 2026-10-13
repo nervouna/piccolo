@@ -40,6 +40,31 @@ struct ScreensTests {
         #expect(screens[2].visibleFrame == CGRect(x: -1920, y: -180 + 25, width: 1920, height: 1055))
     }
 
+    @Test("displays keep the screens' order and both frames")
+    func displaysFromScreens() {
+        let screens = Screens.make(from: [
+            (frame: CGRect(x: 0, y: 0, width: 1440, height: 900),
+             visibleFrame: CGRect(x: 0, y: 0, width: 1440, height: 875)),
+            (frame: CGRect(x: -1920, y: 0, width: 1920, height: 1080),
+             visibleFrame: CGRect(x: -1920, y: 0, width: 1920, height: 1055)),
+        ])
+
+        let displays = Screens.displays(from: screens)
+
+        #expect(displays.count == 2)
+        for (screen, display) in zip(screens, displays) {
+            #expect(display.frame == screen.frame)
+            #expect(display.visibleFrame == screen.visibleFrame)
+            #expect(display == screen.display)
+        }
+        #expect(displays[0].visibleFrame == CGRect(x: 0, y: 25, width: 1440, height: 875))
+    }
+
+    @Test("no screens yields no displays")
+    func noDisplays() {
+        #expect(Screens.displays(from: []).isEmpty)
+    }
+
     @Test("no screens yields an empty list")
     func empty() {
         #expect(Screens.make(from: []).isEmpty)

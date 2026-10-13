@@ -3,44 +3,6 @@ import Testing
 
 @testable import PiccoloSystem
 
-/// A window on a pair of displays. Like a real window it cannot grow beyond the
-/// display its origin is on, and it never gets smaller than `minimumSize` or larger
-/// than `maximumSize`, which is what makes the order of operations observable.
-private final class FakeWindow: WindowFrameAccess {
-    var origin: CGPoint
-    var size: CGSize
-    var displays: [CGRect]
-    var minimumSize = CGSize(width: 100, height: 100)
-    var maximumSize = CGSize(width: 100_000, height: 100_000)
-    var failSizeWith: WindowError?
-    var calls: [String] = []
-
-    init(frame: CGRect, displays: [CGRect]) {
-        origin = frame.origin
-        size = frame.size
-        self.displays = displays
-    }
-
-    func frame() throws -> CGRect {
-        CGRect(origin: origin, size: size)
-    }
-
-    func setSize(_ newSize: CGSize) throws {
-        calls.append("size")
-        if let failSizeWith { throw failSizeWith }
-        let display = displays.first { $0.contains(origin) } ?? displays[0]
-        size = CGSize(
-            width: min(max(newSize.width, minimumSize.width), min(maximumSize.width, display.width)),
-            height: min(
-                max(newSize.height, minimumSize.height), min(maximumSize.height, display.height)))
-    }
-
-    func setPosition(_ newOrigin: CGPoint) throws {
-        calls.append("position")
-        origin = newOrigin
-    }
-}
-
 @Suite("FrameSetter")
 struct FrameSetterTests {
     private let small = CGRect(x: 0, y: 0, width: 1000, height: 800)
@@ -95,16 +57,145 @@ struct FrameSetterTests {
         #expect(tooLarge == CGRect(x: 30, y: 40, width: 800, height: 600))
     }
 
-    @Test("a size that cannot be set aborts before the window is moved")
+    @Test("a fixed-size window is still moved to the target's origin and keeps its size")
+    func fixedSizeWindowIsMoved() throws {
+        let window = FakeWindow(
+            frame: CGRect(x: 100, y: 100, width: 800, height: 600), displays: [small, large])
+        window.isFixedSize = true
+
+        let achieved = try FrameSetter.apply(CGRect(x: 30, y: 40, width: 300, height: 300), to: window)
+
+        #expect(achieved == CGRect(x: 30, y: 40, width: 800, height: 600))
+        #expect(window.calls == ["size", "position", "size"])
+    }
+
+    @Test("any other failure of the size step aborts before the window is moved")
     func sizeFailureStopsEarly() {
         let window = FakeWindow(
             frame: CGRect(x: 100, y: 100, width: 800, height: 600), displays: [small, large])
-        window.failSizeWith = .attributeNotSettable("AXSize")
+        window.failSizeWith = .accessibility(operation: "set AXSize", code: -25204)
 
-        #expect(throws: WindowError.attributeNotSettable("AXSize")) {
+        #expect(throws: WindowError.accessibility(operation: "set AXSize", code: -25204)) {
             try FrameSetter.apply(CGRect(x: 0, y: 0, width: 300, height: 300), to: window)
         }
         #expect(window.calls == ["size"])
         #expect(window.origin == CGPoint(x: 100, y: 100))
+    }
+
+    @Test("a window that is gone fails with noFocusedWindow, also from the size step")
+    func windowGone() {
+        let window = FakeWindow(
+            frame: CGRect(x: 100, y: 100, width: 800, height: 600), displays: [small, large])
+        window.failSizeWith = .noFocusedWindow
+
+        #expect(throws: WindowError.noFocusedWindow) {
+            try FrameSetter.apply(CGRect(x: 0, y: 0, width: 300, height: 300), to: window)
+        }
+    }
+
+    @Test("a position that cannot be set is an error")
+    func positionFailure() {
+        let window = FakeWindow(
+            frame: CGRect(x: 100, y: 100, width: 800, height: 600), displays: [small, large])
+        window.failPositionWith = .attributeNotSettable("AXPosition")
+
+        #expect(throws: WindowError.attributeNotSettable("AXPosition")) {
+            try FrameSetter.apply(CGRect(x: 0, y: 0, width: 300, height: 300), to: window)
+        }
+    }
+
+    // MARK: Staying inside the visible frame
+
+    @Test("a window that refuses the size and sticks out is shifted back inside")
+    func refusedSizeIsShiftedInside() throws {
+        // Right half of a 1000 pt wide display, but the window is at least 700 pt wide.
+        let window = FakeWindow(
+            frame: CGRect(x: 100, y: 100, width: 400, height: 400), displays: [small, large])
+        window.minimumSize = CGSize(width: 700, height: 300)
+        let target = CGRect(x: 500, y: 0, width: 500, height: 800)
+
+        let achieved = try FrameSetter.apply(target, to: window, within: small)
+
+        // The size step ended at 700 x 800 at x 500, which sticks out by 200 pt on the right.
+        #expect(achieved == CGRect(x: 300, y: 0, width: 700, height: 800))
+        #expect(small.contains(achieved))
+        #expect(window.calls == ["size", "position", "size", "position"])
+    }
+
+    @Test("the shift reports the frame read back, not the one computed")
+    func shiftReportsReadBack() throws {
+        let window = FakeWindow(
+            frame: CGRect(x: 100, y: 100, width: 400, height: 400), displays: [small, large])
+        window.minimumSize = CGSize(width: 700, height: 300)
+        window.ignorePositionFromCall = 2
+
+        let achieved = try FrameSetter.apply(
+            CGRect(x: 500, y: 0, width: 500, height: 800), to: window, within: small)
+
+        // The window did not follow the second move.
+        #expect(achieved == CGRect(x: 500, y: 0, width: 700, height: 800))
+    }
+
+    @Test("a window larger than the visible frame is aligned to its top-left corner")
+    func largerThanVisibleFrame() throws {
+        let window = FakeWindow(
+            frame: CGRect(x: 100, y: 100, width: 400, height: 400), displays: [small, large])
+        window.minimumSize = CGSize(width: 700, height: 300)
+        let narrow = CGRect(x: 0, y: 0, width: 600, height: 800)
+
+        let achieved = try FrameSetter.apply(
+            CGRect(x: 300, y: 100, width: 300, height: 700), to: window, within: narrow)
+
+        // It cannot fit, so it sticks out on the right only.
+        #expect(achieved == CGRect(x: 0, y: 100, width: 700, height: 700))
+    }
+
+    @Test("a window that fits is not moved a second time")
+    func insideIsLeftAlone() throws {
+        let window = FakeWindow(
+            frame: CGRect(x: 100, y: 100, width: 400, height: 400), displays: [small, large])
+        let target = CGRect(x: 500, y: 0, width: 500, height: 800)
+
+        let achieved = try FrameSetter.apply(target, to: window, within: small)
+
+        #expect(achieved == target)
+        #expect(window.calls == ["size", "position", "size"])
+    }
+
+    @Test("without a visible frame a window that sticks out stays where the target put it")
+    func noVisibleFrameNoShift() throws {
+        let window = FakeWindow(
+            frame: CGRect(x: 100, y: 100, width: 400, height: 400), displays: [small, large])
+        window.minimumSize = CGSize(width: 700, height: 300)
+
+        let achieved = try FrameSetter.apply(CGRect(x: 500, y: 0, width: 500, height: 800), to: window)
+
+        #expect(achieved == CGRect(x: 500, y: 0, width: 700, height: 800))
+        #expect(window.calls == ["size", "position", "size"])
+    }
+
+    @Test("a fixed-size window that sticks out of the visible frame is shifted back inside")
+    func fixedSizeIsShiftedInside() throws {
+        let window = FakeWindow(
+            frame: CGRect(x: 100, y: 100, width: 800, height: 600), displays: [small, large])
+        window.isFixedSize = true
+
+        let achieved = try FrameSetter.apply(
+            CGRect(x: 500, y: 0, width: 500, height: 800), to: window, within: small)
+
+        #expect(achieved == CGRect(x: 200, y: 0, width: 800, height: 600))
+    }
+
+    @Test("a failure while shifting is an error")
+    func shiftFailure() {
+        let window = FakeWindow(
+            frame: CGRect(x: 100, y: 100, width: 400, height: 400), displays: [small, large])
+        window.minimumSize = CGSize(width: 700, height: 300)
+        window.failPositionWith = .noFocusedWindow
+        window.failPositionFromCall = 2
+
+        #expect(throws: WindowError.noFocusedWindow) {
+            try FrameSetter.apply(CGRect(x: 500, y: 0, width: 500, height: 800), to: window, within: small)
+        }
     }
 }
