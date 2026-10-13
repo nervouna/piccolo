@@ -81,7 +81,7 @@ extension Action {
     }
 }
 
-extension Binding {
+extension KeyBinding {
     func validate() throws(ValidationError) {
         try action.validate()
         try shortcut?.validate()

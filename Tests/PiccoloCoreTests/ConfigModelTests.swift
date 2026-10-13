@@ -62,11 +62,11 @@ struct ConfigModelTests {
 
     @Test("a binding survives a round trip with and without a shortcut")
     func bindingRoundTrip() throws {
-        let withShortcut = Binding(
+        let withShortcut = KeyBinding(
             id: Fixture.idA,
             action: .moveDivider(.left),
             shortcut: Shortcut(keyCode: 123, modifiers: [.control, .option]))
-        let withoutShortcut = Binding(id: Fixture.idB, action: .moveToDisplay(.next))
+        let withoutShortcut = KeyBinding(id: Fixture.idB, action: .moveToDisplay(.next))
         #expect(try roundTrip(withShortcut) == withShortcut)
         #expect(try roundTrip(withoutShortcut) == withoutShortcut)
     }
@@ -106,16 +106,16 @@ struct ConfigModelTests {
             version: 1,
             resizeStep: 0.05,
             bindings: [
-                Binding(
+                KeyBinding(
                     id: Fixture.idA,
                     action: .placeWindow(.preset(.leftHalf)),
                     shortcut: Shortcut(keyCode: 123, modifiers: [.control, .option])),
-                Binding(
+                KeyBinding(
                     id: Fixture.idB,
                     action: .placeWindow(.custom(FractionalRect(x: 0.25, y: 0, width: 0.5, height: 1)))),
-                Binding(id: Fixture.idC, action: .moveToDisplay(.next)),
-                Binding(id: Fixture.idD, action: .arrangeGrid(GridSpec(count: 4, rows: 2, columns: 2))),
-                Binding(id: Fixture.idE, action: .moveDivider(.left)),
+                KeyBinding(id: Fixture.idC, action: .moveToDisplay(.next)),
+                KeyBinding(id: Fixture.idD, action: .arrangeGrid(GridSpec(count: 4, rows: 2, columns: 2))),
+                KeyBinding(id: Fixture.idE, action: .moveDivider(.left)),
             ])
         #expect(try decode(Config.self, sampleJSON) == expected)
     }
@@ -123,7 +123,7 @@ struct ConfigModelTests {
     @Test("a binding with a null shortcut has no shortcut")
     func nullShortcut() throws {
         let json = #"{"action":{"direction":"next","type":"moveToDisplay"},"id":"5E0B7C1E-6C0A-4C55-9C5B-0B6C1D2E3F40","shortcut":null}"#
-        let binding = try decode(Binding.self, json)
+        let binding = try decode(KeyBinding.self, json)
         #expect(binding.shortcut == nil)
     }
 
@@ -164,7 +164,7 @@ struct ConfigModelTests {
 @Suite("Config file format")
 struct ConfigFileFormatTests {
     /// Saves one config holding `bindings` and returns the exact text written to disk.
-    private func written(_ bindings: [Binding]) throws -> String {
+    private func written(_ bindings: [KeyBinding]) throws -> String {
         try withTemporaryDirectory { directory in
             let url = directory.appending(path: "config.json")
             try ConfigStore(url: url).save(Config(bindings: bindings))
@@ -174,7 +174,7 @@ struct ConfigFileFormatTests {
 
     @Test("a placeWindow binding with a preset writes sorted keys and sorted modifiers")
     func placeWindowPreset() throws {
-        let binding = Binding(
+        let binding = KeyBinding(
             id: Fixture.idA,
             action: .placeWindow(.preset(.leftHalf)),
             shortcut: Shortcut(keyCode: 123, modifiers: [.shift, .option, .command, .control]))
@@ -210,7 +210,7 @@ struct ConfigFileFormatTests {
 
     @Test("a placeWindow binding with a custom frame and no shortcut omits the shortcut key")
     func placeWindowCustom() throws {
-        let binding = Binding(
+        let binding = KeyBinding(
             id: Fixture.idB,
             action: .placeWindow(.custom(FractionalRect(x: 0.25, y: 0, width: 0.5, height: 1))))
         let expected = """
@@ -241,7 +241,7 @@ struct ConfigFileFormatTests {
 
     @Test("a moveToDisplay binding writes its direction")
     func moveToDisplay() throws {
-        let binding = Binding(id: Fixture.idC, action: .moveToDisplay(.next))
+        let binding = KeyBinding(id: Fixture.idC, action: .moveToDisplay(.next))
         let expected = """
             {
               "bindings" : [
@@ -263,7 +263,7 @@ struct ConfigFileFormatTests {
 
     @Test("an arrangeGrid binding writes count, rows and columns inside the action")
     func arrangeGrid() throws {
-        let binding = Binding(
+        let binding = KeyBinding(
             id: Fixture.idD,
             action: .arrangeGrid(GridSpec(count: 4, rows: 2, columns: 2)))
         let expected = """
@@ -306,7 +306,7 @@ struct ConfigFileFormatTests {
 
     @Test("a shortcut without modifiers writes its empty modifiers array on one line")
     func emptyModifiers() throws {
-        let binding = Binding(
+        let binding = KeyBinding(
             id: Fixture.idE,
             action: .moveDivider(.left),
             shortcut: Shortcut(keyCode: 0, modifiers: []))
@@ -335,7 +335,7 @@ struct ConfigFileFormatTests {
 
     @Test("a moveDivider binding with a shortcut writes both")
     func moveDivider() throws {
-        let binding = Binding(
+        let binding = KeyBinding(
             id: Fixture.idE,
             action: .moveDivider(.left),
             shortcut: Shortcut(keyCode: 0, modifiers: [.command, .shift]))

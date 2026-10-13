@@ -10,8 +10,8 @@ struct ConfigStoreTests {
     }
 
     /// A single valid binding, used as the expected content of a clean file.
-    private var placeLeftHalf: Binding {
-        Binding(
+    private var placeLeftHalf: KeyBinding {
+        KeyBinding(
             id: Fixture.idA,
             action: .placeWindow(.preset(.leftHalf)),
             shortcut: Shortcut(keyCode: 123, modifiers: [.control, .option]))
@@ -55,7 +55,7 @@ struct ConfigStoreTests {
     @Test("save refuses an invalid config and writes nothing")
     func saveRejectsInvalidConfig() throws {
         let bad = Config(bindings: [
-            Binding(
+            KeyBinding(
                 id: Fixture.idB,
                 action: .placeWindow(.custom(FractionalRect(x: 0.5, y: 0, width: 0.75, height: 1))))
         ])
@@ -73,8 +73,8 @@ struct ConfigStoreTests {
     @Test("save refuses a config with a duplicate binding ID and writes nothing")
     func saveRejectsDuplicateIDs() throws {
         let bad = Config(bindings: [
-            Binding(id: Fixture.idA, action: .moveToDisplay(.next)),
-            Binding(id: Fixture.idA, action: .moveToDisplay(.previous)),
+            KeyBinding(id: Fixture.idA, action: .moveToDisplay(.next)),
+            KeyBinding(id: Fixture.idA, action: .moveToDisplay(.previous)),
         ])
         try withTemporaryDirectory { directory in
             let url = directory.appending(path: "config.json")
@@ -277,8 +277,8 @@ struct ConfigStoreTests {
 
     @Test("of two bindings sharing an ID the first one wins and the second is reported")
     func duplicateIDs() throws {
-        let first = Binding(id: Fixture.idA, action: .moveToDisplay(.next))
-        let third = Binding(id: Fixture.idB, action: .moveToDisplay(.previous))
+        let first = KeyBinding(id: Fixture.idA, action: .moveToDisplay(.next))
+        let third = KeyBinding(id: Fixture.idB, action: .moveToDisplay(.previous))
         try withTemporaryDirectory { directory in
             let url = directory.appending(path: "config.json")
             try writeText(

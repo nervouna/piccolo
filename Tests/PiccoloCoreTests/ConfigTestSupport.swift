@@ -33,20 +33,20 @@ enum Fixture {
 }
 
 /// One binding of each kind, with and without a shortcut.
-let allKindsBindings: [Binding] = [
-    Binding(
+let allKindsBindings: [KeyBinding] = [
+    KeyBinding(
         id: Fixture.idA,
         action: .placeWindow(.preset(.leftHalf)),
         shortcut: Shortcut(keyCode: 123, modifiers: [.control, .option])),
-    Binding(
+    KeyBinding(
         id: Fixture.idB,
         action: .placeWindow(.custom(FractionalRect(x: 0.25, y: 0, width: 0.5, height: 1)))),
-    Binding(id: Fixture.idC, action: .moveToDisplay(.next)),
-    Binding(
+    KeyBinding(id: Fixture.idC, action: .moveToDisplay(.next)),
+    KeyBinding(
         id: Fixture.idD,
         action: .arrangeGrid(GridSpec(count: 4, rows: 2, columns: 2)),
         shortcut: Shortcut(keyCode: 18, modifiers: [.command, .shift])),
-    Binding(
+    KeyBinding(
         id: Fixture.idE,
         action: .moveDivider(.left),
         shortcut: Shortcut(keyCode: 0, modifiers: []))

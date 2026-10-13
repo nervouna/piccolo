@@ -15,12 +15,12 @@ public struct Config: Codable, Equatable, Sendable {
     public var version: Int
     /// Fraction of the screen a linked resize moves a divider by. Valid range: `0 < resizeStep <= 0.5`.
     public var resizeStep: Double
-    public var bindings: [Binding]
+    public var bindings: [KeyBinding]
 
     public init(
         version: Int = Config.currentVersion,
         resizeStep: Double = Config.defaultResizeStep,
-        bindings: [Binding] = []
+        bindings: [KeyBinding] = []
     ) {
         self.version = version
         self.resizeStep = resizeStep
@@ -32,7 +32,7 @@ public struct Config: Codable, Equatable, Sendable {
 }
 
 /// One action bound to an optional shortcut.
-public struct Binding: Codable, Equatable, Sendable {
+public struct KeyBinding: Codable, Equatable, Sendable {
     /// Identifies the binding. Must be unique within a config.
     public var id: UUID
     public var action: Action

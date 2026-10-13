@@ -85,10 +85,10 @@ public struct ConfigStore: Sendable {
             }
         }
 
-        var bindings: [Binding] = []
+        var bindings: [KeyBinding] = []
         var seen: Set<UUID> = []
         for (index, slot) in file.bindings.enumerated() {
-            let binding: Binding
+            let binding: KeyBinding
             switch slot.result {
             case .success(let value):
                 binding = value
@@ -187,7 +187,7 @@ private struct VersionProbe: Decodable {
 /// entry does not discard the others.
 private struct StoredFile: Decodable {
     let resizeStep: Lenient<Double>?
-    let bindings: [Lenient<Binding>]
+    let bindings: [Lenient<KeyBinding>]
 }
 
 /// Decodes a value or keeps the error, so that a failure stays inside its container.

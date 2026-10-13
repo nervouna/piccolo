@@ -170,7 +170,7 @@ struct ConfigValidationTests {
         }
     }
 
-    // MARK: Action, Binding and Config
+    // MARK: Action, KeyBinding and Config
 
     @Test("an action is valid when its frame or grid is")
     func actionValidity() {
@@ -193,8 +193,8 @@ struct ConfigValidationTests {
     @Test("a config with two bindings sharing an ID is invalid")
     func duplicateIDs() {
         let config = Config(bindings: [
-            Binding(id: Fixture.idA, action: .moveToDisplay(.next)),
-            Binding(id: Fixture.idA, action: .moveToDisplay(.previous)),
+            KeyBinding(id: Fixture.idA, action: .moveToDisplay(.next)),
+            KeyBinding(id: Fixture.idA, action: .moveToDisplay(.previous)),
         ])
         #expect(throws: ValidationError.duplicateBindingID(Fixture.idA)) {
             try config.validate()
@@ -203,11 +203,11 @@ struct ConfigValidationTests {
 
     @Test("a config with an invalid binding is invalid")
     func invalidBindingMakesConfigInvalid() {
-        let bad = Binding(
+        let bad = KeyBinding(
             id: Fixture.idB,
             action: .placeWindow(.custom(FractionalRect(x: 0.9, y: 0, width: 0.2, height: 1))))
         #expect(throws: ValidationError.outOfRange(field: "x + width", rule: "must be <= 1")) {
-            try Config(bindings: [Binding(id: Fixture.idA, action: .moveDivider(.left)), bad]).validate()
+            try Config(bindings: [KeyBinding(id: Fixture.idA, action: .moveDivider(.left)), bad]).validate()
         }
     }
 
