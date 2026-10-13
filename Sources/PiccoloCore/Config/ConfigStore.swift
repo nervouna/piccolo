@@ -5,6 +5,15 @@ public struct LoadResult: Equatable, Sendable {
     public let config: Config
     /// Human-readable notes, one per problem. Empty when the file was clean or missing.
     public let issues: [String]
+    /// The zero-based position in the file of each binding of `config`, by binding ID. Empty when
+    /// the config did not come from a file: a missing or unusable file, or a newer version.
+    public let sourceIndices: [UUID: Int]
+
+    init(config: Config, issues: [String], sourceIndices: [UUID: Int] = [:]) {
+        self.config = config
+        self.issues = issues
+        self.sourceIndices = sourceIndices
+    }
 }
 
 public enum ConfigStoreError: Error, Equatable, Sendable {
@@ -31,7 +40,8 @@ public struct ConfigStore: Sendable {
     /// - A file with a version above `Config.currentVersion` is left untouched, `Config.default`
     ///   is returned, and `save(_:)` refuses to overwrite it.
     /// - An undecodable or invalid binding is skipped. Of several bindings sharing an ID, the
-    ///   first valid one is kept; invalid bindings never claim an ID.
+    ///   first valid one is kept; invalid bindings never claim an ID. Each kept binding keeps the
+    ///   position it had in the file, counting the skipped ones, in `LoadResult.sourceIndices`.
     /// - An invalid `resizeStep` is replaced by the default.
     public func load() throws -> LoadResult {
         guard FileManager.default.fileExists(atPath: url.path) else {
@@ -86,6 +96,7 @@ public struct ConfigStore: Sendable {
         }
 
         var bindings: [KeyBinding] = []
+        var sourceIndices: [UUID: Int] = [:]
         var seen: Set<UUID> = []
         for (index, slot) in file.bindings.enumerated() {
             let binding: KeyBinding
@@ -107,11 +118,13 @@ public struct ConfigStore: Sendable {
                 continue
             }
             bindings.append(binding)
+            sourceIndices[binding.id] = index
         }
 
         return LoadResult(
             config: Config(resizeStep: resizeStep, bindings: bindings),
-            issues: issues)
+            issues: issues,
+            sourceIndices: sourceIndices)
     }
 
     /// Validates, creates the parent directory and writes atomically.

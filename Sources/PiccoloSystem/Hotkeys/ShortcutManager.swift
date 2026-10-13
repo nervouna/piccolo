@@ -63,6 +63,10 @@ public final class ShortcutManager {
     /// file and for one that could not be used.
     public private(set) var config: Config = .default
 
+    /// The position in the file of each binding of ``config``, from the last ``load(from:)``. Issues
+    /// name bindings by these positions, so that they point at the same entry as the file does.
+    private var sourceIndices: [UUID: Int] = [:]
+
     /// Whether the hotkeys are released for the time being. See ``setSuspended(_:)``.
     public private(set) var isSuspended = false
 
@@ -87,15 +91,18 @@ public final class ShortcutManager {
     public func load(from url: URL) -> Status {
         var issues: [String] = []
         var config = Config.default
+        var sourceIndices: [UUID: Int] = [:]
         do {
             let result = try ConfigStore(url: url).load()
             config = result.config
+            sourceIndices = result.sourceIndices
             issues += result.issues
         } catch {
             issues.append("\(url.lastPathComponent) could not be read: \(error.localizedDescription)")
         }
         self.url = url
         self.config = config
+        self.sourceIndices = sourceIndices
         loadIssues = issues
         return register()
     }
@@ -125,16 +132,14 @@ public final class ShortcutManager {
     /// Registers what the loaded config allows (nothing while suspended) and records the outcome.
     private func register() -> Status {
         var issues = loadIssues
-        let plan = ShortcutPlan.resolve(config.bindings)
+        let plan = ShortcutPlan.resolve(config.bindings, sourceIndices: sourceIndices)
         issues += plan.issues
 
         let refusals = registrar.apply(isSuspended ? [] : plan.registrations) { [weak self] bindingID in
             self?.pressed(bindingID)
         }
         for refusal in refusals {
-            let index = config.bindings.firstIndex { $0.id == refusal.id }
-            let name = index.map { "bindings[\($0)]" } ?? "binding \(refusal.id.uuidString)"
-            issues.append("\(name) shortcut was refused: \(refusal.reason); it is not registered")
+            issues.append("\(bindingName(refusal.id)) shortcut was refused: \(refusal.reason); it is not registered")
         }
 
         let registered = registrar.registered
@@ -146,6 +151,12 @@ public final class ShortcutManager {
         status = Status(
             path: url.path, bindingCount: config.bindings.count, registered: registered, issues: issues)
         return status
+    }
+
+    /// How an issue names a binding: by its position in the file, as `ShortcutPlan` does.
+    private func bindingName(_ bindingID: UUID) -> String {
+        let position = sourceIndices[bindingID] ?? config.bindings.firstIndex(where: { $0.id == bindingID })
+        return position.map { "bindings[\($0)]" } ?? "binding \(bindingID.uuidString)"
     }
 
     private func pressed(_ bindingID: UUID) {
