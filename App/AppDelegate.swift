@@ -1,4 +1,5 @@
 import AppKit
+import PiccoloSystem
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
@@ -11,6 +12,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         accessibility.start()
         config.start()
+        // Records which windows are focused from now on, so that the first "arrange" has a history.
+        // The first use of `ActionExecutor.live` starts it too, which only matters if this line goes.
+        FocusTracker.shared.start()
         #if DEBUG
         debugControl.start()
         #endif
