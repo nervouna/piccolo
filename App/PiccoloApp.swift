@@ -5,7 +5,7 @@ struct PiccoloApp: App {
 
     var body: some Scene {
         MenuBarExtra("Piccolo", systemImage: "rectangle.split.2x2") {
-            MenuContent(accessibility: appDelegate.accessibility)
+            MenuContent(accessibility: appDelegate.accessibility, config: appDelegate.config)
         }
         .menuBarExtraStyle(.menu)
     }
