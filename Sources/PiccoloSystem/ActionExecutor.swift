@@ -7,8 +7,11 @@ public enum ActionOutcome: Equatable, Sendable {
     /// The window was sent to `target`; `achieved` is the frame read back afterwards. They differ
     /// when the window refused the size, or was shifted back inside the display.
     case placed(target: CGRect, achieved: CGRect)
-    /// The action needed no change, for example `moveToDisplay` with a single display.
+    /// The action needed no change, for example `moveToDisplay` with a single display, or
+    /// `arrangeGrid` with no window to arrange.
     case nothingToDo
+    /// `arrangeGrid` sent windows to their cells, or tried to.
+    case arranged(ArrangeOutcome)
 }
 
 /// Why an action could not be run, besides ``ActionPlanningError`` and ``WindowError``, which
@@ -27,8 +30,8 @@ public enum ActionExecutionError: Error, Equatable, Sendable, LocalizedError {
 
 /// Runs an `Action` end to end: focused window, plan, apply, outcome.
 ///
-/// The window and the displays come from closures, so that the whole flow runs against fakes in
-/// tests. ``live`` reads the real focused window and screens.
+/// The window, the displays and the windows to arrange come from closures, so that the whole flow
+/// runs against fakes in tests. ``live`` reads the real focused window, screens and windows.
 ///
 /// A run is synchronous and blocks on Accessibility calls, so it belongs off the main thread.
 public struct ActionExecutor: Sendable {
@@ -37,28 +40,50 @@ public struct ActionExecutor: Sendable {
     /// Lists the displays in canonical coordinates, the primary display first.
     public typealias DisplaysProvider = @Sendable () throws -> [Display]
 
-    private let windowProvider: WindowProvider
-    private let displaysProvider: DisplaysProvider
+    let windowProvider: WindowProvider
+    let displaysProvider: DisplaysProvider
+    let arrangement: ArrangementSource
 
-    public init(window: @escaping WindowProvider, displays: @escaping DisplaysProvider) {
+    /// - Parameter arrangement: Where `arrangeGrid` finds the windows to arrange. The default has
+    ///   none, so that `arrangeGrid` has nothing to do.
+    public init(
+        window: @escaping WindowProvider,
+        displays: @escaping DisplaysProvider,
+        arrangement: ArrangementSource = .none
+    ) {
         self.windowProvider = window
         self.displaysProvider = displays
+        self.arrangement = arrangement
     }
 
-    /// The focused window of the frontmost application, on the attached displays.
+    /// The focused window of the frontmost application, on the attached displays, arranging the
+    /// windows on screen in the order the focus tracker saw them focused.
+    ///
+    /// The first use starts the focus tracker, which keeps listening for the rest of the process's
+    /// life.
     public static let live = ActionExecutor(
         window: { try FocusedWindow.current() },
-        displays: { Screens.currentDisplays() })
+        displays: { Screens.currentDisplays() },
+        arrangement: .live)
 
-    /// Runs `action` on the focused window.
+    /// The windows focused so far, most recent first. Empty until the tracker has seen a window.
+    public var focusHistory: [WindowID] {
+        arrangement.history().order
+    }
+
+    /// Runs `action` on the focused window; `arrangeGrid` runs on the windows on screen.
     ///
-    /// - Throws: ``ActionExecutionError/notImplemented(actionType:)`` for `arrangeGrid` and
-    ///   `moveDivider`, before the window is touched; ``ActionPlanningError`` for an action that
-    ///   cannot be planned; ``WindowError`` when the window cannot be found, read or changed.
-    public func run(_ action: Action) throws -> ActionOutcome {
+    /// - Parameter onlyPid: Restricts the windows `arrangeGrid` may move to those of this process.
+    ///   The other actions ignore it: they only touch the focused window.
+    /// - Throws: ``ActionExecutionError/notImplemented(actionType:)`` for `moveDivider`, before
+    ///   anything is touched; ``ActionPlanningError`` for an action that cannot be planned;
+    ///   ``ArrangePlannerError`` for a grid that cannot be arranged; ``WindowError`` when a window
+    ///   cannot be found, read or changed. A window of an arrangement that cannot be changed is not
+    ///   an error: it is reported in the outcome, and the other windows are still moved.
+    public func run(_ action: Action, onlyPid: pid_t? = nil) throws -> ActionOutcome {
         switch action {
-        case .arrangeGrid:
-            throw ActionExecutionError.notImplemented(actionType: "arrangeGrid")
+        case .arrangeGrid(let grid):
+            return try arrange(grid, onlyPid: onlyPid)
         case .moveDivider:
             throw ActionExecutionError.notImplemented(actionType: "moveDivider")
         case .placeWindow, .moveToDisplay:

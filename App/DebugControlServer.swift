@@ -77,21 +77,8 @@ final class DebugControlServer {
             return ["frame": JSONValue(rect: achieved)]
         }
 
-        // The params are an action exactly as the config file writes it, for example
-        // {"type": "placeWindow", "frame": {"preset": "leftHalf"}}.
-        router.register("action.run") { params in
-            let action = try params.decode(Action.self)
-            switch try executor.run(action) {
-            case .placed(let target, let achieved):
-                return [
-                    "target": JSONValue(rect: target),
-                    "achieved": JSONValue(rect: achieved),
-                ]
-            case .nothingToDo:
-                return ["nothingToDo": .bool(true)]
-            }
-        }
-
+        // action.run and focus.history, in DebugArrangeCommands.swift.
+        registerArrangeCommands(in: &router, executor: executor)
         return router
     }
 }

@@ -22,6 +22,7 @@ struct WindowErrorTests {
             .notTrusted,
             .noFrontmostApplication,
             .noFocusedWindow,
+            .windowGone,
             .attributeNotSettable("AXSize"),
             .accessibility(operation: "read AXPosition", code: -25204),
         ]

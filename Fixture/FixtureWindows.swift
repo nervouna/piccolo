@@ -99,8 +99,41 @@ final class FixtureWindows {
             ordered.map { window in
                 var entry = describe(window)
                 entry["isKey"] = .bool(window.isKeyWindow)
+                entry["isMiniaturized"] = .bool(window.isMiniaturized)
                 return .object(entry)
             })
+    }
+
+    /// Minimizes the window into the Dock and waits (bounded) until the window server no longer
+    /// lists it as on screen, which is after the system's own animation.
+    func miniaturize(id: String) throws -> JSONValue {
+        let window = try window(id)
+        window.miniaturize(nil)
+        spinMainRunLoop(until: 5) {
+            window.isMiniaturized && windowServerBounds(of: window.windowNumber) == nil
+        }
+        guard window.isMiniaturized else {
+            throw ControlCommandError.failed("window '\(id)' did not minimize")
+        }
+        var result = describe(window)
+        result["isMiniaturized"] = .bool(true)
+        return .object(result)
+    }
+
+    /// Brings a minimized window back and waits (bounded) until the window server lists it at
+    /// its frame again. A window that is not minimized is left as it is.
+    func deminiaturize(id: String) throws -> JSONValue {
+        let window = try window(id)
+        if window.isMiniaturized {
+            window.deminiaturize(nil)
+            waitUntilOnScreen(window)
+        }
+        guard !window.isMiniaturized else {
+            throw ControlCommandError.failed("window '\(id)' did not come back from the Dock")
+        }
+        var result = describe(window)
+        result["isMiniaturized"] = .bool(false)
+        return .object(result)
     }
 
     func close(id: String) throws -> JSONValue {
