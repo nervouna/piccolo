@@ -18,11 +18,36 @@ public struct ScreenInfo: Sendable, Equatable {
     }
 }
 
+extension ScreenInfo {
+    /// The same screen as the pure geometry type of `PiccoloCore`.
+    public var display: Display {
+        Display(frame: frame, visibleFrame: visibleFrame)
+    }
+}
+
 public enum Screens {
     /// The attached displays, converted from AppKit space to canonical space.
     @MainActor
     public static func current() -> [ScreenInfo] {
         make(from: NSScreen.screens.map { (frame: $0.frame, visibleFrame: $0.visibleFrame) })
+    }
+
+    /// The screens as `Display`s for `PiccoloCore`, in the same order: the first is the primary display.
+    public static func displays(from screens: [ScreenInfo]) -> [Display] {
+        screens.map(\.display)
+    }
+
+    /// The attached displays as `Display`s, readable from any thread.
+    ///
+    /// `NSScreen` belongs to the main thread, so a call from another thread (the control server's
+    /// queue, say) waits for the main thread. Called on the main thread it reads directly.
+    public static func currentDisplays() -> [Display] {
+        if Thread.isMainThread {
+            return MainActor.assumeIsolated { displays(from: current()) }
+        }
+        return DispatchQueue.main.sync {
+            MainActor.assumeIsolated { displays(from: current()) }
+        }
     }
 
     /// Converts AppKit-space frames (`NSScreen.frame` and `visibleFrame`, in

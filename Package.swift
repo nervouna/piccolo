@@ -38,14 +38,14 @@ let package = Package(
         ),
         .testTarget(
             name: "PiccoloSystemTests",
-            dependencies: ["PiccoloSystem"]
+            dependencies: ["PiccoloSystem", "PiccoloCore"]
         ),
         // Desktop acceptance: drives the installed Debug Piccolo and the PiccoloFixture
         // app and measures real window frames. Skipped unless PICCOLO_ACCEPTANCE=1;
         // run it with scripts/accept.sh.
         .testTarget(
             name: "PiccoloAcceptanceTests",
-            dependencies: ["PiccoloControl", "PiccoloSystem"]
+            dependencies: ["PiccoloControl", "PiccoloSystem", "PiccoloCore"]
         ),
     ],
     swiftLanguageModes: [.v6]

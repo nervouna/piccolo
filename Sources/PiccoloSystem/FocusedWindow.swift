@@ -94,10 +94,10 @@ public struct FocusedWindow: WindowFrameAccess {
     }
 
     /// Moves and resizes the window to `frame` and returns the frame it ended up with.
-    /// See ``FrameSetter/apply(_:to:)``.
+    /// See ``FrameSetter/apply(_:to:within:)``.
     @discardableResult
-    public func setFrame(_ frame: CGRect) throws -> CGRect {
-        try FrameSetter.apply(frame, to: self)
+    public func setFrame(_ frame: CGRect, within visibleFrame: CGRect? = nil) throws -> CGRect {
+        try FrameSetter.apply(frame, to: self, within: visibleFrame)
     }
 
     // MARK: Accessibility plumbing
