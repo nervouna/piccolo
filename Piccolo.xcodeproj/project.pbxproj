@@ -63,6 +63,9 @@
 			);
 			buildRules = (
 			);
+			dependencies = (
+				A10000000000000000000195 /* PBXTargetDependency */,
+			);
 			fileSystemSynchronizedGroups = (
 				A10000000000000000000010 /* App */,
 			);
@@ -127,6 +130,13 @@
 			);
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A10000000000000000000195 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = A10000000000000000000190 /* PiccoloControl */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		A10000000000000000000210 /* Debug configuration for PBXProject "Piccolo" */ = {
@@ -260,6 +270,10 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 0.1.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"$(BUILT_PRODUCTS_DIR)/PiccoloControl.o",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = io.damao.piccolo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = macosx;
@@ -325,6 +339,10 @@
 		A10000000000000000000180 /* PiccoloSystem */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = PiccoloSystem;
+		};
+		A10000000000000000000190 /* PiccoloControl */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = PiccoloControl;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

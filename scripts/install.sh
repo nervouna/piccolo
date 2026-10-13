@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
-# Builds a release app, replaces /Applications/Piccolo.app and launches it.
+# Builds the app, replaces /Applications/Piccolo.app and launches it.
 #
-# Usage: scripts/install.sh
+# Usage: scripts/install.sh [debug|release]   (default: release)
+#
+# Only a Debug build hosts the control server that piccoloctl talks to.
 #
 # The Accessibility grant is tied to the bundle ID and the signing identity, so
 # only a build signed with the configured identity may be installed. Without one
@@ -13,6 +15,23 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 # shellcheck source=scripts/common.sh
 source "$SCRIPT_DIR/common.sh"
 
+usage() {
+    echo "Usage: scripts/install.sh [debug|release]" >&2
+}
+
+if [[ $# -gt 1 ]]; then
+    usage
+    exit 2
+fi
+
+case "${1:-release}" in
+    debug | release) configuration="${1:-release}" ;;
+    *)
+        usage
+        exit 2
+        ;;
+esac
+
 load_signing_env
 
 if [[ -z "$SIGN_IDENTITY" ]]; then
@@ -21,7 +40,7 @@ Set PICCOLO_CODESIGN_IDENTITY and PICCOLO_TEAM_ID in $SIGN_ENV_FILE
 (or point PICCOLO_SIGNING_ENV at a file that sets them)."
 fi
 
-"$SCRIPT_DIR/build.sh" release
+"$SCRIPT_DIR/build.sh" "$configuration"
 
 built_app="$BUILD_DIR/$APP_NAME.app"
 if codesign -dv "$built_app" 2>&1 | grep -q '^Signature=adhoc'; then

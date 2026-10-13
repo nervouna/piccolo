@@ -22,6 +22,8 @@ Non-goals: drag-to-snap with the mouse, automatic tiling of new windows, moving 
 - The root `Package.swift` holds everything testable:
   - `PiccoloCore`: pure logic (geometry, presets, grid and divider model, config schema). No AppKit side effects, no globals, fully unit tested.
   - `PiccoloSystem`: adapters for Accessibility, window enumeration, screens and hotkeys, behind protocols so that logic is testable with fakes.
+  - `PiccoloControl`: request/response protocol, server and client of the debug control channel. Imports nothing from the other targets, so test support apps can host a server too.
+  - `piccoloctl` (executable): command line client of the control channel plus read-only desktop queries (see "Debug control channel").
 - `Piccolo.xcodeproj` holds thin targets only: the `Piccolo` app (UI and wiring) and test support apps. It uses file-system-synchronized groups, so adding files does not touch the project file. No project generators.
 - One canonical coordinate space inside `PiccoloCore`: global display coordinates with a top-left origin and y pointing down, as used by the Accessibility and CGWindow APIs. Convert from AppKit's bottom-left space only at the `PiccoloSystem` boundary.
 
@@ -29,10 +31,20 @@ Non-goals: drag-to-snap with the mouse, automatic tiling of new windows, moving 
 
 - `swift test` runs the package's unit tests.
 - `scripts/build.sh [debug|release]` builds `build/Piccolo.app` with xcodebuild.
-- `scripts/install.sh` builds, replaces `/Applications/Piccolo.app` and relaunches it.
+- `scripts/install.sh [debug|release]` (default `release`) builds, replaces `/Applications/Piccolo.app` and relaunches it. Only a Debug build hosts the control server.
 - `scripts/release.sh [--skip-notarize]` builds a Developer ID signed release (hardened runtime, secure timestamp, no `get-task-allow`), notarizes it, staples the ticket and writes `build/release/Piccolo-<version>.zip`. It refuses without the signing identity, and without the notary settings unless `--skip-notarize`.
 - Signing and notarization settings are never committed. Scripts source `${XDG_CONFIG_HOME:-$HOME/.config}/piccolo/signing.env` when it exists (`PICCOLO_CODESIGN_IDENTITY`, `PICCOLO_TEAM_ID`, `PICCOLO_NOTARY_*`) and fall back to ad-hoc signing otherwise. `PICCOLO_SIGNING_ENV` overrides the file's path.
 - The Accessibility grant is tied to the bundle ID and the signing identity. Only builds signed with the configured identity may be installed to `/Applications/Piccolo.app`; `scripts/install.sh` refuses ad-hoc builds. Never reset or edit TCC (`tccutil`, the TCC database).
+
+## Debug control channel
+
+Debug builds of Piccolo host a control server (`io.damao.piccolo.control`, a same-user `CFMessagePort`; no network socket) so that scripts and tests can query the app and trigger actions without keyboard input. This is the basis of automated desktop acceptance.
+
+- Requests are `{"command": String, "params": Object}`, responses `{"ok": Bool, "result": Any?, "error": String?}`. Commands: `status`, `window.focusedFrame`, `window.setFocusedFrame`.
+- `swift run piccoloctl app <command> [--params '<json>']` sends a command. `piccoloctl windows`, `screens` and `frontmost` read the desktop directly. All output is one line of JSON on stdout; exit code 0 only on success. Frames are in canonical coordinates.
+- Release builds contain no control code: the server is under `#if DEBUG`, and `Piccolo.xcodeproj` links `PiccoloControl` into the app in Debug only (a build-only target dependency plus `OTHER_LDFLAGS` for Debug). Do not add `PiccoloControl` to the app's linked frameworks, and check that `strings` on a Release binary finds no `PiccoloControl`.
+- Handlers run on the server's own queue, not on the main thread. Accessibility calls have a 2 s messaging timeout.
+- App names are localized: match on `bundleID` (`com.apple.finder`), not on `name`.
 
 ## Workflow
 
