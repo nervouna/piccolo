@@ -5,6 +5,10 @@
 #
 # Signing comes from the signing env file (see scripts/common.sh); without one the
 # app is signed ad-hoc. All intermediate products live under build/.
+#
+# PICCOLO_NOTARIZABLE=1 (set by scripts/release.sh) makes a signed Release build
+# acceptable to the notary service: no get-task-allow entitlement and a secure
+# timestamp. It needs network access and does not affect Debug or ad-hoc builds.
 
 set -euo pipefail
 
@@ -34,6 +38,10 @@ load_signing_env
 if [[ -n "$SIGN_IDENTITY" ]]; then
     signing_overrides=("CODE_SIGN_IDENTITY=$SIGN_IDENTITY" "DEVELOPMENT_TEAM=$SIGN_TEAM")
     log "Signing with the configured identity"
+    if [[ "$CONFIGURATION" == "Release" && "${PICCOLO_NOTARIZABLE:-}" == "1" ]]; then
+        signing_overrides+=("CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO" "OTHER_CODE_SIGN_FLAGS=--timestamp")
+        log "Release signing for notarization: no get-task-allow, secure timestamp"
+    fi
 else
     signing_overrides=("CODE_SIGN_IDENTITY=-" "DEVELOPMENT_TEAM=")
     log "No signing identity configured: building ad-hoc signed"
