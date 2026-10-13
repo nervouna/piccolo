@@ -11,6 +11,7 @@ let package = Package(
         .library(name: "PiccoloCore", targets: ["PiccoloCore"]),
         .library(name: "PiccoloSystem", targets: ["PiccoloSystem"]),
         .library(name: "PiccoloControl", targets: ["PiccoloControl"]),
+        .library(name: "PiccoloUI", targets: ["PiccoloUI"]),
         .executable(name: "piccoloctl", targets: ["piccoloctl"]),
     ],
     targets: [
@@ -23,6 +24,11 @@ let package = Package(
         ),
         // Request/response protocol, server and client of the local control channel.
         .target(name: "PiccoloControl"),
+        // The Settings window: its model, the texts it shows and the SwiftUI and AppKit views.
+        .target(
+            name: "PiccoloUI",
+            dependencies: ["PiccoloCore"]
+        ),
         // Command line client for the control channel and window/screen queries.
         .executableTarget(
             name: "piccoloctl",
@@ -35,6 +41,10 @@ let package = Package(
         .testTarget(
             name: "PiccoloControlTests",
             dependencies: ["PiccoloControl"]
+        ),
+        .testTarget(
+            name: "PiccoloUITests",
+            dependencies: ["PiccoloUI", "PiccoloCore"]
         ),
         .testTarget(
             name: "PiccoloSystemTests",

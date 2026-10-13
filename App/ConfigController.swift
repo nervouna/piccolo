@@ -18,6 +18,10 @@ final class ConfigController {
     /// What the last load came to: the file, the registered shortcuts and the problems.
     private(set) var status: ShortcutManager.Status
 
+    /// Called after another file replaced the config in effect: a reload, or `config.load`.
+    /// Not called for ``save(_:)``. The Settings window follows it.
+    @ObservationIgnored var onExternalLoad: (@MainActor () -> Void)?
+
     #if DEBUG
     /// How many times each binding's hotkey fired since launch. The debug channel uses it to
     /// tell that a simulated key press reached the hotkey registry.
@@ -54,6 +58,28 @@ final class ConfigController {
         apply(url)
     }
 
+    /// The config the last load read.
+    var config: Config {
+        manager.config
+    }
+
+    /// Writes `config` to the file in use (the default location, or the file given to
+    /// ``load(from:)``), creating its folder on the first save, and applies it: the shortcuts
+    /// take effect at once.
+    func save(_ config: Config) throws {
+        status = try manager.save(config)
+        log("saved")
+    }
+
+    /// Releases every global hotkey (`true`) or registers them again (`false`), for the time a
+    /// shortcut is being recorded.
+    func setShortcutsSuspended(_ suspended: Bool) {
+        status = manager.setSuspended(suspended)
+        logger.info(
+            "shortcuts \(suspended ? "suspended" : "restored", privacy: .public): \(self.status.summary, privacy: .public)"
+        )
+    }
+
     /// Shows the config file in Finder. A missing file is not created: Finder opens the
     /// closest folder that exists instead.
     func revealInFinder() {
@@ -71,8 +97,14 @@ final class ConfigController {
 
     private func apply(_ url: URL) {
         status = manager.load(from: url)
+        log("loaded")
+        onExternalLoad?()
+    }
+
+    private func log(_ what: String) {
         logger.info(
-            "loaded \(url.lastPathComponent, privacy: .public): \(self.status.summary, privacy: .public)")
+            "\(what, privacy: .public) \(URL(fileURLWithPath: self.status.path).lastPathComponent, privacy: .public): \(self.status.summary, privacy: .public)"
+        )
         for issue in status.issues {
             logger.error("config problem: \(issue, privacy: .public)")
         }

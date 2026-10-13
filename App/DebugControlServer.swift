@@ -44,6 +44,7 @@ final class DebugControlServer {
     nonisolated static func makeRouter(executor: ActionExecutor = .live) -> ControlRouter {
         var router = ControlRouter()
         registerConfigCommands(in: &router)
+        registerSettingsCommands(in: &router)
 
         router.register("status") { _ in
             let report = SelfCheck.makeReport()

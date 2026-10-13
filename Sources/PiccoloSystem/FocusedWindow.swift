@@ -21,7 +21,8 @@ public struct FocusedWindow: WindowFrameAccess {
     /// Finds the focused window of the frontmost application.
     ///
     /// - Throws: ``WindowError/notTrusted``, ``WindowError/noFrontmostApplication``,
-    ///   ``WindowError/noFocusedWindow``, or ``WindowError/accessibility(operation:code:)``.
+    ///   ``WindowError/ownWindow`` when Piccolo itself is frontmost, ``WindowError/noFocusedWindow``,
+    ///   or ``WindowError/accessibility(operation:code:)``.
     public static func current(
         permission: AccessibilityPermission = AccessibilityPermission()
     ) throws -> FocusedWindow {
@@ -29,6 +30,7 @@ public struct FocusedWindow: WindowFrameAccess {
         guard let app = FrontmostApplication.current() else {
             throw WindowError.noFrontmostApplication
         }
+        try refuseOwnWindows(of: app, ownPID: ProcessInfo.processInfo.processIdentifier)
 
         let application = AXUIElementCreateApplication(app.pid)
         AXUIElementSetMessagingTimeout(application, messagingTimeout)
@@ -53,6 +55,13 @@ public struct FocusedWindow: WindowFrameAccess {
         AXUIElementSetMessagingTimeout(window, messagingTimeout)
         return FocusedWindow(
             pid: app.pid, appName: app.name ?? app.bundleID ?? "", element: window)
+    }
+
+    /// Piccolo does not act on its own windows (the Settings window): see ``WindowError/ownWindow``.
+    static func refuseOwnWindows(of app: FrontmostApplication, ownPID: pid_t) throws {
+        if app.pid == ownPID {
+            throw WindowError.ownWindow
+        }
     }
 
     private init(pid: pid_t, appName: String, element: AXUIElement) {

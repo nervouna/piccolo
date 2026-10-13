@@ -30,6 +30,11 @@ struct MenuContent: View {
 
         Divider()
 
+        Button("Settings…") {
+            SettingsController.shared.show()
+        }
+        .keyboardShortcut(",")
+
         Button("Quit Piccolo") {
             NSApplication.shared.terminate(nil)
         }
