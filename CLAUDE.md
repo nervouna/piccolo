@@ -30,6 +30,7 @@ Non-goals: drag-to-snap with the mouse, automatic tiling of new windows, moving 
 - `swift test` runs the package's unit tests.
 - `scripts/build.sh [debug|release]` builds `build/Piccolo.app` with xcodebuild.
 - `scripts/install.sh` builds, replaces `/Applications/Piccolo.app` and relaunches it.
+- `scripts/release.sh [--skip-notarize]` builds a Developer ID signed release (hardened runtime, secure timestamp, no `get-task-allow`), notarizes it, staples the ticket and writes `build/release/Piccolo-<version>.zip`. It refuses without the signing identity, and without the notary settings unless `--skip-notarize`.
 - Signing and notarization settings are never committed. Scripts source `${XDG_CONFIG_HOME:-$HOME/.config}/piccolo/signing.env` when it exists (`PICCOLO_CODESIGN_IDENTITY`, `PICCOLO_TEAM_ID`, `PICCOLO_NOTARY_*`) and fall back to ad-hoc signing otherwise. `PICCOLO_SIGNING_ENV` overrides the file's path.
 - The Accessibility grant is tied to the bundle ID and the signing identity. Only builds signed with the configured identity may be installed to `/Applications/Piccolo.app`; `scripts/install.sh` refuses ad-hoc builds. Never reset or edit TCC (`tccutil`, the TCC database).
 
