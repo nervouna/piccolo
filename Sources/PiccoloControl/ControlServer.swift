@@ -5,6 +5,8 @@ import Foundation
 public enum ControlServiceName {
     /// The Piccolo app (Debug builds only).
     public static let piccolo = "io.damao.piccolo.control"
+    /// The acceptance fixture app (`PiccoloFixture`, Debug builds only).
+    public static let fixture = "io.damao.piccolo.fixture.control"
 }
 
 /// Hosts a control channel under a service name.

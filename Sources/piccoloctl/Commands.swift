@@ -24,6 +24,7 @@ struct Outcome {
 enum Commands {
     static let usage = """
         usage: piccoloctl app <command> [--params '<json object>'] [--service <name>] [--timeout <seconds>]
+               piccoloctl fixture <command> [--params '<json object>'] [--timeout <seconds>]
                piccoloctl windows
                piccoloctl screens
                piccoloctl frontmost
@@ -38,6 +39,9 @@ enum Commands {
         switch command {
         case "app":
             return app(rest)
+        case "fixture":
+            // `app` aimed at the acceptance fixture: same options, other default service.
+            return app(rest, defaultService: ControlServiceName.fixture)
         case "windows":
             return rest.isEmpty ? windows() : .failure(usage, exitCode: 2)
         case "screens":
@@ -56,7 +60,7 @@ enum Commands {
     private struct AppArguments {
         var command: String
         var params: [String: JSONValue] = [:]
-        var service = ControlServiceName.piccolo
+        var service: String
         var timeout = ControlClient.defaultTimeout
     }
 
@@ -64,9 +68,11 @@ enum Commands {
         case message(String)
     }
 
-    private static func parseAppArguments(_ arguments: [String]) throws -> AppArguments {
+    private static func parseAppArguments(
+        _ arguments: [String], defaultService: String
+    ) throws -> AppArguments {
         var command: String?
-        var parsed = AppArguments(command: "")
+        var parsed = AppArguments(command: "", service: defaultService)
         var index = 0
 
         func value(for option: String) throws -> String {
@@ -111,10 +117,12 @@ enum Commands {
         return parsed
     }
 
-    private static func app(_ arguments: [String]) -> Outcome {
+    private static func app(
+        _ arguments: [String], defaultService: String = ControlServiceName.piccolo
+    ) -> Outcome {
         let parsed: AppArguments
         do {
-            parsed = try parseAppArguments(arguments)
+            parsed = try parseAppArguments(arguments, defaultService: defaultService)
         } catch ArgumentError.message(let message) {
             return .failure("\(message)\n\(usage)", exitCode: 2)
         } catch {
@@ -128,8 +136,15 @@ enum Commands {
             return Outcome(output: text, exitCode: response.ok ? 0 : 1)
         } catch let error as ControlError {
             var message = failureText(error)
-            if case .noServer = error, parsed.service == ControlServiceName.piccolo {
-                message += "; is Piccolo running, and is it a Debug build? Release builds have no control server"
+            if case .noServer = error {
+                switch parsed.service {
+                case ControlServiceName.piccolo:
+                    message += "; is Piccolo running, and is it a Debug build? Release builds have no control server"
+                case ControlServiceName.fixture:
+                    message += "; is the fixture running? scripts/accept.sh starts it, or open build/PiccoloFixture.app"
+                default:
+                    break
+                }
             }
             return .failure(message)
         } catch {

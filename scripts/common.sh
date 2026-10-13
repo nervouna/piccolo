@@ -8,6 +8,8 @@ PICCOLO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 BUILD_DIR="$PICCOLO_ROOT/build"
 APP_NAME="Piccolo"
 INSTALLED_APP="/Applications/$APP_NAME.app"
+# The acceptance fixture app (Debug builds only, see scripts/accept.sh).
+FIXTURE_NAME="PiccoloFixture"
 
 die() {
     echo "error: $*" >&2
