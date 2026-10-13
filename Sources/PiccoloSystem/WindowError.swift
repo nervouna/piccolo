@@ -9,6 +9,8 @@ public enum WindowError: Error, Equatable, LocalizedError {
     case noFrontmostApplication
     /// The frontmost application has no focused window.
     case noFocusedWindow
+    /// The window no longer exists, for example because it was closed after it was listed.
+    case windowGone
     /// The window refuses changes to this attribute (for example `AXSize` of a
     /// window that cannot be resized).
     case attributeNotSettable(String)
@@ -34,8 +36,10 @@ public enum WindowError: Error, Equatable, LocalizedError {
             return "no application is frontmost"
         case .noFocusedWindow:
             return "the frontmost application has no focused window"
+        case .windowGone:
+            return "the window no longer exists"
         case .attributeNotSettable(let attribute):
-            return "the focused window does not allow changing \(attribute)"
+            return "the window does not allow changing \(attribute)"
         case .accessibility(let operation, let code):
             return "Accessibility call failed: \(operation) (AXError \(code))"
         }
