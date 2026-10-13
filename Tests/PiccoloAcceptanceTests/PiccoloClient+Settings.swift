@@ -23,6 +23,8 @@ struct SettingsState: Decodable, Equatable {
     var selectedBindingID: UUID?
     /// The tab the window shows: `shortcuts` or `general`.
     var tab: String
+    /// What the system says about starting Piccolo at login, by the name of `LoginItemStatus`.
+    var loginItem: String
 }
 
 /// The Settings window commands of the Debug control channel.

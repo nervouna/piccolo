@@ -10,7 +10,7 @@ import PiccoloUI
 /// `settings.state`, the view state (`settings.select`, `settings.showTab`), the edits
 /// (`settings.addBinding`, `settings.removeBinding`, `settings.updateAction`,
 /// `settings.setResizeStep`) and recording (`settings.beginRecording`, `settings.cancelRecording`,
-/// `settings.record`).
+/// `settings.record`), and the login item (`loginItem.status`, `loginItem.set`).
 ///
 /// They drive the model the window uses, through the same methods and properties, so a rejected
 /// edit answers `ok: false` with the model's own message and the window follows what the commands
@@ -107,6 +107,31 @@ extension DebugControlServer {
             }
         }
 
+        // What the system says about starting Piccolo at login, read now. The model reads it too, so
+        // that the window and `settings.state` show the same.
+        router.register("loginItem.status") { _ in
+            onMainActor {
+                SettingsController.shared.model.refreshLoginItem()
+                return loginItemState()
+            }
+        }
+
+        // Registers or unregisters Piccolo as a login item through the model, as the switch in the
+        // General tab does, and answers the status afterwards. A refusal answers `ok: false` with
+        // the system's message. Registering shows a system notification, so scripts and tests use
+        // this deliberately and put the status back.
+        router.register("loginItem.set") { params in
+            let enabled = try params.decode(EnabledParams.self).enabled
+            return try onMainActor {
+                let model = SettingsController.shared.model
+                guard model.setLaunchAtLogin(enabled) else {
+                    throw ControlCommandError.failed(
+                        model.loginItemError ?? "the login item could not be changed")
+                }
+                return loginItemState()
+            }
+        }
+
         // Starts recording without a key press: the global hotkeys are suspended until
         // `settings.cancelRecording`, a recorded key, or the window closing.
         router.register("settings.beginRecording") { params in
@@ -195,11 +220,20 @@ extension DebugControlServer {
 
     // MARK: State
 
+    /// The login item as `loginItem.status` and `loginItem.set` answer with it.
+    @MainActor
+    private static func loginItemState() -> JSONValue {
+        .object(["status": .string(SettingsController.shared.model.loginItemStatus.rawValue)])
+    }
+
     /// The model and the window as the commands answer with them.
     @MainActor
     private static func settingsState() -> JSONValue {
         let settings = SettingsController.shared
         let model = settings.model
+        // Read from the system, so that the state agrees with `loginItem.status` whatever the
+        // user did in System Settings since the model last looked.
+        model.refreshLoginItem()
         var state: [String: JSONValue] = [
             "isOpen": .bool(settings.isOpen),
             "bindings": .array(
@@ -221,6 +255,7 @@ extension DebugControlServer {
             "resizeStep": .double(model.resizeStep),
             "issues": .array(model.issues.map { .string($0) }),
             "tab": .string(model.tab.rawValue),
+            "loginItem": .string(model.loginItemStatus.rawValue),
         ]
         if let selected = model.selectedBindingID {
             state["selectedBindingID"] = .string(selected.uuidString)
@@ -252,6 +287,10 @@ extension DebugControlServer {
 
     private struct ValueParams: Decodable {
         var value: Double
+    }
+
+    private struct EnabledParams: Decodable {
+        var enabled: Bool
     }
 
     private struct UpdateActionParams: Decodable {
