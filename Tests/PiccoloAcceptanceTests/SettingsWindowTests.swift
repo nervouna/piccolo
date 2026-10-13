@@ -441,6 +441,84 @@ extension DesktopAcceptanceTests {
             #expect(try !piccolo.settingsState().isOpen)
         }
 
+        // MARK: 11. Select a binding
+
+        @Test("settings 11. settings.select selects a binding in the open window, an unknown ID is refused, and nothing is saved")
+        func selectBinding() async throws {
+            let a = KeyBinding(action: .placeWindow(.preset(.leftHalf)), shortcut: TestShortcut.f13)
+            let b = KeyBinding(action: .placeWindow(.preset(.rightHalf)), shortcut: TestShortcut.f14)
+            try await withSettingsSession([a, b]) { session in
+                let pid = try piccolo.pid()
+                try session.openSettings()
+                _ = try await PiccoloWindows.waitForWindow(pid: pid)
+                let before = try session.fileBytes()
+
+                // A window opens with the first binding selected.
+                let initial = try piccolo.settingsState()
+                #expect(initial.selectedBindingID == a.id, "the state shows \(String(describing: initial.selectedBindingID)) selected")
+
+                let selected = try piccolo.settingsSelect(b.id)
+                #expect(selected.selectedBindingID == b.id, "settings.select answered \(String(describing: selected.selectedBindingID))")
+                #expect(try piccolo.settingsState().selectedBindingID == b.id)
+
+                let back = try piccolo.settingsSelect(a.id)
+                #expect(back.selectedBindingID == a.id)
+
+                // An ID no binding has is refused, and the selection stays.
+                let message = try piccolo.settingsSelectExpectingRefusal(UUID())
+                #expect(message.contains("no binding"), "the message is \"\(message)\"")
+                #expect(try piccolo.settingsState().selectedBindingID == a.id, "a refused settings.select changed the selection")
+
+                // Selecting is a change of the view: the file, the hotkeys and the window are as they were.
+                #expect(try session.fileBytes() == before, "selecting a binding changed the file")
+                #expect(try session.registeredIDs() == [a.id, b.id])
+                #expect(try piccolo.settingsState().isOpen)
+                _ = try await PiccoloWindows.waitForWindow(pid: pid)
+            }
+        }
+
+        // MARK: 12. Show a tab
+
+        @Test("settings 12. settings.showTab switches the tab, with the window closed and open, and an unknown tab is refused")
+        func showTab() async throws {
+            let a = KeyBinding(action: .placeWindow(.preset(.leftHalf)), shortcut: TestShortcut.f13)
+            try await withSettingsSession([a]) { session in
+                let pid = try piccolo.pid()
+                let before = try session.fileBytes()
+
+                // Whatever tab an earlier test left behind, this one starts on the Shortcuts tab.
+                #expect(try piccolo.settingsShowTab("shortcuts").tab == "shortcuts")
+
+                // With the window closed the tab is set, and the window opens on it.
+                let general = try piccolo.settingsShowTab("general")
+                #expect(general.tab == "general", "settings.showTab answered the tab \(general.tab)")
+                #expect(!general.isOpen)
+                try session.openSettings()
+                _ = try await PiccoloWindows.waitForWindow(pid: pid)
+                #expect(try piccolo.settingsState().tab == "general", "opening the window changed the tab")
+
+                // With the window open, both ways.
+                #expect(try piccolo.settingsShowTab("shortcuts").tab == "shortcuts")
+                #expect(try piccolo.settingsState().tab == "shortcuts")
+                #expect(try piccolo.settingsShowTab("general").tab == "general")
+                #expect(try piccolo.settingsShowTab("general").tab == "general", "showing the tab that is shown changed it")
+
+                // An unknown tab is refused, names the tabs there are, and the tab stays.
+                let message = try piccolo.settingsShowTabExpectingRefusal("advanced")
+                #expect(
+                    message.contains("shortcuts") && message.contains("general"),
+                    "the message does not name the tabs: \"\(message)\"")
+                #expect(try piccolo.settingsState().tab == "general", "a refused settings.showTab changed the tab")
+
+                // A change of the view saves nothing and leaves the window open and the hotkeys registered.
+                #expect(try session.fileBytes() == before, "switching the tab changed the file")
+                #expect(try session.registeredIDs() == [a.id])
+                #expect(try piccolo.settingsState().isOpen)
+                _ = try await PiccoloWindows.waitForWindow(pid: pid)
+                try piccolo.settingsShowTab("shortcuts")
+            }
+        }
+
         // MARK: Helpers
 
         /// Where the fixture windows of these tests start: inside the primary display.

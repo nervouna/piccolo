@@ -56,6 +56,11 @@ struct SettingsViewRenderTests {
         return false
     }
 
+    /// The bitmap as PNG data, to compare two renderings.
+    private func png(_ bitmap: NSBitmapImageRep) -> Data? {
+        bitmap.representation(using: .png, properties: [:])
+    }
+
     private func keep(_ bitmap: NSBitmapImageRep, as name: String) {
         guard let directory = ProcessInfo.processInfo.environment["PICCOLO_RENDER_DIR"],
             let data = bitmap.representation(using: .png, properties: [:])
@@ -87,6 +92,26 @@ struct SettingsViewRenderTests {
             #expect(hasContent(bitmap), "the window is blank in \(name) appearance")
             keep(bitmap, as: "window-\(name)")
         }
+    }
+
+    @Test("the window shows the tab and the selected binding the model names")
+    func followsTheModel() throws {
+        let model = model([Self.leftHalf, Self.custom])
+        let shortcuts = try render(SettingsView(model: model, host: host))
+
+        model.tab = .general
+        let general = try render(SettingsView(model: model, host: host))
+        #expect(png(shortcuts) != png(general), "the window looks the same on the General tab as on the Shortcuts tab")
+
+        model.tab = .shortcuts
+        let again = try render(SettingsView(model: model, host: host))
+        #expect(png(again) == png(shortcuts), "going back to the Shortcuts tab did not bring the same window back")
+
+        model.selectedBindingID = UIFixture.idA
+        let first = try render(SettingsView(model: model, host: host))
+        model.selectedBindingID = UIFixture.idB
+        let second = try render(SettingsView(model: model, host: host))
+        #expect(png(first) != png(second), "the window looks the same with the first and the second binding selected")
     }
 
     @Test("the Shortcuts tab renders each kind of action selected")

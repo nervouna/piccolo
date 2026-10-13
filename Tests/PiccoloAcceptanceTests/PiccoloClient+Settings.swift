@@ -19,6 +19,10 @@ struct SettingsState: Decodable, Equatable {
     var issues: [String]
     var error: String?
     var recordingBindingID: UUID?
+    /// The binding the list has selected, if any.
+    var selectedBindingID: UUID?
+    /// The tab the window shows: `shortcuts` or `general`.
+    var tab: String
 }
 
 /// The Settings window commands of the Debug control channel.
@@ -56,6 +60,28 @@ extension PiccoloClient {
 
     func settingsState() throws -> SettingsState {
         try settingsCommand("settings.state")
+    }
+
+    // MARK: View state
+
+    @discardableResult
+    func settingsSelect(_ id: UUID) throws -> SettingsState {
+        try settingsCommand("settings.select", ["id": .string(id.uuidString)])
+    }
+
+    /// `settings.select` with an ID that must be refused. Returns the message.
+    func settingsSelectExpectingRefusal(_ id: UUID) throws -> String {
+        try settingsExpectingRefusal("settings.select", ["id": .string(id.uuidString)])
+    }
+
+    @discardableResult
+    func settingsShowTab(_ tab: String) throws -> SettingsState {
+        try settingsCommand("settings.showTab", ["tab": .string(tab)])
+    }
+
+    /// `settings.showTab` with a tab that must be refused. Returns the message.
+    func settingsShowTabExpectingRefusal(_ tab: String) throws -> String {
+        try settingsExpectingRefusal("settings.showTab", ["tab": .string(tab)])
     }
 
     // MARK: Edits

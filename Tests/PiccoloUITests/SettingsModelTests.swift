@@ -34,6 +34,21 @@ struct SettingsModelTests {
         #expect(model.error == nil)
     }
 
+    @Test("the window starts on the Shortcuts tab, and the tab is the model's to set")
+    func tabStartsOnShortcuts() {
+        let (model, backend) = make()
+        #expect(model.tab == .shortcuts)
+        #expect(SettingsTab.allCases == [.shortcuts, .general])
+        #expect(SettingsTab.allCases.map(\.rawValue) == ["shortcuts", "general"])
+
+        model.tab = .general
+
+        #expect(model.tab == .general)
+        // Showing a tab edits nothing: it saves nothing and leaves the selection alone.
+        #expect(backend.saved.isEmpty)
+        #expect(model.selectedBindingID == UIFixture.idA)
+    }
+
     @Test("an empty config selects nothing")
     func emptyConfig() {
         let (model, _) = make(.default)

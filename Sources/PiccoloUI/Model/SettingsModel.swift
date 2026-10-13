@@ -25,6 +25,9 @@ public final class SettingsModel {
     public private(set) var issues: [String]
     /// The binding the editor shows. The list binds to it.
     public var selectedBindingID: UUID?
+    /// The tab the window shows. The tab control binds to it, so that whatever sets it (a click, the
+    /// debug control channel) changes what the window shows.
+    public var tab: SettingsTab = .shortcuts
     /// The binding that is waiting for a key press, if any.
     public private(set) var recordingBindingID: UUID?
     /// Why the last change was rejected, until the next change is accepted.

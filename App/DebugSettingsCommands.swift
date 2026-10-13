@@ -7,13 +7,15 @@ import PiccoloCore
 import PiccoloUI
 
 /// The Settings window commands of the Debug control channel: `settings.open`, `settings.close`,
-/// `settings.state`, the edits (`settings.addBinding`, `settings.removeBinding`,
-/// `settings.updateAction`, `settings.setResizeStep`) and recording (`settings.beginRecording`,
-/// `settings.cancelRecording`, `settings.record`).
+/// `settings.state`, the view state (`settings.select`, `settings.showTab`), the edits
+/// (`settings.addBinding`, `settings.removeBinding`, `settings.updateAction`,
+/// `settings.setResizeStep`) and recording (`settings.beginRecording`, `settings.cancelRecording`,
+/// `settings.record`).
 ///
-/// They drive the model the window uses, through the same methods, so a rejected edit answers
-/// `ok: false` with the model's own message. Like the rest of the control channel, this file is
-/// compiled out of Release builds.
+/// They drive the model the window uses, through the same methods and properties, so a rejected
+/// edit answers `ok: false` with the model's own message and the window follows what the commands
+/// do: the list's selection and the tab control are bound to the model. Like the rest of the
+/// control channel, this file is compiled out of Release builds.
 extension DebugControlServer {
     /// How long `settings.record` waits for the recorder to receive the key press it posted.
     private nonisolated static let recordTimeout: TimeInterval = 3
@@ -39,6 +41,33 @@ extension DebugControlServer {
 
         router.register("settings.state") { _ in
             onMainActor { settingsState() }
+        }
+
+        // Selects a binding in the list, as a click on its row does: the editor shows it.
+        router.register("settings.select") { params in
+            let id = try params.decode(IDParams.self).id
+            return try onMainActor {
+                let model = SettingsController.shared.model
+                guard model.binding(id) != nil else {
+                    throw ControlCommandError.failed("there is no binding with the ID \(id.uuidString)")
+                }
+                model.selectedBindingID = id
+                return settingsState()
+            }
+        }
+
+        // Switches the tab, as a click on the tab control does. Works with the window closed too:
+        // it then opens on that tab.
+        router.register("settings.showTab") { params in
+            let name = try params.decode(TabParams.self).tab
+            guard let tab = SettingsTab(rawValue: name) else {
+                let known = SettingsTab.allCases.map { "\"\($0.rawValue)\"" }.joined(separator: " or ")
+                throw ControlCommandError.invalidParams("tab must be \(known), not \"\(name)\"")
+            }
+            return onMainActor {
+                SettingsController.shared.model.tab = tab
+                return settingsState()
+            }
         }
 
         router.register("settings.addBinding") { _ in
@@ -191,7 +220,11 @@ extension DebugControlServer {
                 }),
             "resizeStep": .double(model.resizeStep),
             "issues": .array(model.issues.map { .string($0) }),
+            "tab": .string(model.tab.rawValue),
         ]
+        if let selected = model.selectedBindingID {
+            state["selectedBindingID"] = .string(selected.uuidString)
+        }
         if let error = model.error {
             state["error"] = .string(error)
         }
@@ -211,6 +244,10 @@ extension DebugControlServer {
 
     private struct IDParams: Decodable {
         var id: UUID
+    }
+
+    private struct TabParams: Decodable {
+        var tab: String
     }
 
     private struct ValueParams: Decodable {

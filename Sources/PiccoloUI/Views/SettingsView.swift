@@ -1,15 +1,10 @@
 import SwiftUI
 
-/// The content of the Settings window: the "Shortcuts" and "General" tabs.
+/// The content of the Settings window: the "Shortcuts" and "General" tabs. The tab shown is the
+/// model's ``SettingsModel/tab``.
 public struct SettingsView: View {
-    private enum Tab: Hashable {
-        case shortcuts
-        case general
-    }
-
-    let model: SettingsModel
+    @Bindable var model: SettingsModel
     let host: SettingsHost
-    @State private var tab: Tab = .shortcuts
 
     public init(model: SettingsModel, host: SettingsHost) {
         self.model = model
@@ -17,16 +12,16 @@ public struct SettingsView: View {
     }
 
     public var body: some View {
-        TabView(selection: $tab) {
+        TabView(selection: $model.tab) {
             ShortcutsTab(model: model)
                 .tabItem { Label("Shortcuts", systemImage: "keyboard") }
-                .tag(Tab.shortcuts)
+                .tag(SettingsTab.shortcuts)
             GeneralTab(model: model, host: host)
                 .tabItem { Label("General", systemImage: "gearshape") }
-                .tag(Tab.general)
+                .tag(SettingsTab.general)
         }
         .padding(12)
-        .onChange(of: tab) {
+        .onChange(of: model.tab) {
             // A rejected change belongs to the tab it was made on.
             model.clearError()
         }
