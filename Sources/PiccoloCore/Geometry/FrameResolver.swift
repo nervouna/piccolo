@@ -45,20 +45,20 @@ public enum FrameResolver {
         // It keeps the result inside `visible` when `visible` has fractional edges.
         let originX = visible.minX + (visible.width - width) / 2
         let originY = visible.minY + (visible.height - height) / 2
-        let x = clamp(originX.rounded(.toNearestOrAwayFromZero), from: visible.minX, to: visible.maxX - width)
-        let y = clamp(originY.rounded(.toNearestOrAwayFromZero), from: visible.minY, to: visible.maxY - height)
+        let x = clamp(EdgeRounding.round(originX), from: visible.minX, to: visible.maxX - width)
+        let y = clamp(EdgeRounding.round(originY), from: visible.minY, to: visible.maxY - height)
         return CGRect(x: x, y: y, width: width, height: height)
     }
 
-    /// Rounds each edge to the nearest integer, ties away from zero, independently of the others.
+    /// Rounds each edge with `EdgeRounding.round`, independently of the others.
     ///
     /// The width and height are the differences of the rounded edges. Neighbouring frames that share
     /// an unrounded edge therefore share the rounded edge too: no gaps and no overlaps.
     static func roundEdges(minX: CGFloat, maxX: CGFloat, minY: CGFloat, maxY: CGFloat) -> CGRect {
-        let left = minX.rounded(.toNearestOrAwayFromZero)
-        let right = maxX.rounded(.toNearestOrAwayFromZero)
-        let top = minY.rounded(.toNearestOrAwayFromZero)
-        let bottom = maxY.rounded(.toNearestOrAwayFromZero)
+        let left = EdgeRounding.round(minX)
+        let right = EdgeRounding.round(maxX)
+        let top = EdgeRounding.round(minY)
+        let bottom = EdgeRounding.round(maxY)
         return CGRect(x: left, y: top, width: right - left, height: bottom - top)
     }
 

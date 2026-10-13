@@ -65,7 +65,7 @@ public enum DisplayLayout {
     /// The window keeps its place relative to `source.visibleFrame` and its size as a fraction of it.
     /// Those fractions are applied to `target.visibleFrame`. The size is capped to the target's
     /// visible size, the origin is shifted so the frame lies inside the target's visible frame, and
-    /// the edges are rounded with the rule in `FrameResolver`.
+    /// the edges are rounded with `EdgeRounding.round`, as in `FrameResolver`.
     ///
     /// - Precondition: `source.visibleFrame` has a positive width and height.
     public static func frame(moving window: CGRect, from source: Display, to target: Display) -> CGRect {
