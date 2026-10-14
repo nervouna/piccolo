@@ -20,6 +20,15 @@ log() {
     echo "==> $*" >&2
 }
 
+# Compiles scripts/icon-tool.swift into build/icon-tool and sets ICON_TOOL to it. The icon
+# scripts call the tool for the artwork checks and the renders (see that file).
+build_icon_tool() {
+    ICON_TOOL="$BUILD_DIR/icon-tool"
+    mkdir -p "$BUILD_DIR"
+    swiftc -O "$PICCOLO_ROOT/scripts/icon-tool.swift" -o "$ICON_TOOL" \
+        || die "cannot compile scripts/icon-tool.swift"
+}
+
 # Reads the signing settings. They are never part of the repository: the file
 # named by PICCOLO_SIGNING_ENV, or ${XDG_CONFIG_HOME:-$HOME/.config}/piccolo/signing.env,
 # is the only source. A missing file means ad-hoc signing.
