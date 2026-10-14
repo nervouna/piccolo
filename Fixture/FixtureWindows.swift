@@ -2,9 +2,12 @@ import AppKit
 import PiccoloControl
 import PiccoloCore
 
-/// A titled window that remembers the id it was opened with.
+/// A titled window that remembers the id it was opened with, and the key-down events it receives.
 final class FixtureWindow: NSWindow {
     private(set) var fixtureID = ""
+    /// The key codes of the key-down events this window received, in order. A key that a global
+    /// hotkey took never gets here, which is what the tests of Escape rely on.
+    private(set) var keyDownCodes: [Int] = []
 
     convenience init(id: String, resizable: Bool) {
         var style: NSWindow.StyleMask = [.titled, .closable, .miniaturizable]
@@ -21,6 +24,13 @@ final class FixtureWindow: NSWindow {
         // window server, which makes measurements right after a command unreliable.
         animationBehavior = .none
         contentView = Self.makeContent(showing: id)
+    }
+
+    override func sendEvent(_ event: NSEvent) {
+        if event.type == .keyDown {
+            keyDownCodes.append(Int(event.keyCode))
+        }
+        super.sendEvent(event)
     }
 
     private static func makeContent(showing id: String) -> NSView {
@@ -134,6 +144,12 @@ final class FixtureWindows {
         var result = describe(window)
         result["isMiniaturized"] = .bool(false)
         return .object(result)
+    }
+
+    /// The key codes of the key-down events the window received so far, oldest first.
+    func keyEvents(id: String) throws -> JSONValue {
+        let window = try window(id)
+        return ["keyCodes": .array(window.keyDownCodes.map { .int($0) })]
     }
 
     func close(id: String) throws -> JSONValue {

@@ -92,30 +92,12 @@ extension ActionExecutor {
     ///   ``LayoutGroupStore``): the layout, the windows in cell order, the visible frame and the
     ///   frames read back.
     func arrange(_ grid: GridSpec, onlyPid: pid_t?, settings: ActionSettings) throws -> ActionOutcome {
-        let displays = try displaysProvider()
-        guard !displays.isEmpty else { throw ActionPlanningError.noDisplays }
-
-        let windows = try arrangement.catalog(onlyPid)
-        let focusedFrame = try currentFocusedFrame()
-
-        let reference = focusedFrame ?? windows.first?.candidate.frame
-        let displayIndex = reference.flatMap { DisplayLayout.index(containing: $0, in: displays) } ?? 0
-
-        var history = arrangement.history()
-        if focusedFrame != nil, let focused = arrangement.focusedWindowID() {
-            history.recordFocus(focused)
+        guard let planning = try planArrangement(grid, onlyPid: onlyPid, settings: settings) else {
+            return .nothingToDo
         }
-
-        // Also checks the grid, so that an invalid one is refused even with nothing to arrange.
-        guard
-            let plan = try ArrangePlanner.plan(
-                grid: grid,
-                fillOrder: settings.gridFillOrder,
-                displayIndex: displayIndex,
-                candidates: windows.map(\.candidate),
-                history: history,
-                displays: displays)
-        else { return .nothingToDo }
+        let plan = planning.plan
+        let windows = planning.windows
+        let displays = planning.displays
 
         let handles = Dictionary(
             windows.map { ($0.candidate.id, $0.handle) }, uniquingKeysWith: { first, _ in first })
@@ -144,6 +126,46 @@ extension ActionExecutor {
         }
         recordGroup(of: plan, visibleFrame: visibleFrame, arranged: arranged)
         return .arranged(ArrangeOutcome(displayIndex: plan.displayIndex, windows: arranged))
+    }
+
+    /// An arrangement planned, not yet carried out.
+    struct ArrangementPlanning {
+        var plan: ArrangePlan
+        /// The windows on screen the plan was made from; the plan's windows are among them.
+        var windows: [CatalogWindow]
+        var displays: [Display]
+    }
+
+    /// Plans the arrangement ``arrange(_:onlyPid:settings:)`` carries out, and touches nothing: not a
+    /// window, not a group. `nil` when there is no window to arrange.
+    func planArrangement(
+        _ grid: GridSpec, onlyPid: pid_t?, settings: ActionSettings
+    ) throws -> ArrangementPlanning? {
+        let displays = try displaysProvider()
+        guard !displays.isEmpty else { throw ActionPlanningError.noDisplays }
+
+        let windows = try arrangement.catalog(onlyPid)
+        let focusedFrame = try currentFocusedFrame()
+
+        let reference = focusedFrame ?? windows.first?.candidate.frame
+        let displayIndex = reference.flatMap { DisplayLayout.index(containing: $0, in: displays) } ?? 0
+
+        var history = arrangement.history()
+        if focusedFrame != nil, let focused = arrangement.focusedWindowID() {
+            history.recordFocus(focused)
+        }
+
+        // Also checks the grid, so that an invalid one is refused even with nothing to arrange.
+        guard
+            let plan = try ArrangePlanner.plan(
+                grid: grid,
+                fillOrder: settings.gridFillOrder,
+                displayIndex: displayIndex,
+                candidates: windows.map(\.candidate),
+                history: history,
+                displays: displays)
+        else { return nil }
+        return ArrangementPlanning(plan: plan, windows: windows, displays: displays)
     }
 
     /// Records the windows of a successful arrangement as the group of their display, replacing
