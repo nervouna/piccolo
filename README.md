@@ -6,7 +6,7 @@ Piccolo is a macOS menu bar app that moves, resizes and arranges windows with gl
 
 ## Status
 
-Piccolo is pre-release (version 0.1.0). No release has been published yet.
+Piccolo is pre-release (version 0.1.0). Pre-release builds, notarized by Apple, are attached to the repository's [releases](https://github.com/nervouna/piccolo/releases).
 
 What works:
 
@@ -25,13 +25,12 @@ What works:
 
 ## Install
 
-No release has been published yet. Until one is, build Piccolo from source (see [Building and testing](#building-and-testing)).
-
-From a release archive, once one is published:
+From a release archive (download it from the repository's [releases](https://github.com/nervouna/piccolo/releases)):
 
 1. Unzip the archive and move `Piccolo.app` to `/Applications`.
 2. Open Piccolo. It has no Dock icon and opens no window at launch. Its icon appears in the menu bar.
 3. Grant the Accessibility permission when asked (see [Requirements](#requirements)).
+4. On the first launch Piccolo writes the [default shortcuts](#default-shortcuts) to its config file. Open Settings from the menu to change them.
 
 From source, `scripts/install.sh` builds the release configuration, replaces `/Applications/Piccolo.app` and opens it. It needs a signing identity. Without one, run `scripts/build.sh` and open `build/Piccolo.app`, then grant it the Accessibility permission. The details are under [Building and testing](#building-and-testing).
 
