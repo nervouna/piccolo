@@ -351,7 +351,7 @@ struct ShortcutManagerTests {
 
     // MARK: Pressing
 
-    @Test("pressing a registered shortcut hands over the action and the ID of its binding")
+    @Test("tapping a registered shortcut hands over the action and the ID of its binding (the destination preview is on in a default config, so the action runs on release)")
     func pressRunsAction() throws {
         let fixture = try Fixture()
         let left = binding(FunctionKey.f13, .placeWindow(.preset(.leftHalf)))
@@ -359,7 +359,10 @@ struct ShortcutManagerTests {
         fixture.manager.load(from: try fixture.write([left, next]))
 
         fixture.backend.press(next.shortcut!)
+        #expect(fixture.fired.runs.isEmpty, "with the preview on the action waits for the release")
+        fixture.backend.release(next.shortcut!)
         fixture.backend.press(left.shortcut!)
+        fixture.backend.release(left.shortcut!)
 
         #expect(fixture.fired.runs.map(\.id) == [next.id, left.id])
         #expect(fixture.fired.runs.map(\.action) == [.moveToDisplay(.next), .placeWindow(.preset(.leftHalf))])

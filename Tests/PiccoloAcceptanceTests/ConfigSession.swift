@@ -44,6 +44,14 @@ struct ConfigDirectory {
         return target
     }
 
+    /// Writes `config`, settings and bindings, as `name`, the way Piccolo itself would, and returns its URL.
+    @discardableResult
+    func write(_ config: Config, as name: String = "config.json") throws -> URL {
+        let target = file(name)
+        try ConfigStore(url: target).save(config)
+        return target
+    }
+
     /// Writes `text` as `name`, whatever it is.
     @discardableResult
     func write(text: String, as name: String = "config.json") throws -> URL {

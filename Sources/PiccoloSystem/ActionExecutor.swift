@@ -123,19 +123,34 @@ public struct ActionExecutor: Sendable {
             break
         }
 
-        let window = try windowProvider()
-        let windowFrame = try window.frame()
-        let displays = try displaysProvider()
-        let plan = try ActionPlanner.plan(action, windowFrame: windowFrame, displays: displays)
-        switch plan {
+        let planning = try planSingleWindow(action)
+        switch planning.plan {
         case .nothingToDo:
             return .nothingToDo
         case .place(let target, let visibleFrame):
             glide(
-                [AnimatedWindow(window: window, start: windowFrame, target: target)],
-                settings: settings, displays: displays)
-            let achieved = try FrameSetter.apply(target, to: window, within: visibleFrame)
+                [AnimatedWindow(window: planning.window, start: planning.frame, target: target)],
+                settings: settings, displays: planning.displays)
+            let achieved = try FrameSetter.apply(target, to: planning.window, within: visibleFrame)
             return .placed(target: target, achieved: achieved)
         }
+    }
+
+    /// A single-window action planned: the window it acts on, where that is now, the displays and the
+    /// plan. Reading only; ``run(_:onlyPid:settings:)`` and ``destinations(for:onlyPid:settings:)``
+    /// both start from it.
+    struct SingleWindowPlanning {
+        var window: any WindowFrameAccess
+        var frame: CGRect
+        var displays: [Display]
+        var plan: ActionPlan
+    }
+
+    func planSingleWindow(_ action: Action) throws -> SingleWindowPlanning {
+        let window = try windowProvider()
+        let windowFrame = try window.frame()
+        let displays = try displaysProvider()
+        let plan = try ActionPlanner.plan(action, windowFrame: windowFrame, displays: displays)
+        return SingleWindowPlanning(window: window, frame: windowFrame, displays: displays, plan: plan)
     }
 }
