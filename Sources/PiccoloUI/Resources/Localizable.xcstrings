@@ -390,13 +390,13 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Organizar %1$lld ventanas en %2$lld × %3$lld"
+            "value" : "Disponer %1$lld ventanas en %2$lld × %3$lld"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Disposer %1$lld fenêtres en %2$lld × %3$lld"
+            "value" : "Organiser %1$lld fenêtres en %2$lld × %3$lld"
           }
         },
         "ja" : {
@@ -420,7 +420,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "將 %1$lld 個視窗排成 %2$lld × %3$lld"
+            "value" : "將 %1$lld 個視窗排列成 %2$lld × %3$lld"
           }
         }
       }
@@ -443,13 +443,13 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Organizar en cuadrícula"
+            "value" : "Disponer en cuadrícula"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Disposer en grille"
+            "value" : "Organiser en grille"
           }
         },
         "ja" : {
@@ -496,13 +496,13 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Organizando ventanas"
+            "value" : "Disponiendo ventanas"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Disposition des fenêtres en cours"
+            "value" : "Organisation des fenêtres en cours"
           }
         },
         "ja" : {
@@ -749,7 +749,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mitte"
+            "value" : "Zentriert"
           }
         },
         "en" : {
@@ -761,7 +761,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Centro"
+            "value" : "Centrar"
           }
         },
         "fr" : {
@@ -773,13 +773,13 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "中央"
+            "value" : "中央に配置"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Centro"
+            "value" : "Centralizar"
           }
         },
         "zh-Hans" : {
@@ -791,7 +791,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "置中"
+            "value" : "中央"
           }
         }
       }
@@ -879,7 +879,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "クリア"
+            "value" : "Clear"
           }
         },
         "pt-BR" : {
@@ -985,7 +985,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "列数"
+            "value" : "カラム数"
           }
         },
         "pt-BR" : {
@@ -1003,7 +1003,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "欄數"
+            "value" : "直欄數"
           }
         }
       }
@@ -1038,7 +1038,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "列優先"
+            "value" : "カラム優先"
           }
         },
         "pt-BR" : {
@@ -1056,7 +1056,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "欄優先"
+            "value" : "直欄優先"
           }
         }
       }
@@ -1091,7 +1091,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "列数は 1 以上にしてください。"
+            "value" : "カラム数は 1 以上にしてください。"
           }
         },
         "pt-BR" : {
@@ -1109,7 +1109,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "欄數至少為 1。"
+            "value" : "直欄數至少為 1。"
           }
         }
       }
@@ -1662,7 +1662,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Concedida"
+            "value" : "Permitida"
           }
         },
         "fr" : {
@@ -1692,7 +1692,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已授權"
+            "value" : "已允許"
           }
         }
       }
@@ -1809,7 +1809,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hilfe"
+            "value" : "Hilfetaste"
           }
         },
         "en" : {
@@ -1833,7 +1833,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ヘルプ"
+            "value" : "Help"
           }
         },
         "pt-BR" : {
@@ -1880,7 +1880,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Maintenez un raccourci enfoncé pour voir où les fenêtres iront, relâchez-le pour les déplacer, ou appuyez sur Échap pour annuler. Lorsque cette option est désactivée, les fenêtres se déplacent dès que le raccourci est pressé."
+            "value" : "Maintenez un raccourci enfoncé pour voir où les fenêtres iront, relâchez-le pour les déplacer, ou appuyez sur Esc pour annuler. Lorsque cette option est désactivée, les fenêtres se déplacent dès que le raccourci est pressé."
           }
         },
         "ja" : {
@@ -2074,7 +2074,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ziffernblock %@"
+            "value" : "numerische Tastatur %@"
           }
         },
         "en" : {
@@ -2104,7 +2104,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Teclado numérico %@"
+            "value" : "Teclado Numérico %@"
           }
         },
         "zh-Hans" : {
@@ -2116,7 +2116,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "數字鍵台 %@"
+            "value" : "數字鍵盤 %@"
           }
         }
       }
@@ -2180,7 +2180,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Beim Anmelden öffnen"
+            "value" : "Bei der Anmeldung öffnen"
           }
         },
         "en" : {
@@ -2198,7 +2198,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ouvrir à la connexion"
+            "value" : "Ouvrir avec la session"
           }
         },
         "ja" : {
@@ -2210,7 +2210,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Abrir ao iniciar sessão"
+            "value" : "Abrir no Início da Sessão"
           }
         },
         "zh-Hans" : {
@@ -2222,7 +2222,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "登入時開啟"
+            "value" : "在登入時打開"
           }
         }
       }
@@ -2233,7 +2233,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "„Beim Anmelden öffnen“ konnte nicht deaktiviert werden."
+            "value" : "„Bei der Anmeldung öffnen“ konnte nicht deaktiviert werden."
           }
         },
         "en" : {
@@ -2251,7 +2251,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Impossible de désactiver « Ouvrir à la connexion »."
+            "value" : "Impossible de désactiver « Ouvrir avec la session »."
           }
         },
         "ja" : {
@@ -2263,7 +2263,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Não foi possível desativar “Abrir ao iniciar sessão”."
+            "value" : "Não foi possível desativar “Abrir no Início da Sessão”."
           }
         },
         "zh-Hans" : {
@@ -2275,7 +2275,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "無法關閉「登入時開啟」。"
+            "value" : "無法關閉「在登入時打開」。"
           }
         }
       }
@@ -2286,7 +2286,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "„Beim Anmelden öffnen“ konnte nicht deaktiviert werden: %@"
+            "value" : "„Bei der Anmeldung öffnen“ konnte nicht deaktiviert werden: %@"
           }
         },
         "en" : {
@@ -2304,7 +2304,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Impossible de désactiver « Ouvrir à la connexion » : %@"
+            "value" : "Impossible de désactiver « Ouvrir avec la session » : %@"
           }
         },
         "ja" : {
@@ -2316,7 +2316,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Não foi possível desativar “Abrir ao iniciar sessão”: %@"
+            "value" : "Não foi possível desativar “Abrir no Início da Sessão”: %@"
           }
         },
         "zh-Hans" : {
@@ -2328,7 +2328,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "無法關閉「登入時開啟」：%@"
+            "value" : "無法關閉「在登入時打開」：%@"
           }
         }
       }
@@ -2339,7 +2339,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "„Beim Anmelden öffnen“ konnte nicht aktiviert werden."
+            "value" : "„Bei der Anmeldung öffnen“ konnte nicht aktiviert werden."
           }
         },
         "en" : {
@@ -2357,7 +2357,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Impossible d'activer « Ouvrir à la connexion »."
+            "value" : "Impossible d'activer « Ouvrir avec la session »."
           }
         },
         "ja" : {
@@ -2369,7 +2369,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Não foi possível ativar “Abrir ao iniciar sessão”."
+            "value" : "Não foi possível ativar “Abrir no Início da Sessão”."
           }
         },
         "zh-Hans" : {
@@ -2381,7 +2381,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "無法開啟「登入時開啟」。"
+            "value" : "無法開啟「在登入時打開」。"
           }
         }
       }
@@ -2392,7 +2392,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "„Beim Anmelden öffnen“ konnte nicht aktiviert werden: %@"
+            "value" : "„Bei der Anmeldung öffnen“ konnte nicht aktiviert werden: %@"
           }
         },
         "en" : {
@@ -2410,7 +2410,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Impossible d'activer « Ouvrir à la connexion » : %@"
+            "value" : "Impossible d'activer « Ouvrir avec la session » : %@"
           }
         },
         "ja" : {
@@ -2422,7 +2422,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Não foi possível ativar “Abrir ao iniciar sessão”: %@"
+            "value" : "Não foi possível ativar “Abrir no Início da Sessão”: %@"
           }
         },
         "zh-Hans" : {
@@ -2434,7 +2434,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "無法開啟「登入時開啟」：%@"
+            "value" : "無法開啟「在登入時打開」：%@"
           }
         }
       }
@@ -2763,7 +2763,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Maximieren"
+            "value" : "Füllen"
           }
         },
         "en" : {
@@ -2775,25 +2775,25 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Maximizar"
+            "value" : "Rellenar"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Maximiser"
+            "value" : "Remplir"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "最大化"
+            "value" : "画面全体に表示"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Maximizar"
+            "value" : "Preencher"
           }
         },
         "zh-Hans" : {
@@ -2805,7 +2805,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "最大化"
+            "value" : "填滿"
           }
         }
       }
@@ -3152,7 +3152,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Déplacer vers l'écran"
+            "value" : "Déplacer vers le moniteur"
           }
         },
         "ja" : {
@@ -3205,7 +3205,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Écran suivant"
+            "value" : "Moniteur suivant"
           }
         },
         "ja" : {
@@ -3305,7 +3305,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No concedida"
+            "value" : "No permitida"
           }
         },
         "fr" : {
@@ -3335,7 +3335,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "未授權"
+            "value" : "未允許"
           }
         }
       }
@@ -3464,13 +3464,13 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Abrir ajustes de «Elementos de inicio de sesión»…"
+            "value" : "Abrir ajustes de «Ítems de inicio»…"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ouvrir les réglages de « Éléments de connexion »…"
+            "value" : "Ouvrir les réglages de « Ouverture »…"
           }
         },
         "ja" : {
@@ -3482,7 +3482,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Abrir ajustes de “Itens de Início de Sessão”…"
+            "value" : "Abrir ajustes de “Itens de Início”…"
           }
         },
         "zh-Hans" : {
@@ -3600,7 +3600,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Piccolo 無法重新啟動：%@"
+            "value" : "Piccolo 無法重新開機：%@"
           }
         }
       }
@@ -3623,13 +3623,13 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Piccolo espera tu aprobación. Permítelo en «Elementos de inicio de sesión» en los Ajustes del Sistema."
+            "value" : "Piccolo espera tu aprobación. Permítelo en «Ítems de inicio» en los Ajustes del Sistema."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Piccolo attend votre autorisation. Autorisez-le dans « Éléments de connexion » des Réglages Système."
+            "value" : "Piccolo attend votre autorisation. Autorisez-le dans « Ouverture » des Réglages Système."
           }
         },
         "ja" : {
@@ -3641,7 +3641,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O Piccolo está aguardando sua aprovação. Permita-o em “Itens de Início de Sessão” nos Ajustes do Sistema."
+            "value" : "O Piccolo está aguardando sua aprovação. Permita-o em “Itens de Início” nos Ajustes do Sistema."
           }
         },
         "zh-Hans" : {
@@ -3717,7 +3717,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Neuen Tastaturkurzbefehl drücken, Esc zum Abbrechen, Entf zum Löschen"
+            "value" : "Neuen Tastaturkurzbefehl drücken, Esc zum Abbrechen, Löschen zum Entfernen"
           }
         },
         "en" : {
@@ -3729,13 +3729,13 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pulsa el nuevo atajo, Esc para cancelar, Supr para borrar"
+            "value" : "Pulsa el nuevo atajo, Esc para cancelar, Suprimir para borrar"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Appuyez sur le nouveau raccourci, Échap pour annuler, Suppr pour effacer"
+            "value" : "Appuyez sur le nouveau raccourci, Esc pour annuler, Supprimer pour effacer"
           }
         },
         "ja" : {
@@ -3747,7 +3747,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pressione o novo atalho; Esc para cancelar, Delete para limpar"
+            "value" : "Pressione o novo atalho; Esc para cancelar, Apagar para limpar"
           }
         },
         "zh-Hans" : {
@@ -3782,7 +3782,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vista previa"
+            "value" : "Previsualización"
           }
         },
         "fr" : {
@@ -3800,7 +3800,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prévia"
+            "value" : "Pré-visualização"
           }
         },
         "zh-Hans" : {
@@ -3835,7 +3835,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vista previa de la disposición de las ventanas"
+            "value" : "Previsualización de la disposición de las ventanas"
           }
         },
         "fr" : {
@@ -3853,7 +3853,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prévia da disposição das janelas"
+            "value" : "Pré-visualização da disposição das janelas"
           }
         },
         "zh-Hans" : {
@@ -3894,7 +3894,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Écran précédent"
+            "value" : "Moniteur précédent"
           }
         },
         "ja" : {
@@ -4100,7 +4100,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sustituye todos los atajos por los predeterminados. Se guarda una copia del archivo de configuración junto a él."
+            "value" : "Sustituye todos los atajos por los valores por omisión. Se guarda una copia del archivo de configuración junto a él."
           }
         },
         "fr" : {
@@ -4112,7 +4112,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "すべてのショートカットを初期設定に置き換えます。設定ファイルのコピーが隣に保存されます。"
+            "value" : "すべてのショートカットをデフォルトに置き換えます。設定ファイルのコピーが隣に保存されます。"
           }
         },
         "pt-BR" : {
@@ -4212,7 +4212,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Redémarrer maintenant"
+            "value" : "Redémarrer"
           }
         },
         "ja" : {
@@ -4224,7 +4224,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Reiniciar agora"
+            "value" : "Reiniciar Agora"
           }
         },
         "zh-Hans" : {
@@ -4236,7 +4236,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "立即重新啟動"
+            "value" : "立即重新開機"
           }
         }
       }
@@ -4265,13 +4265,13 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rétablir"
+            "value" : "Restaurer"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "戻す"
+            "value" : "復元"
           }
         },
         "pt-BR" : {
@@ -4289,7 +4289,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "恢復"
+            "value" : "回復"
           }
         }
       }
@@ -4312,7 +4312,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Restaurar atajos predeterminados…"
+            "value" : "Restaurar atajos por omisión…"
           }
         },
         "fr" : {
@@ -4324,7 +4324,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "初期設定のショートカットに戻す…"
+            "value" : "デフォルトのショートカットに戻す…"
           }
         },
         "pt-BR" : {
@@ -4342,7 +4342,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "恢復預設快速鍵…"
+            "value" : "回復預設快速鍵…"
           }
         }
       }
@@ -4365,7 +4365,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¿Restaurar los atajos predeterminados?"
+            "value" : "¿Restaurar los atajos por omisión?"
           }
         },
         "fr" : {
@@ -4377,7 +4377,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "初期設定のショートカットに戻しますか？"
+            "value" : "デフォルトのショートカットに戻しますか？"
           }
         },
         "pt-BR" : {
@@ -4395,7 +4395,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "要恢復預設快速鍵嗎？"
+            "value" : "要回復預設快速鍵嗎？"
           }
         }
       }
@@ -4406,7 +4406,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Konfiguration im Finder zeigen"
+            "value" : "Konfiguration im Finder anzeigen"
           }
         },
         "en" : {
@@ -4430,7 +4430,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "設定ファイルを Finder で表示"
+            "value" : "設定ファイルをFinderに表示"
           }
         },
         "pt-BR" : {
@@ -4448,7 +4448,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "在 Finder 中顯示設定檔"
+            "value" : "在Finder中顯示設定檔"
           }
         }
       }
@@ -5066,7 +5066,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "スペース"
+            "value" : "Space"
           }
         },
         "pt-BR" : {
@@ -5160,7 +5160,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Predeterminado del sistema"
+            "value" : "Por omisión del sistema"
           }
         },
         "fr" : {
@@ -5172,7 +5172,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "システムの初期設定"
+            "value" : "システムのデフォルト"
           }
         },
         "pt-BR" : {
@@ -5319,7 +5319,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Los atajos actuales se sustituirán por los predeterminados. Se guarda una copia del archivo de configuración junto a él."
+            "value" : "Los atajos actuales se sustituirán por los valores por omisión. Se guarda una copia del archivo de configuración junto a él."
           }
         },
         "fr" : {
@@ -5331,7 +5331,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "現在のショートカットは初期設定に置き換えられます。設定ファイルのコピーが隣に保存されます。"
+            "value" : "現在のショートカットはデフォルトに置き換えられます。設定ファイルのコピーが隣に保存されます。"
           }
         },
         "pt-BR" : {
@@ -5402,7 +5402,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "新的語言將在 Piccolo 重新啟動後生效。"
+            "value" : "新的語言將在 Piccolo 重新開機後生效。"
           }
         }
       }
@@ -5437,7 +5437,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ウインドウ数は 行数 × 列数 を超えられません。"
+            "value" : "ウインドウ数は 行数 × カラム数 を超えられません。"
           }
         },
         "pt-BR" : {
@@ -5455,7 +5455,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "視窗數量不能超過行數 × 欄數。"
+            "value" : "視窗數量不能超過行數 × 直欄數。"
           }
         }
       }
@@ -5637,7 +5637,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Arriba"
+            "value" : "Superior"
           }
         },
         "fr" : {
@@ -5655,7 +5655,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Topo"
+            "value" : "Superior"
           }
         },
         "zh-Hans" : {
@@ -5849,7 +5849,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "El valor de arriba debe ser al menos 0 %."
+            "value" : "El valor de «Superior» debe ser al menos 0 %."
           }
         },
         "fr" : {
@@ -5867,7 +5867,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O valor do topo deve ser de pelo menos 0%."
+            "value" : "O valor de “Superior” deve ser de pelo menos 0%."
           }
         },
         "zh-Hans" : {
@@ -5902,7 +5902,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "El valor de arriba más el alto no puede superar el 100 %."
+            "value" : "El valor de «Superior» más el alto no puede superar el 100 %."
           }
         },
         "fr" : {
@@ -5920,7 +5920,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O topo mais a altura não pode passar de 100%."
+            "value" : "“Superior” mais a altura não pode passar de 100%."
           }
         },
         "zh-Hans" : {

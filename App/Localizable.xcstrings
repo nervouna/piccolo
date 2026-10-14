@@ -334,7 +334,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Accesibilidad: concedida"
+            "value" : "Accesibilidad: permitida"
           }
         },
         "fr" : {
@@ -364,7 +364,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "輔助使用：已授權"
+            "value" : "輔助使用：已允許"
           }
         }
       }
@@ -387,7 +387,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Accesibilidad: no concedida"
+            "value" : "Accesibilidad: no permitida"
           }
         },
         "fr" : {
@@ -417,7 +417,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "輔助使用：未授權"
+            "value" : "輔助使用：未允許"
           }
         }
       }
@@ -505,13 +505,13 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Piccolo を終了"
+            "value" : "Piccoloを終了"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sair do Piccolo"
+            "value" : "Encerrar Piccolo"
           }
         },
         "zh-Hans" : {
@@ -587,7 +587,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Konfiguration im Finder zeigen"
+            "value" : "Konfiguration im Finder anzeigen"
           }
         },
         "en" : {
@@ -611,7 +611,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "設定ファイルを Finder で表示"
+            "value" : "設定ファイルをFinderに表示"
           }
         },
         "pt-BR" : {
@@ -629,7 +629,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "在 Finder 中顯示設定檔"
+            "value" : "在Finder中顯示設定檔"
           }
         }
       }
