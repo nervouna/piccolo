@@ -3,16 +3,41 @@
 # artwork in design/icon.png: every macOS size (16, 32, 128, 256 and 512 pt at 1x
 # and 2x), each downscaled from the source with sips, plus the set's Contents.json.
 #
-# Usage: scripts/make-icon.sh
+# Usage: scripts/make-icon.sh [--normalize]
+#
+# Before anything is generated the artwork must have a fully opaque interior (see
+# scripts/icon-tool.swift): macOS draws an icon with a non-opaque interior with blotches,
+# so the script refuses such artwork. --normalize first sets the alpha of every pixel
+# with alpha 240 or more to 255 in design/icon.png itself, colour channels untouched.
 #
 # To replace the artwork, put a new 1024x1024 PNG at design/icon.png and run this
-# script. Running it on the committed artwork changes nothing. Xcode compiles the
-# set into Assets.car (and AppIcon.icns) when the app is built.
+# script with --normalize, then scripts/check-icon-render.sh after a Release build.
+# Running it on the committed artwork changes nothing. Xcode compiles the set into
+# Assets.car (and AppIcon.icns) when the app is built.
 
 set -euo pipefail
 
 # shellcheck source=scripts/common.sh
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
+
+usage() {
+    echo "Usage: scripts/make-icon.sh [--normalize]" >&2
+}
+
+normalize=false
+for arg in "$@"; do
+    case "$arg" in
+        --normalize) normalize=true ;;
+        -h | --help)
+            usage
+            exit 0
+            ;;
+        *)
+            usage
+            exit 2
+            ;;
+    esac
+done
 
 SOURCE="$PICCOLO_ROOT/design/icon.png"
 ICON_SET="$PICCOLO_ROOT/App/Assets.xcassets/AppIcon.appiconset"
@@ -35,6 +60,22 @@ width="$(sips -g pixelWidth "$SOURCE" | awk '/pixelWidth/ { print $2 }')"
 height="$(sips -g pixelHeight "$SOURCE" | awk '/pixelHeight/ { print $2 }')"
 [[ "$width" == 1024 && "$height" == 1024 ]] \
     || die "${SOURCE#"$PICCOLO_ROOT"/} must be 1024x1024 pixels, it is ${width}x${height}"
+
+build_icon_tool
+
+if $normalize; then
+    # Written to build/ first and moved over the artwork, so that a failure never
+    # leaves design/icon.png half written.
+    normalized="$BUILD_DIR/icon-normalized.png"
+    "$ICON_TOOL" normalize "$SOURCE" "$normalized" 240 >&2 \
+        || die "cannot normalize ${SOURCE#"$PICCOLO_ROOT"/}"
+    mv "$normalized" "$SOURCE"
+    log "Normalized ${SOURCE#"$PICCOLO_ROOT"/} in place"
+fi
+
+if ! "$ICON_TOOL" check "$SOURCE"; then
+    die "${SOURCE#"$PICCOLO_ROOT"/} is not fit to be the app icon, see above"
+fi
 
 rm -rf "$STAGING"
 mkdir -p "$STAGING"
