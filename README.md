@@ -210,7 +210,7 @@ Piccolo keeps what it can use and reports the rest.
 
 Problems are reported in three places. The menu shows how many there are. The Settings window lists each one at the bottom of the window, on both tabs. The system log has all of them, which you can read in Console under the subsystem `io.damao.piccolo`. Failed actions are logged there as well.
 
-Settings writes the whole file on every save. Keys that Piccolo does not know are dropped, and a binding that was skipped when the file loaded is not written back. If you edit the file by hand, fix the problems that Settings lists before you save from Settings, or keep a copy of the file.
+Settings writes the whole file on every save. Keys that Piccolo does not know are dropped, and a binding that was skipped when the file loaded is not written back. So when the file loaded with a skipped binding or an invalid `resizeStep`, Piccolo first copies it, as it was before the first save after the load, to `config.backup-<yyyyMMdd-HHmmss>.json` in the same folder. The copy keeps everything, including the keys Piccolo does not know and the skipped bindings. Each load makes at most one copy, at the first save after it, and an earlier copy is never overwritten. The problems that Settings lists name the copy until the file is loaded again, at launch or on Reload Config. If you edit the file by hand, still fix the problems that Settings lists before you save from Settings.
 
 ## Limitations
 

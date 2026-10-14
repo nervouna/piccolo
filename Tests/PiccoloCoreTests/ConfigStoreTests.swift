@@ -398,4 +398,134 @@ struct ConfigStoreTests {
             #expect(result == LoadResult(config: .default, issues: []))
         }
     }
+
+    // MARK: Dropped entries
+
+    @Test("a skipped binding reports dropped entries")
+    func droppedBinding() throws {
+        try withTemporaryDirectory { directory in
+            let url = directory.appending(path: "config.json")
+            try writeText(#"{"bindings":[{"id":"not-a-uuid"}],"version":1}"#, to: url)
+            #expect(try ConfigStore(url: url).load().droppedEntries)
+        }
+    }
+
+    @Test("an invalid resizeStep that is replaced reports dropped entries")
+    func droppedResizeStep() throws {
+        try withTemporaryDirectory { directory in
+            let url = directory.appending(path: "config.json")
+            try writeText(#"{"bindings":[],"resizeStep":0.9,"version":1}"#, to: url)
+            #expect(try ConfigStore(url: url).load().droppedEntries)
+        }
+    }
+
+    @Test(
+        "a load that keeps everything reports no dropped entries",
+        arguments: [
+            #"{"bindings":[],"version":1}"#,
+            #"{"bindings":[],"resizeStep":0.05,"version":1}"#,
+            #"{"bindings":[],"version":1,"someFutureKey":true}"#,
+        ])
+    func noDroppedEntries(json: String) throws {
+        try withTemporaryDirectory { directory in
+            let url = directory.appending(path: "config.json")
+            try writeText(json, to: url)
+            #expect(try ConfigStore(url: url).load().droppedEntries == false)
+        }
+    }
+
+    @Test("a missing, moved-aside or newer file reports no dropped entries")
+    func noDroppedEntriesWhenNothingIsLoaded() throws {
+        try withTemporaryDirectory { directory in
+            #expect(try ConfigStore(url: directory.appending(path: "missing.json")).load().droppedEntries == false)
+
+            let corrupt = directory.appending(path: "corrupt.json")
+            try writeText("not json", to: corrupt)
+            #expect(try ConfigStore(url: corrupt).load().droppedEntries == false)
+
+            let newer = directory.appending(path: "newer.json")
+            try writeText(#"{"bindings":[{"id":"not-a-uuid"}],"version":2}"#, to: newer)
+            #expect(try ConfigStore(url: newer).load().droppedEntries == false)
+        }
+    }
+
+    // MARK: Copies
+
+    @Test("a backup holds the file's bytes, leaves the file in place and is named after it and the time")
+    func backUpCopy() throws {
+        try withTemporaryDirectory { directory in
+            let url = directory.appending(path: "config.json")
+            let original = Data(#"{"bindings":[],"extra":true,"version":1}"#.utf8)
+            try original.write(to: url)
+
+            let copy = try ConfigStore(url: url).backUp(at: Date(timeIntervalSince1970: 1_800_000_000))
+
+            #expect(copy.lastPathComponent.wholeMatch(of: #/config\.backup-\d{8}-\d{6}\.json/#) != nil)
+            #expect(FileManager.default.fileExists(atPath: directory.appending(path: copy.lastPathComponent).path))
+            #expect(try Data(contentsOf: copy) == original)
+            #expect(try Data(contentsOf: url) == original)
+        }
+    }
+
+    @Test("a backup with the same name as an earlier one never replaces it")
+    func backUpNeverOverwrites() throws {
+        try withTemporaryDirectory { directory in
+            let url = directory.appending(path: "config.json")
+            let store = ConfigStore(url: url)
+            let date = Date(timeIntervalSince1970: 1_800_000_000)
+
+            try writeText("first", to: url)
+            let firstCopy = try store.backUp(at: date)
+            try writeText("second", to: url)
+            let secondCopy = try store.backUp(at: date)
+
+            #expect(secondCopy.lastPathComponent != firstCopy.lastPathComponent)
+            #expect(secondCopy.lastPathComponent.hasSuffix("-2.json"))
+            #expect(try Data(contentsOf: firstCopy) == Data("first".utf8))
+            #expect(try Data(contentsOf: secondCopy) == Data("second".utf8))
+        }
+    }
+
+    @Test("backing up a missing file throws and creates nothing")
+    func backUpMissingFile() throws {
+        try withTemporaryDirectory { directory in
+            let store = ConfigStore(url: directory.appending(path: "config.json"))
+            #expect(throws: (any Error).self) {
+                try store.backUp()
+            }
+            let names = try entryNames(in: directory)
+            #expect(names.isEmpty)
+        }
+    }
+
+    // MARK: Checking a save
+
+    @Test("checkSave refuses what save refuses, and writes nothing either way")
+    func checkSaveRefuses() throws {
+        try withTemporaryDirectory { directory in
+            let url = directory.appending(path: "config.json")
+            let store = ConfigStore(url: url)
+
+            #expect(throws: ConfigStoreError.invalid(.unsupportedVersion(2))) {
+                try store.checkSave(Config(version: 2))
+            }
+            #expect(!FileManager.default.fileExists(atPath: url.path))
+
+            let newer = Data(#"{"bindings":[],"version":2}"#.utf8)
+            try newer.write(to: url)
+            #expect(throws: ConfigStoreError.newerFileVersion(2)) {
+                try store.checkSave(.default)
+            }
+            #expect(try Data(contentsOf: url) == newer)
+        }
+    }
+
+    @Test("checkSave accepts a valid config and writes nothing")
+    func checkSaveAccepts() throws {
+        try withTemporaryDirectory { directory in
+            let url = directory.appending(path: "config.json")
+            try ConfigStore(url: url).checkSave(Config(bindings: allKindsBindings))
+            #expect(try entryNames(in: directory).isEmpty)
+        }
+    }
 }

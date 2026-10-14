@@ -341,10 +341,12 @@ struct ShortcutManagerTests {
         let status = try fixture.manager.save(Config(bindings: fixture.manager.config.bindings + [added]))
 
         #expect(status.registered.map(\.id) == [first.id, second.id])
-        #expect(status.issues.count == 1)
+        // The file skipped an entry at load, so the save also keeps a copy and the issues say so, last.
+        #expect(status.issues.count == 2, "the issues are \(status.issues)")
         let issue = try #require(status.issues.first)
         #expect(issue.hasPrefix("bindings[2]"), "the issue is \"\(issue)\"")
         #expect(issue.contains("bindings[1]"), "the issue is \"\(issue)\"")
+        #expect(status.issues.last?.contains("config.backup-") == true, "the issues are \(status.issues)")
     }
 
     // MARK: Pressing
