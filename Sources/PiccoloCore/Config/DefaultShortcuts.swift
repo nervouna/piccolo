@@ -1,14 +1,22 @@
 import Foundation
 
 extension Config {
-    /// The config a new install starts with: version 1, the default resize step and the 25 bindings
-    /// below, in this order. Each call makes new binding IDs, so two calls never share one.
+    /// The config a new install starts with: version 1, the default settings (resize step, window
+    /// animation, grid fill order, destination preview) and the 25 bindings below, in this order.
+    /// Each call makes new binding IDs, so two calls never share one.
     ///
     /// At launch, Piccolo writes this config to the default location when there is no file there
-    /// (see `ShortcutManager.loadAtLaunch(from:)`), and Settings restores it on request. Key codes
-    /// are macOS virtual key codes (`kVK_*`).
+    /// (see `ShortcutManager.loadAtLaunch(from:)`). Settings restores only its bindings, through
+    /// `defaultShortcuts.bindings`, and keeps the settings. Key codes are macOS virtual key codes
+    /// (`kVK_*`).
     public static var defaultShortcuts: Config {
-        Config(version: currentVersion, resizeStep: defaultResizeStep, bindings: defaultBindings)
+        Config(
+            version: currentVersion,
+            resizeStep: defaultResizeStep,
+            animation: defaultAnimation,
+            gridFillOrder: defaultGridFillOrder,
+            destinationPreview: defaultDestinationPreview,
+            bindings: defaultBindings)
     }
 
     private static var defaultBindings: [KeyBinding] {

@@ -1,7 +1,8 @@
+import PiccoloCore
 import SwiftUI
 
-/// The "General" tab: launch at login, the linked-resize step, the Accessibility status, the config
-/// file and the version.
+/// The "General" tab: launch at login, the window animation, the grid fill order, the destination
+/// preview, the linked-resize step, the Accessibility status, the config file and the version.
 struct GeneralTab: View {
     let model: SettingsModel
     let host: SettingsHost
@@ -10,6 +11,52 @@ struct GeneralTab: View {
         VStack(spacing: 0) {
             Form {
                 LaunchAtLoginSection(model: model)
+
+                Section {
+                    Picker(
+                        "Window animation",
+                        selection: Binding(
+                            get: { model.animation },
+                            set: { model.setAnimation($0) })
+                    ) {
+                        Text("Off").tag(WindowAnimation.off)
+                        Text("Fast").tag(WindowAnimation.fast)
+                        Text("Medium").tag(WindowAnimation.medium)
+                        Text("Slow").tag(WindowAnimation.slow)
+                    }
+                } footer: {
+                    Text("How long a window takes to move to its new place.")
+                }
+
+                Section {
+                    Picker(
+                        "Fill order",
+                        selection: Binding(
+                            get: { model.gridFillOrder },
+                            set: { model.setGridFillOrder($0) })
+                    ) {
+                        Text("Rows first").tag(GridFillOrder.rows)
+                        Text("Columns first").tag(GridFillOrder.columns)
+                    }
+                } header: {
+                    Text("Arranging windows")
+                } footer: {
+                    Text(
+                        "When the windows do not fill the grid. With 3 windows in 2 × 2, rows first puts two windows on top and one across the bottom; columns first puts two on the left and one down the right side."
+                    )
+                }
+
+                Section {
+                    Toggle(
+                        "Show destination while a shortcut is held",
+                        isOn: Binding(
+                            get: { model.destinationPreview },
+                            set: { model.setDestinationPreview($0) }))
+                } footer: {
+                    Text(
+                        "Hold a shortcut to see where windows will go, release it to move them, or press Escape to cancel. When off, windows move as soon as the shortcut is pressed."
+                    )
+                }
 
                 Section {
                     PercentField(

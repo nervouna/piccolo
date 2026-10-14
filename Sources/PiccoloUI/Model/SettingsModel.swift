@@ -2,9 +2,10 @@ import Foundation
 import Observation
 import PiccoloCore
 
-/// What the Settings window shows and edits: the bindings, the resize step, the problems with the
-/// config, which binding is selected and which is recording a shortcut, and whether Piccolo
-/// launches at login (not part of the config: the system keeps it, see ``LoginItemBackend``).
+/// What the Settings window shows and edits: the bindings, the settings of the config (resize step,
+/// window animation, grid fill order, destination preview), the problems with the config, which
+/// binding is selected and which is recording a shortcut, and whether Piccolo launches at login
+/// (not part of the config: the system keeps it, see ``LoginItemBackend``).
 ///
 /// The window and the debug control commands call the same methods. Every accepted change is
 /// persisted through the ``SettingsBackend`` before it shows: the model never holds a config that
@@ -22,6 +23,12 @@ public final class SettingsModel {
     public private(set) var bindings: [KeyBinding]
     /// Fraction of the screen a linked resize moves a divider by, as in the config file.
     public private(set) var resizeStep: Double
+    /// How long a window takes to move to its new place, as in the config file.
+    public private(set) var animation: WindowAnimation
+    /// Where the windows of a grid go when there are fewer windows than cells, as in the config file.
+    public private(set) var gridFillOrder: GridFillOrder
+    /// Whether holding a shortcut shows where its windows will go before they move, as in the config file.
+    public private(set) var destinationPreview: Bool
     /// The problems found when the config was applied, one line each.
     public private(set) var issues: [String]
     /// The binding the editor shows. The list binds to it.
@@ -69,6 +76,9 @@ public final class SettingsModel {
         let snapshot = backend.current()
         bindings = snapshot.config.bindings
         resizeStep = snapshot.config.resizeStep
+        animation = snapshot.config.animation
+        gridFillOrder = snapshot.config.gridFillOrder
+        destinationPreview = snapshot.config.destinationPreview
         issues = snapshot.issues
         selectedBindingID = snapshot.config.bindings.first?.id
         backend.onExternalChange = { [weak self] in
@@ -80,7 +90,12 @@ public final class SettingsModel {
 
     /// The config the model holds, which is the one that was saved last.
     public var config: Config {
-        Config(resizeStep: resizeStep, bindings: bindings)
+        Config(
+            resizeStep: resizeStep,
+            animation: animation,
+            gridFillOrder: gridFillOrder,
+            destinationPreview: destinationPreview,
+            bindings: bindings)
     }
 
     public func binding(_ id: UUID) -> KeyBinding? {
@@ -172,6 +187,30 @@ public final class SettingsModel {
         return commit(candidate)
     }
 
+    /// Sets how long a window takes to move to its new place.
+    @discardableResult
+    public func setAnimation(_ value: WindowAnimation) -> Bool {
+        var candidate = config
+        candidate.animation = value
+        return commit(candidate)
+    }
+
+    /// Sets where the windows of a grid go when there are fewer windows than cells.
+    @discardableResult
+    public func setGridFillOrder(_ value: GridFillOrder) -> Bool {
+        var candidate = config
+        candidate.gridFillOrder = value
+        return commit(candidate)
+    }
+
+    /// Sets whether holding a shortcut shows where its windows will go before they move.
+    @discardableResult
+    public func setDestinationPreview(_ value: Bool) -> Bool {
+        var candidate = config
+        candidate.destinationPreview = value
+        return commit(candidate)
+    }
+
     /// Forgets the errors, for example when the window closes.
     public func clearError() {
         error = nil
@@ -190,10 +229,11 @@ public final class SettingsModel {
         isConfirmingRestore = false
     }
 
-    /// Replaces every binding with `Config.defaultShortcuts` and keeps the resize step. The config file in
-    /// use is copied next to itself first, when there is one (see ``SettingsBackend``), so the current
-    /// shortcuts can be recovered. A recording ends, since its binding is gone and the hotkeys come back
-    /// with the new bindings, and the list selects the first binding.
+    /// Replaces every binding with `Config.defaultShortcuts` and keeps the settings (resize step, window
+    /// animation, grid fill order, destination preview). The config file in use is copied next to itself
+    /// first, when there is one (see ``SettingsBackend``), so the current shortcuts can be recovered. A
+    /// recording ends, since its binding is gone and the hotkeys come back with the new bindings, and the
+    /// list selects the first binding.
     ///
     /// This does not ask: the window asks first (see ``askToRestoreDefaults()``). Answers whether the
     /// bindings were replaced; when they were not, ``error`` says why and nothing changed.
@@ -201,14 +241,15 @@ public final class SettingsModel {
     public func restoreDefaultShortcuts() -> Bool {
         isConfirmingRestore = false
         backupName = nil
-        let candidate = Config(resizeStep: resizeStep, bindings: Config.defaultShortcuts.bindings)
+        var candidate = config
+        candidate.bindings = Config.defaultShortcuts.bindings
         do {
             try candidate.validate()
         } catch {
             return reject(SettingsMessages.describe(error))
         }
         do {
-            backupName = try backend.backUpAndReplace(with: candidate)
+            backupName = try backend.backUpAndReplace(with: candidate.bindings)
         } catch {
             return reject(Self.message(for: error))
         }
@@ -312,6 +353,9 @@ public final class SettingsModel {
         let snapshot = backend.current()
         bindings = snapshot.config.bindings
         resizeStep = snapshot.config.resizeStep
+        animation = snapshot.config.animation
+        gridFillOrder = snapshot.config.gridFillOrder
+        destinationPreview = snapshot.config.destinationPreview
         issues = snapshot.issues
         error = nil
         if let recording = recordingBindingID, binding(recording) == nil {
@@ -345,6 +389,9 @@ public final class SettingsModel {
         }
         bindings = candidate.bindings
         resizeStep = candidate.resizeStep
+        animation = candidate.animation
+        gridFillOrder = candidate.gridFillOrder
+        destinationPreview = candidate.destinationPreview
         issues = newIssues
         self.error = nil
         return true

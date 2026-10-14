@@ -182,7 +182,7 @@ final class Desk: @unchecked Sendable {
     func move(
         _ direction: Direction, step: Double = DeskRig.step, onlyPid: pid_t? = nil
     ) throws -> DividerMoveOutcome {
-        let outcome = try executor.run(.moveDivider(direction), onlyPid: onlyPid, resizeStep: step)
+        let outcome = try executor.run(.moveDivider(direction), onlyPid: onlyPid, settings: ActionSettings(resizeStep: step))
         guard case .dividerMove(let result) = outcome else {
             throw DeskFailure("expected a divider move, got \(outcome)")
         }

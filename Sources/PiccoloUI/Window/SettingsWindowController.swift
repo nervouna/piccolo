@@ -18,8 +18,11 @@ public final class SettingsWindowController: NSObject, NSWindowDelegate {
     private var deactivationObserver: (any NSObjectProtocol)?
     private var activationObserver: (any NSObjectProtocol)?
 
-    private static let frameAutosaveName = "PiccoloSettings"
-    private static let defaultContentSize = NSSize(width: 640, height: 580)
+    /// The name the frame is saved under. It changed with the taller default size, so that a frame
+    /// saved by an earlier version, too short for the General tab, is not restored.
+    private static let frameAutosaveName = "PiccoloSettings.v2"
+    /// Tall enough for the whole General tab without scrolling (its form is about 760 pt high).
+    private static let defaultContentSize = NSSize(width: 640, height: 820)
     private static let minimumContentSize = NSSize(width: 560, height: 480)
 
     public init(model: SettingsModel, host: SettingsHost) {

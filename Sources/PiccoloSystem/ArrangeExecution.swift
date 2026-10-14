@@ -89,7 +89,7 @@ extension ActionExecutor {
     /// - When no window failed, the windows become the linked group of the display (see
     ///   ``LayoutGroupStore``): the layout, the windows in cell order, the visible frame and the
     ///   frames read back.
-    func arrange(_ grid: GridSpec, onlyPid: pid_t?) throws -> ActionOutcome {
+    func arrange(_ grid: GridSpec, onlyPid: pid_t?, settings: ActionSettings) throws -> ActionOutcome {
         let displays = try displaysProvider()
         guard !displays.isEmpty else { throw ActionPlanningError.noDisplays }
 

@@ -66,8 +66,8 @@ extension ActionExecutor {
     /// 2. The group is checked now, not earlier: the windows on screen are read, and the group is
     ///    dissolved when a member is not among them or an edge of one is more than 2 pt from the
     ///    frame recorded for it.
-    /// 3. `DividerMove.plan` gives the new layout. Without one (a window at its smallest, no divider
-    ///    in that direction) there is nothing to do.
+    /// 3. `DividerMove.plan` gives the new layout, one `settings.resizeStep` away. Without one (a
+    ///    window at its smallest, no divider in that direction) there is nothing to do.
     /// 4. The windows whose cell changed are sent to their new frames with
     ///    ``FrameSetter/apply(_:to:within:)`` in the group's visible frame: those that shrink first,
     ///    then those that grow, so that no two windows overlap while it happens.
@@ -80,7 +80,8 @@ extension ActionExecutor {
     /// move: the windows after it in the order above are left alone, so that none grows into space
     /// that is still taken. The group cannot be trusted any more: it is dissolved, and the windows
     /// that were not moved are reported with the reason.
-    func moveDivider(_ direction: Direction, step: Double, onlyPid: pid_t?) throws -> ActionOutcome {
+    func moveDivider(_ direction: Direction, onlyPid: pid_t?, settings: ActionSettings) throws -> ActionOutcome {
+        let step = settings.resizeStep
         guard step.isFinite, step > 0 else { throw ActionExecutionError.invalidResizeStep(step) }
         guard let focused = arrangement.focusedWindowID() else {
             return .dividerMove(.nothingToDo(.noFocusedWindow))

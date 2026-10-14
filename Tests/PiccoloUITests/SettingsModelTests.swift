@@ -769,4 +769,93 @@ struct SettingsModelTests {
         // The new bindings were saved while the hotkeys were suspended, and then registered.
         #expect(backend.suspendedAtSave.last == true)
     }
+
+    // MARK: Window settings
+
+    @Test("the window settings start as the backend's config holds them")
+    func windowSettingsStart() {
+        let config = Config(
+            resizeStep: 0.1, animation: .slow, gridFillOrder: .columns, destinationPreview: false,
+            bindings: UIFixture.twoBindings().bindings)
+        let (model, _) = make(config)
+
+        #expect(model.animation == .slow)
+        #expect(model.gridFillOrder == .columns)
+        #expect(model.destinationPreview == false)
+        #expect(model.config == config)
+    }
+
+    @Test("a window animation is saved and shown", arguments: WindowAnimation.allCases)
+    func animationAccepted(_ value: WindowAnimation) {
+        let (model, backend) = make()
+        #expect(model.setAnimation(value))
+        #expect(model.animation == value)
+        #expect(backend.config.animation == value)
+    }
+
+    @Test("a grid fill order is saved and shown", arguments: GridFillOrder.allCases)
+    func gridFillOrderAccepted(_ value: GridFillOrder) {
+        let (model, backend) = make()
+        #expect(model.setGridFillOrder(value))
+        #expect(model.gridFillOrder == value)
+        #expect(backend.config.gridFillOrder == value)
+    }
+
+    @Test("the destination preview is saved and shown", arguments: [true, false])
+    func destinationPreviewAccepted(_ value: Bool) {
+        let (model, backend) = make()
+        #expect(model.setDestinationPreview(value))
+        #expect(model.destinationPreview == value)
+        #expect(backend.config.destinationPreview == value)
+    }
+
+    @Test("a refused save leaves the window settings as they were, and says why")
+    func windowSettingsRefused() {
+        let (model, backend) = make()
+        backend.failure = "the config file was written by a newer version"
+        let before = model.config
+
+        #expect(!model.setAnimation(.slow))
+        #expect(!model.setGridFillOrder(.columns))
+        #expect(!model.setDestinationPreview(false))
+
+        #expect(model.config == before)
+        #expect(model.animation == Config.defaultAnimation)
+        #expect(model.gridFillOrder == Config.defaultGridFillOrder)
+        #expect(model.destinationPreview == Config.defaultDestinationPreview)
+        #expect(backend.saved.isEmpty)
+        #expect(model.error?.contains("newer version") == true)
+    }
+
+    @Test("restoring the default shortcuts keeps the resize step and the window settings")
+    func restoreKeepsWindowSettings() {
+        let config = Config(
+            resizeStep: 0.2, animation: .slow, gridFillOrder: .columns, destinationPreview: false,
+            bindings: UIFixture.twoBindings().bindings)
+        let (model, backend) = make(config)
+
+        #expect(model.restoreDefaultShortcuts())
+
+        #expect(model.bindings.count == 25)
+        #expect(model.resizeStep == 0.2)
+        #expect(model.animation == .slow)
+        #expect(model.gridFillOrder == .columns)
+        #expect(model.destinationPreview == false)
+        #expect(backend.config.bindings.count == 25)
+        #expect(backend.config.resizeStep == 0.2)
+        #expect(backend.config.animation == .slow)
+        #expect(backend.config.gridFillOrder == .columns)
+        #expect(backend.config.destinationPreview == false)
+    }
+
+    @Test("a config replaced from outside brings its window settings")
+    func externalChangeWindowSettings() {
+        let (model, backend) = make()
+
+        backend.replaceFromOutside(Config(animation: .off, gridFillOrder: .columns, destinationPreview: false))
+
+        #expect(model.animation == .off)
+        #expect(model.gridFillOrder == .columns)
+        #expect(model.destinationPreview == false)
+    }
 }

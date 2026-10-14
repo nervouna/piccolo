@@ -92,8 +92,8 @@ public struct ActionExecutor: Sendable {
     ///   - onlyPid: Restricts the windows `arrangeGrid` may move to those of this process, and
     ///     `moveDivider` too: a group with a window of another process is dissolved instead of
     ///     moved. The other actions ignore it: they only touch the focused window.
-    ///   - resizeStep: The fraction of the display a divider moves by, the loaded config's
-    ///     `resizeStep`. Only `moveDivider` uses it.
+    ///   - settings: The settings of the config in effect. `moveDivider` uses its `resizeStep`.
+    ///     `animation` and `gridFillOrder` are not read yet; the behaviour that uses them comes later.
     /// - Throws: ``ActionExecutionError`` for a `resizeStep` that is not a positive number, before
     ///   anything is touched; ``ActionPlanningError`` for an action that cannot be planned;
     ///   ``ArrangePlannerError`` for a grid that cannot be arranged; ``WindowError`` when a window
@@ -101,13 +101,13 @@ public struct ActionExecutor: Sendable {
     ///   be changed is not an error: it is reported in the outcome, and the other windows are still
     ///   moved.
     public func run(
-        _ action: Action, onlyPid: pid_t? = nil, resizeStep: Double = Config.defaultResizeStep
+        _ action: Action, onlyPid: pid_t? = nil, settings: ActionSettings = .default
     ) throws -> ActionOutcome {
         switch action {
         case .arrangeGrid(let grid):
-            return try arrange(grid, onlyPid: onlyPid)
+            return try arrange(grid, onlyPid: onlyPid, settings: settings)
         case .moveDivider(let direction):
-            return try moveDivider(direction, step: resizeStep, onlyPid: onlyPid)
+            return try moveDivider(direction, onlyPid: onlyPid, settings: settings)
         case .placeWindow, .moveToDisplay:
             break
         }

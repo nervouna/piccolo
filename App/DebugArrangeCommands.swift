@@ -33,12 +33,10 @@ extension DebugControlServer {
         router.register("action.run") { params in
             let action = try params.decode(Action.self)
             let pid = try onlyPid(in: params)
-            // The step is the one of the config in effect, as for a shortcut. Only a divider move uses it.
-            var step = Config.defaultResizeStep
-            if case .moveDivider = action {
-                step = onMainActor { ConfigController.shared.config.resizeStep }
-            }
-            return json(for: try executor().run(action, onlyPid: pid, resizeStep: step))
+            // The settings are those of the config in effect, as for a shortcut. Only a divider move
+            // uses the resize step; no action reads the animation or the fill order yet.
+            let settings = onMainActor { ActionSettings(ConfigController.shared.config) }
+            return json(for: try executor().run(action, onlyPid: pid, settings: settings))
         }
 
         router.register("groups.list") { _ in

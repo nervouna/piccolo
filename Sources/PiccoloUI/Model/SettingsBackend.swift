@@ -40,12 +40,13 @@ public protocol SettingsBackend: AnyObject {
     func save(_ config: Config) throws -> [String]
 
     /// Keeps a copy of the config file next to itself (`ConfigStore.backUp()`, when there is a file),
-    /// then persists `config` in its place and applies it, as ``save(_:)`` does. Answers the file name
-    /// of the copy, or `nil` when there was no file to copy. Nothing changes when it throws.
+    /// then replaces the bindings in effect with `bindings`, keeping the other settings, and persists and
+    /// applies the result, as ``save(_:)`` does. Answers the file name of the copy, or `nil` when there
+    /// was no file to copy. Nothing changes when it throws.
     ///
     /// - Throws: ``SettingsSaveError`` (or any error with a readable description) when the copy or the
     ///   config cannot be written.
-    func backUpAndReplace(with config: Config) throws -> String?
+    func backUpAndReplace(with bindings: [KeyBinding]) throws -> String?
 
     /// Releases every global hotkey (`true`) or registers them again (`false`). Asking for the
     /// state that is already in force does nothing.

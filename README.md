@@ -50,7 +50,7 @@ Settings opens from the menu. It also opens when you launch Piccolo again while 
 ### Shortcuts tab
 
 - **Add and remove.** The + button adds a binding. It places the window in the left half and has no shortcut yet. The − button removes the selected binding.
-- **Restore Default Shortcuts…** replaces every binding with the [default shortcuts](#default-shortcuts) after you confirm. The resize step stays. A copy of the config file is kept next to it first.
+- **Restore Default Shortcuts…** replaces every binding with the [default shortcuts](#default-shortcuts) after you confirm. The resize step, the window animation, the arranging order and the destination preview stay. A copy of the config file is kept next to it first.
 - **Action.** The Action menu offers four kinds: Place Window, Move to Display, Arrange Grid and Move Divider. Choosing a kind resets the binding to that kind's default: Left Half, Next Display, 4 windows in 2 × 2, or Move Divider Left. The parameters of the kind follow. For Place Window and Arrange Grid, a preview of the frame or cells is drawn beside the editor.
 - **Recording a shortcut.** Click the button on the right of a binding. It reads "Record Shortcut" when the binding has none, and shows the shortcut, such as ⌃⌥F13, when it has one. Click it, then press the keys. Press Escape to cancel. Press Delete or Forward Delete on its own to clear the shortcut.
 - **Rules.** A shortcut needs ⌘, ⌥ or ⌃, or it must be a function key (F1 to F20). Shift on its own does not count, so ⇧A is refused. A shortcut that another binding already has is refused too, and the message names the other binding by its action. A refused shortcut shows a message at the bottom of the window and nothing is saved. Recording ends after any key press, so press the keys again to retry.
@@ -62,6 +62,9 @@ Settings opens from the menu. It also opens when you launch Piccolo again while 
 <img src="docs/images/settings-general.png" alt="Settings window, General tab: the Launch at login switch, the resize step, the Accessibility status, the Reveal Config in Finder button and the app version." width="640">
 
 - **Launch at login** starts Piccolo when you log in. When macOS is waiting for you to allow it, the tab says so and offers a button to open Login Items in System Settings.
+- **Window animation** is how long a window takes to move to its new place: Off, Fast (0.15 s, the default), Medium (0.25 s) or Slow (0.4 s). It applies to every action, including Arrange Grid and Move Divider.
+- **Arranging windows: Fill order** decides where the windows go when they do not fill the grid. With 3 windows in a 2 × 2 grid, Rows first (the default) puts two windows on top and one across the bottom; Columns first puts two on the left and one down the right side.
+- **Show destination while a shortcut is held** shows where the windows will go while you hold a shortcut. Release it to move them, or press Escape to cancel. The default is on. When it is off, windows move as soon as the shortcut is pressed.
 - **Resize step** is how far each Move Divider key press moves a divider, as a share of the display's visible width or height (see [Move Divider](#move-divider)). The default is 5%. Typed values above 0% up to 50% are accepted. The arrows change it in steps of 1%, between 1% and 50%.
 - **Accessibility** shows the permission status and opens its settings.
 - **Config** reveals the config file in Finder.
@@ -179,6 +182,7 @@ This example has one binding of each action kind:
 
 ```json
 {
+  "animation": "fast",
   "bindings": [
     {
       "action": {
@@ -212,6 +216,8 @@ This example has one binding of each action kind:
       "shortcut": { "keyCode": 123, "modifiers": ["command", "control", "option"] }
     }
   ],
+  "destinationPreview": true,
+  "gridFillOrder": "rows",
   "resizeStep": 0.05,
   "version": 1
 }
@@ -230,6 +236,9 @@ The keys can appear in any order. These are the keys of the file:
 | Key | Value | Meaning |
 |---|---|---|
 | `version` | `1` | Required. The only version this build reads and writes. |
+| `animation` | `"off"`, `"fast"`, `"medium"` or `"slow"` | Optional, default `"fast"`. How long a window takes to move: 0, 0.15, 0.25 or 0.4 seconds. |
+| `gridFillOrder` | `"rows"` or `"columns"` | Optional, default `"rows"`. Where the windows go when they do not fill the grid: row by row, or column by column. |
+| `destinationPreview` | `true` or `false` | Optional, default `true`. Whether holding a shortcut shows where its windows will go before they move. |
 | `resizeStep` | number | Optional, default `0.05`. How far a linked resize moves a divider, as a fraction of the screen: above 0 and at most 0.5. |
 | `bindings` | array | Required; may be empty. The bindings, in the order of the Settings list. |
 | `id` | UUID string | Required in each binding. Identifies the binding; each binding needs its own. |
@@ -254,10 +263,11 @@ Piccolo keeps what it can use and reports the rest.
 - **A shortcut that an earlier binding already has.** The first binding keeps it. The later one is not registered.
 - **A shortcut that the system refuses**, for example one that another app holds. It is not registered.
 - **A `resizeStep` that is not a number or is out of range.** The default is used.
+- **An `animation`, `gridFillOrder` or `destinationPreview` that cannot be read**, for example an unknown name or a value of the wrong type. The default is used. A key that is missing takes its default without a problem being reported.
 
 Problems are reported in three places. The menu shows how many there are. The Settings window lists each one at the bottom of the window, on both tabs. The system log has all of them, which you can read in Console under the subsystem `io.damao.piccolo`. Failed actions are logged there as well.
 
-Settings writes the whole file on every save. Keys that Piccolo does not know are dropped, and a binding that was skipped when the file loaded is not written back. So when the file loaded with a skipped binding or an invalid `resizeStep`, Piccolo first copies it, as it was before the first save after the load, to `config.backup-<yyyyMMdd-HHmmss>.json` in the same folder. The copy keeps everything, including the keys Piccolo does not know and the skipped bindings. Each load makes at most one copy, at the first save after it, and an earlier copy is never overwritten. The problems that Settings lists name the copy until the file is loaded again, at launch or on Reload Config. If you edit the file by hand, still fix the problems that Settings lists before you save from Settings.
+Settings writes the whole file on every save. Keys that Piccolo does not know are dropped, and a binding that was skipped when the file loaded is not written back. So when the file loaded with a skipped binding or a setting that was replaced by its default, Piccolo first copies it, as it was before the first save after the load, to `config.backup-<yyyyMMdd-HHmmss>.json` in the same folder. The copy keeps everything, including the keys Piccolo does not know and the skipped bindings. Each load makes at most one copy, at the first save after it, and an earlier copy is never overwritten. The problems that Settings lists name the copy until the file is loaded again, at launch or on Reload Config. If you edit the file by hand, still fix the problems that Settings lists before you save from Settings.
 
 ## Limitations
 

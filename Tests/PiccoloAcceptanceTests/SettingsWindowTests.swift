@@ -552,6 +552,38 @@ extension DesktopAcceptanceTests {
             }
         }
 
+        // MARK: 14. The window settings
+
+        @Test("settings 14. the window animation, the grid fill order and the destination preview are saved to the file and shown")
+        func windowSettings() async throws {
+            try await withSettingsSession { session in
+                let animated = try piccolo.settingsSetAnimation("slow")
+                #expect(animated.animation == "slow", "settings.state shows animation \(animated.animation)")
+                let ordered = try piccolo.settingsSetGridFillOrder("columns")
+                #expect(ordered.gridFillOrder == "columns", "settings.state shows gridFillOrder \(ordered.gridFillOrder)")
+                let previewed = try piccolo.settingsSetDestinationPreview(false)
+                #expect(previewed.destinationPreview == false, "settings.state shows destinationPreview \(previewed.destinationPreview)")
+
+                let state = try piccolo.settingsState()
+                #expect(state.animation == "slow")
+                #expect(state.gridFillOrder == "columns")
+                #expect(state.destinationPreview == false)
+
+                let inFile = try session.fileConfig()
+                #expect(inFile.animation == .slow, "the file's animation is \(inFile.animation)")
+                #expect(inFile.gridFillOrder == .columns, "the file's gridFillOrder is \(inFile.gridFillOrder)")
+                #expect(inFile.destinationPreview == false, "the file's destinationPreview is \(inFile.destinationPreview)")
+                #expect(try ConfigStore(url: session.url).load().issues.isEmpty)
+
+                // A name the format does not know is refused, and the file is left as it was.
+                let saved = try session.fileBytes()
+                let message = try piccolo.settingsSetAnimationExpectingRefusal("bounce")
+                #expect(message.contains("animation"), "the message is \"\(message)\"")
+                #expect(try session.fileBytes() == saved, "the refused animation changed the file")
+                #expect(try piccolo.settingsState().animation == "slow")
+            }
+        }
+
         // MARK: Helpers
 
         /// Where the fixture windows of these tests start: inside the primary display.

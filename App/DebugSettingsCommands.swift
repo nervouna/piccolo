@@ -9,7 +9,8 @@ import PiccoloUI
 /// The Settings window commands of the Debug control channel: `settings.open`, `settings.close`,
 /// `settings.state`, the view state (`settings.select`, `settings.showTab`), the edits
 /// (`settings.addBinding`, `settings.removeBinding`, `settings.updateAction`,
-/// `settings.setResizeStep`, `settings.restoreDefaults`) and recording
+/// `settings.setResizeStep`, `settings.setAnimation`, `settings.setGridFillOrder`,
+/// `settings.setDestinationPreview`, `settings.restoreDefaults`) and recording
 /// (`settings.beginRecording`, `settings.cancelRecording`, `settings.record`), and the login item
 /// (`loginItem.status`, `loginItem.set`).
 ///
@@ -104,6 +105,42 @@ extension DebugControlServer {
             return try onMainActor {
                 let model = SettingsController.shared.model
                 guard model.setResizeStep(value) else { throw rejection(of: model) }
+                return settingsState()
+            }
+        }
+
+        // The window animation, by its name in the config file: "off", "fast", "medium" or "slow".
+        router.register("settings.setAnimation") { params in
+            let name = try params.decode(NameParams.self).value
+            guard let animation = WindowAnimation(rawValue: name) else {
+                throw ControlCommandError.invalidParams(unknownValue("animation", name, WindowAnimation.self))
+            }
+            return try onMainActor {
+                let model = SettingsController.shared.model
+                guard model.setAnimation(animation) else { throw rejection(of: model) }
+                return settingsState()
+            }
+        }
+
+        // The grid fill order, by its name in the config file: "rows" or "columns".
+        router.register("settings.setGridFillOrder") { params in
+            let name = try params.decode(NameParams.self).value
+            guard let order = GridFillOrder(rawValue: name) else {
+                throw ControlCommandError.invalidParams(unknownValue("gridFillOrder", name, GridFillOrder.self))
+            }
+            return try onMainActor {
+                let model = SettingsController.shared.model
+                guard model.setGridFillOrder(order) else { throw rejection(of: model) }
+                return settingsState()
+            }
+        }
+
+        // Whether holding a shortcut shows its destination first.
+        router.register("settings.setDestinationPreview") { params in
+            let enabled = try params.decode(EnabledParams.self).enabled
+            return try onMainActor {
+                let model = SettingsController.shared.model
+                guard model.setDestinationPreview(enabled) else { throw rejection(of: model) }
                 return settingsState()
             }
         }
@@ -266,6 +303,9 @@ extension DebugControlServer {
                     return .object(entry)
                 }),
             "resizeStep": .double(model.resizeStep),
+            "animation": .string(model.animation.rawValue),
+            "gridFillOrder": .string(model.gridFillOrder.rawValue),
+            "destinationPreview": .bool(model.destinationPreview),
             "issues": .array(model.issues.map { .string($0) }),
             "tab": .string(model.tab.rawValue),
             "loginItem": .string(model.loginItemStatus.rawValue),
@@ -281,6 +321,14 @@ extension DebugControlServer {
         }
         state.merge(extra) { _, new in new }
         return .object(state)
+    }
+
+    /// The message for a value that is not a name of `type`, listing the names it accepts.
+    private nonisolated static func unknownValue<Value: RawRepresentable & CaseIterable>(
+        _ key: String, _ name: String, _ type: Value.Type
+    ) -> String where Value.RawValue == String {
+        let names = type.allCases.map { "\"\($0.rawValue)\"" }.joined(separator: ", ")
+        return "\(key) must be one of \(names), not \"\(name)\""
     }
 
     /// The error that answers a rejected edit: the model's message.
@@ -301,6 +349,10 @@ extension DebugControlServer {
 
     private struct ValueParams: Decodable {
         var value: Double
+    }
+
+    private struct NameParams: Decodable {
+        var value: String
     }
 
     private struct EnabledParams: Decodable {
