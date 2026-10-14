@@ -81,7 +81,7 @@ The choice is stored as Piccolo's own language, which is the same setting System
 
 ## Actions
 
-Each binding runs one action.
+Each binding runs one action. The windows glide to their new frames over the time set by [Window animation](#general-tab) (0.15 s by default) and end up where they would without it.
 
 | Action | Parameters | What it does |
 |---|---|---|

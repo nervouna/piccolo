@@ -13,7 +13,10 @@ extension DebugControlServer {
     /// - `action.run`: runs an action. The params are the action exactly as the config file writes it,
     ///   for example `{"type": "arrangeGrid", "count": 4, "rows": 2, "columns": 2}`, plus an optional
     ///   `onlyPid`, the process whose windows `arrangeGrid` may move and the only one: tests pass the
-    ///   fixture's pid so that they never move anybody's real windows. The result is
+    ///   fixture's pid so that they never move anybody's real windows, and an optional `animation`
+    ///   (`"off"`, `"fast"`, `"medium"` or `"slow"`) that replaces the config's animation for this
+    ///   call; an unknown value is refused before anything moves. The call returns once the windows
+    ///   have glided and been placed. The result is
     ///   `{"target", "achieved"}` for a placement, `{"nothingToDo": true}`, or for `arrangeGrid`
     ///   `{"display": index, "windows": [{"window", "target", "achieved"} | {"window", "target", "error"}]}`.
     ///   A `moveDivider` action runs as its shortcut would, with the resize step of the loaded config, on
@@ -36,9 +39,12 @@ extension DebugControlServer {
         router.register("action.run") { params in
             let action = try params.decode(Action.self)
             let pid = try onlyPid(in: params)
-            // The settings are those of the config in effect, as for a shortcut. Only a divider move
-            // uses the resize step; no action reads the animation or the fill order yet.
-            let settings = onMainActor { ActionSettings(ConfigController.shared.config) }
+            let animation = try animationParam(in: params)
+            // The settings are those of the config in effect, as for a shortcut, except that the
+            // optional `animation` param replaces the config's animation for this call. A divider
+            // move uses the resize step, arrangeGrid the grid fill order, and every action the animation.
+            var settings = onMainActor { ActionSettings(ConfigController.shared.config) }
+            if let animation { settings.animation = animation }
             return json(for: try executor().run(action, onlyPid: pid, settings: settings))
         }
 
@@ -49,6 +55,16 @@ extension DebugControlServer {
         router.register("focus.history") { _ in
             ["windows": .array(executor().focusHistory.map { .int(Int($0.rawValue)) })]
         }
+    }
+
+    /// The optional `animation` param: `off`, `fast`, `medium` or `slow`, the names of the config file.
+    private nonisolated static func animationParam(in params: [String: JSONValue]) throws -> WindowAnimation? {
+        guard let value = params["animation"], value != .null else { return nil }
+        let names = WindowAnimation.allCases.map(\.rawValue).joined(separator: ", ")
+        guard let name = value.stringValue, let animation = WindowAnimation(rawValue: name) else {
+            throw ControlCommandError.invalidParams("animation must be one of \(names)")
+        }
+        return animation
     }
 
     /// The optional `onlyPid` param: a positive process ID.

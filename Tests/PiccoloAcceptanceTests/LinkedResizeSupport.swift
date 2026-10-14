@@ -134,16 +134,14 @@ struct LinkedRun {
 
     // MARK: Checking
 
-    /// Waits until the window is measured at `expected` (within `LinkedRun.frameTolerance`).
+    /// Waits until the window is measured at `expected` (within `LinkedRun.frameTolerance`) and has
+    /// stayed there (see `Measure.waitForFrame`).
     func waitForFrame(of window: FixtureWindow, matching expected: CGRect) async throws -> CGRect {
-        try await eventually(
-            "window '\(window.id)' to be measured at \(describe(expected)) ±\(Self.frameTolerance)"
-        ) { () -> Observation<CGRect> in
-            guard let measured = Measure.frame(ofWindow: window.windowNumber) else {
-                return .unsatisfied("window \(window.windowNumber) is not listed as on screen")
-            }
-            return framesMatch(measured, expected, tolerance: Self.frameTolerance)
-                ? .satisfied(measured) : .unsatisfied("measured \(describe(measured))")
+        do {
+            return try await Measure.waitForFrame(
+                ofWindow: window.windowNumber, matching: expected, tolerance: Self.frameTolerance)
+        } catch let failure as AcceptanceFailure {
+            throw AcceptanceFailure("window '\(window.id)': \(failure.message)", isRetryable: failure.isRetryable)
         }
     }
 

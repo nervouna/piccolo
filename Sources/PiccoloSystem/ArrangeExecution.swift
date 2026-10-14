@@ -84,8 +84,10 @@ extension ActionExecutor {
     ///   containing the frontmost window of the catalog; without any window there is nothing to do.
     /// - The focused window counts as the most recently focused window, whether or not the history
     ///   has caught up with it yet.
-    /// - Every window of the plan is sent to its cell with ``FrameSetter/apply(_:to:within:)``. One
-    ///   that fails does not stop the others. No window is raised or focused.
+    /// - The windows glide to their cells together over the duration of `settings.animation` (see
+    ///   ``WindowAnimator``), then every window of the plan is sent to its cell with
+    ///   ``FrameSetter/apply(_:to:within:)``. One that fails does not stop the others. No window is
+    ///   raised or focused.
     /// - When no window failed, the windows become the linked group of the display (see
     ///   ``LayoutGroupStore``): the layout, the windows in cell order, the visible frame and the
     ///   frames read back.
@@ -118,6 +120,17 @@ extension ActionExecutor {
         let handles = Dictionary(
             windows.map { ($0.candidate.id, $0.handle) }, uniquingKeysWith: { first, _ in first })
         let visibleFrame = displays[plan.displayIndex].visibleFrame
+        // All windows glide together; the loop below then places each exactly as without animation.
+        let starts = Dictionary(
+            windows.map { ($0.candidate.id, $0.candidate.frame) }, uniquingKeysWith: { first, _ in first })
+        glide(
+            plan.assignments.compactMap { assignment in
+                guard let handle = handles[assignment.window], let start = starts[assignment.window] else {
+                    return nil
+                }
+                return AnimatedWindow(window: handle, start: start, target: assignment.frame)
+            },
+            settings: settings, displays: displays)
         let arranged = plan.assignments.map { assignment -> ArrangedWindow in
             let result: ArrangedWindow.Result
             do {
