@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="19" height="18" viewBox="0 0 19 18">
+  <!-- Candidate 1b, latte on the previous 18 pt grid. Superseded by menubar-icon-latte.svg (16 pt grid).
+       Not shipped; kept only so that the preview can compare the two. 19 x 18 pt, black on transparent, 1 unit = 1 pt.
+       Candidate 1 with the top pane left empty, as in the outline candidate; the two bottom panes stay filled.
+       Same geometry as menubar-icon.svg. Rows (y): outline 0-1, gap 1-2, top pane 2-8 (empty), gutter 8-9, bottom panes 9-16, gap 16-17, outline 17-18.
+       Columns at y = 9: left pane to x = 11, gutter 11-12, right pane from x = 12.
+       The sides lean in by 1 pt over the height, like the glass. -->
+  <g fill="#000">
+    <!-- Glass outline, 1 pt thick: the silhouette minus the same shape inset by 1 pt. -->
+    <path fill-rule="evenodd" d="M0.069 1.248C0.031 0.559 0.56 0 1.25 0L17.75 0C18.44 0 18.969 0.559 18.931 1.248L18.166 15.005C18.075 16.659 16.657 18 15 18L4 18C2.343 18 0.925 16.659 0.834 15.005ZM1.834 15.003C1.895 16.106 2.84 17 3.944 17L15.056 17C16.16 17 17.105 16.106 17.166 15.003L17.931 1.25C17.938 1.112 17.833 1 17.694 1L1.306 1C1.167 1 1.062 1.112 1.069 1.25Z"/>
+    <!-- Bottom left pane -->
+    <path d="M2.528 9.499C2.512 9.224 2.724 9 3 9L10.5 9C10.776 9 11 9.224 11 9.5L11 15.5C11 15.776 10.776 16 10.5 16L3.889 16C3.337 16 2.864 15.553 2.833 15.002Z"/>
+    <!-- Bottom right pane -->
+    <path d="M12 9.5C12 9.224 12.224 9 12.5 9L16 9C16.276 9 16.488 9.224 16.472 9.499L16.167 15.002C16.136 15.553 15.663 16 15.111 16L12.5 16C12.224 16 12 15.776 12 15.5Z"/>
+  </g>
+</svg>
