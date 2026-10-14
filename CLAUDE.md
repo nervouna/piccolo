@@ -78,24 +78,14 @@ Every feature that moves or resizes real windows ships with acceptance tests tha
 
 ## Workflow
 
-Roles: the owner files issues and decides when to open-source. The orchestrator (Claude, main session) plans, writes specs, dispatches, reviews, verifies, merges and releases; it does not write implementation code. Implementers (subagents on smaller models) write the code.
+Developed with the global `orchestrate` skill: the owner files issues and makes product decisions; Claude writes each issue as a spec, Claude subagents implement it as a PR, Claude reviews, merges and releases. Milestones M0–M5 are GitHub milestones. Piccolo's own rules:
 
-- Milestones M0–M5 are GitHub milestones. Every unit of work is an issue whose body is the spec: Goal, Context, Scope, Out of scope, Acceptance (commands wherever possible).
-- One issue, one branch `<issue-number>-<slug>`, one PR containing `Closes #N`. Squash merge.
-- Never rebase or force-push a PR branch. If `main` has moved, leave the branch alone; when it must be updated, merge `main` into it.
-- The orchestrator resolves merge conflicts that need no decision (both sides kept, documentation combined) itself, with a merge commit on the PR branch. A conflict that needs a choice between the two sides goes back to an implementer.
-- The implementer runs every acceptance command before opening the PR. The orchestrator re-runs them on the PR branch, spot-checks the key diffs and records the verdict as a PR comment. High-risk PRs also get a read-only review by a non-Claude model.
-- Rework goes back to the same implementer with written feedback.
-- Each PR carries a delivery record (see the PR template), filled in by the orchestrator at merge: implementer model, rework rounds, dispatch-to-merge time, defects found in review and in acceptance.
-- Desktop acceptance (anything that moves real windows or installs the app) is a machine-wide shared resource: one run at a time.
-- Release gate: before tagging, run `swift test` and `scripts/build.sh release` on the exact commit to be tagged. Re-run `scripts/accept.sh` there only if code (anything outside documentation) changed since the last full acceptance pass on `main` or on the merged PR result; a documentation-only delta does not need another desktop run.
-- Implementers stop every background process they started (log streams, watchers, loops) before they report. The orchestrator checks for leftovers when it reviews (`ps -axo pid,ppid,etime,command` under the session's process) and stops them. `scripts/accept.sh` enforces this with a lock; run it, rather than the pieces, for anything that touches the desktop.
+- Desktop acceptance (anything that moves real windows or installs the app) is a machine-wide shared resource: one run at a time. Run `scripts/accept.sh`, not its pieces: it holds the lock and always tears down.
+- Release gate: `swift test` and `scripts/build.sh release` on the exact commit to be tagged. Re-run `scripts/accept.sh` there only if code (anything outside documentation) changed since the last full acceptance pass on `main` or on the merged PR result. The published asset, downloaded again, has the SHA-256 of the local archive, is stapled, is assessed as `Notarized Developer ID`, and has no control code and no `get-task-allow`.
 
 ## Rules for implementers
 
-- The issue is the spec. Do not expand its scope. If the spec is wrong or you are blocked, stop and report instead of improvising.
 - Keep logic in `PiccoloCore` and write the tests for the specified behaviour before the implementation.
-- Paste the acceptance results into the PR body, including anything that failed.
 - Never commit signing identities, key locations or machine-specific paths. Never read or print notarization key files.
 - Do not add third-party dependencies or install tools unless the issue says so.
 - Comments and docs in English. Conventional Commits.
