@@ -101,6 +101,57 @@ public final class ShortcutManager {
         return register()
     }
 
+    /// The first load at launch. When there is no file at `url`, writes `Config.defaultShortcuts` there
+    /// first, then loads the file as ``load(from:)`` does. A file that exists is never written over,
+    /// whatever it holds. Answers whether the defaults were written. When they could not be written,
+    /// the issues say so and the load goes on with no bindings.
+    @discardableResult
+    public func loadAtLaunch(from url: URL) -> Bool {
+        var wrote = false
+        var notice: String?
+        do {
+            wrote = try ConfigStore(url: url).createIfMissing(.defaultShortcuts)
+        } catch {
+            notice = "the default shortcuts could not be written to \(url.lastPathComponent): \(error.localizedDescription)"
+        }
+        droppedEntries = read(url)
+        backupCopy = nil
+        if let notice {
+            loadIssues.append(notice)
+        }
+        _ = register()
+        return wrote
+    }
+
+    /// What ``replaceKeepingCopy(with:)`` left behind.
+    public struct Replacement: Equatable, Sendable {
+        /// The copy made of the file before it was replaced, or `nil` when there was no file to copy.
+        public var copy: URL?
+        /// The status after the replacement.
+        public var status: Status
+    }
+
+    /// Makes `config` the config in use, as ``save(_:)`` does, after copying the file that is in use
+    /// next to itself as `ConfigStore.backUp()` does. The copy is made whatever the last load dropped:
+    /// the bindings are replaced as a whole, so the file as it was stays recoverable. Nothing is copied
+    /// or changed when `config` is refused.
+    ///
+    /// - Throws: `ConfigStoreError` when `config` is invalid or the file is from a newer version, and
+    ///   the I/O error when the copy or the file cannot be written.
+    @discardableResult
+    public func replaceKeepingCopy(with config: Config) throws -> Replacement {
+        let store = ConfigStore(url: url)
+        try store.checkSave(config)
+        var copy: URL?
+        if FileManager.default.fileExists(atPath: url.path) {
+            copy = try store.backUp()
+        }
+        try store.save(config)
+        droppedEntries = read(url)
+        backupCopy = nil
+        return Replacement(copy: copy, status: register())
+    }
+
     /// Writes `config` to the file that was loaded last (the initial file before any load),
     /// creating its folder when needed, and loads it again, so that the shortcuts take effect at
     /// once and ``status`` describes the saved file.

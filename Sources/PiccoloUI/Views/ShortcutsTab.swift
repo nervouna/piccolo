@@ -14,6 +14,16 @@ struct ShortcutsTab: View {
             editor
             StatusMessages(model: model)
         }
+        .alert("Restore the default shortcuts?", isPresented: $model.isConfirmingRestore) {
+            Button("Restore", role: .destructive) {
+                model.restoreDefaultShortcuts()
+            }
+            Button("Cancel", role: .cancel) {
+                model.cancelRestoreDefaults()
+            }
+        } message: {
+            Text("The current shortcuts will be replaced by the defaults. A copy of the config file is kept next to it.")
+        }
     }
 
     // MARK: List
@@ -59,6 +69,11 @@ struct ShortcutsTab: View {
             .disabled(model.selectedBindingID == nil)
             .help("Remove the selected shortcut")
             .accessibilityLabel("Remove Shortcut")
+
+            Button("Restore Default Shortcuts…") {
+                model.askToRestoreDefaults()
+            }
+            .help("Replace every shortcut with the defaults. A copy of the config file is kept next to it.")
 
             Spacer()
         }

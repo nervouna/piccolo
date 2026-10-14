@@ -108,6 +108,13 @@ extension PiccoloClient {
         try settingsExpectingRefusal("settings.updateAction", updateParams(id, action))
     }
 
+    /// `settings.restoreDefaults`: replaces the bindings with the default shortcuts without the alert.
+    /// Answers the state and the name of the copy kept next to the config file (`nil` when there was no file).
+    func settingsRestoreDefaults() throws -> (state: SettingsState, backup: String?) {
+        let result = try send("settings.restoreDefaults")
+        return (try decodeState(result, of: "settings.restoreDefaults"), result["backup"]?.stringValue)
+    }
+
     @discardableResult
     func settingsSetResizeStep(_ value: Double) throws -> SettingsState {
         try settingsCommand("settings.setResizeStep", ["value": .double(value)])
