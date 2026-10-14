@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="17" height="16" viewBox="0 0 17 16">
+  <!-- Menu bar glyph, latte, 16 pt grid. 17 x 16 pt, black on transparent, 1 unit = 1 pt.
+       Rows (y): outline 0-1, gap 1-2, top pane 2-7 (empty), gutter 7-8, bottom panes 8-14, gap 14-15, outline 15-16.
+       Columns at y = 8 to 14: left pane to x = 10, gutter 10-11, right pane from x = 11.
+       The sides lean in by 1 pt from y = 1 to y = 13. Top corners have a 1 pt radius, bottom corners a 3 pt radius;
+       the inner corners of the outline are concentric with them (2 pt), the pane corners at the bottom are concentric
+       with the inner ones (1 pt). Every straight horizontal and vertical edge is on a whole point. -->
+  <g fill="#000">
+    <!-- Glass outline, 1 pt thick: the silhouette minus the same shape inset by 1 pt. -->
+    <path fill-rule="evenodd" d="M1 0H16A1 1 0 0 1 17 1L16 13A3 3 0 0 1 13 16H4A3 3 0 0 1 1 13L0 1A1 1 0 0 1 1 0ZM1 1H16L15 13A2 2 0 0 1 13 15H4A2 2 0 0 1 2 13L1 1Z"/>
+    <!-- Bottom left pane -->
+    <path d="M3.083 8H9.5Q10 8 10 8.5V13.5Q10 14 9.5 14H4A1 1 0 0 1 3 13L2.625 8.498Q2.583 8 3.083 8Z"/>
+    <!-- Bottom right pane -->
+    <path d="M11.5 8H13.917Q14.417 8 14.375 8.498L14 13A1 1 0 0 1 13 14H11.5Q11 14 11 13.5V8.5Q11 8 11.5 8Z"/>
+  </g>
+</svg>

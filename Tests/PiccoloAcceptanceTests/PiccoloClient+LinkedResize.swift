@@ -74,8 +74,10 @@ extension PiccoloClient {
     struct GroupInfo: Equatable {
         var display: Int
         var visibleFrame: CGRect
+        /// A row layout when the group was arranged rows first, a column layout when it was arranged
+        /// columns first.
         var layout: TileLayout
-        /// In cell order (row-major).
+        /// In cell order: row-major for a row layout, column-major for a column layout.
         var windows: [GroupWindow]
     }
 
@@ -88,28 +90,46 @@ extension PiccoloClient {
         return try entries.map { entry in
             guard let display = entry["display"]?.intValue,
                 let visibleFrame = entry["visibleFrame"]?.rectValue,
-                let rows = entry["layout"]?["rows"]?.arrayValue,
+                let layoutEntry = entry["layout"],
                 let windows = entry["windows"]?.arrayValue
             else {
                 throw AcceptanceFailure("Piccolo's groups.list lists a malformed group: \(entry)")
             }
-            let layoutRows = try rows.map { row -> TileLayout.Row in
-                guard let height = row["height"]?.doubleValue,
-                    let widths = row["widths"]?.arrayValue?.compactMap(\.doubleValue)
-                else {
-                    throw AcceptanceFailure("Piccolo's groups.list lists a malformed row: \(row)")
-                }
-                return TileLayout.Row(height: height, widths: widths)
-            }
+            let layout = try Self.layout(from: layoutEntry)
             let members = try windows.map { window -> GroupWindow in
                 guard let number = window["window"]?.intValue, let frame = window["frame"]?.rectValue else {
                     throw AcceptanceFailure("Piccolo's groups.list lists a malformed window: \(window)")
                 }
                 return GroupWindow(windowNumber: number, frame: frame)
             }
-            return GroupInfo(
-                display: display, visibleFrame: visibleFrame, layout: TileLayout(rows: layoutRows),
-                windows: members)
+            return GroupInfo(display: display, visibleFrame: visibleFrame, layout: layout, windows: members)
+        }
+    }
+
+    /// A layout as `groups.list` writes it: `{"rows": [{"height", "widths"}]}` for a row layout,
+    /// `{"columns": [{"width", "heights"}]}` for a column layout. Exactly one of the two keys.
+    private static func layout(from entry: JSONValue) throws -> TileLayout {
+        switch (entry["rows"]?.arrayValue, entry["columns"]?.arrayValue) {
+        case (let rows?, nil):
+            return TileLayout(rows: try rows.map { row -> TileLayout.Row in
+                guard let height = row["height"]?.doubleValue,
+                    let widths = row["widths"]?.arrayValue?.compactMap(\.doubleValue)
+                else {
+                    throw AcceptanceFailure("Piccolo's groups.list lists a malformed row: \(row)")
+                }
+                return TileLayout.Row(height: height, widths: widths)
+            })
+        case (nil, let columns?):
+            return TileLayout(columns: try columns.map { column -> TileLayout.Column in
+                guard let width = column["width"]?.doubleValue,
+                    let heights = column["heights"]?.arrayValue?.compactMap(\.doubleValue)
+                else {
+                    throw AcceptanceFailure("Piccolo's groups.list lists a malformed column: \(column)")
+                }
+                return TileLayout.Column(width: width, heights: heights)
+            })
+        default:
+            throw AcceptanceFailure("Piccolo's groups.list lists a layout with neither or both of rows and columns: \(entry)")
         }
     }
 }

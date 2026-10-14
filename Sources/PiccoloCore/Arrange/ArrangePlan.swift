@@ -7,7 +7,8 @@ public struct ArrangePlan: Equatable, Sendable {
     /// The grid the frames come from. Its `windowCount` equals the number of assignments.
     public var layout: TileLayout
     /// One entry per arranged window, most recently focused first. The first entry takes the
-    /// first cell in row-major order, the top-left one.
+    /// first cell, the top-left one. Cells are numbered row by row for a row layout and column by
+    /// column for a column layout, so entry `i` takes cell `i` of `layout`.
     public var assignments: [Assignment]
 
     public init(displayIndex: Int, layout: TileLayout, assignments: [Assignment]) {

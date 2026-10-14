@@ -75,16 +75,21 @@ struct ArrangeRun {
         try piccolo.arrangeGrid(grid, onlyPid: try fixture.processID())
     }
 
-    /// The cells of `count` windows in `grid`, as `TileLayout` lays them out on the visible frame.
-    static func cells(_ count: Int, in grid: GridSpec, on screen: ScreenInfo) -> (layout: TileLayout, frames: [CGRect]) {
-        let layout = TileLayout.grid(windowCount: count, rows: grid.rows, columns: grid.columns)
+    /// The cells of `count` windows in `grid`, as `TileLayout` lays them out on the visible frame, in
+    /// the fill order of the config in effect (rows first unless the test sets `gridFillOrder`).
+    static func cells(
+        _ count: Int, in grid: GridSpec, on screen: ScreenInfo, fillOrder: GridFillOrder = .rows
+    ) -> (layout: TileLayout, frames: [CGRect]) {
+        let layout = TileLayout.grid(
+            windowCount: count, rows: grid.rows, columns: grid.columns, fillOrder: fillOrder)
         return (layout, layout.frames(in: screen.visibleFrame))
     }
 
     // MARK: Checking
 
     /// Checks an arrangement: the answer lists `order` (the window in the top-left cell first), each
-    /// window was sent to its cell and is measured there.
+    /// window was sent to its cell and is measured there. `fillOrder` is the one the config in effect
+    /// names; it decides which cell is cell `i`.
     ///
     /// Windows named in `refusing` are expected to have refused the size: their reported and measured
     /// frames are compared with each other, not with the cell.
@@ -96,7 +101,8 @@ struct ArrangeRun {
         order: [FixtureWindow],
         grid: GridSpec,
         on screen: ScreenInfo,
-        refusing: Set<String> = []
+        refusing: Set<String> = [],
+        fillOrder: GridFillOrder = .rows
     ) async throws -> [CGRect] {
         guard case .arranged(let display, let reported) = result else {
             throw AcceptanceFailure("arrangeGrid answered \(result), expected an arrangement of \(order.map(\.id))")
@@ -110,7 +116,7 @@ struct ArrangeRun {
             throw AcceptanceFailure("the answer lists \(reported.count) windows, expected \(order.count)")
         }
 
-        let (_, cells) = Self.cells(order.count, in: grid, on: screen)
+        let (_, cells) = Self.cells(order.count, in: grid, on: screen, fillOrder: fillOrder)
         var measuredFrames: [CGRect] = []
         for (index, window) in order.enumerated() {
             let entry = reported[index]
@@ -136,11 +142,24 @@ struct ArrangeRun {
         return measuredFrames
     }
 
-    /// Checks that measured frames tile `screen`'s visible frame as `layout` says: neighbouring cells
-    /// share an edge within one point (no overlap, no gap), and together they reach the edges of the
-    /// visible frame.
+    /// Checks that measured frames (in cell order) tile `screen`'s visible frame as `layout` says:
+    /// neighbouring cells share an edge within one point (no overlap, no gap), and together they reach
+    /// the edges of the visible frame.
     func expectTiled(_ measured: [CGRect], layout: TileLayout, on screen: ScreenInfo) {
         let visible = screen.visibleFrame
+        switch layout.orientation {
+        case .rows: expectTiledRows(measured, layout: layout)
+        case .columns: expectTiledColumns(measured, layout: layout)
+        }
+
+        let all = measured.reduce(CGRect.null) { $0.union($1) }
+        #expect(
+            approximatelyEqual(all.minX, visible.minX) && approximatelyEqual(all.minY, visible.minY)
+                && approximatelyEqual(all.maxX, visible.maxX) && approximatelyEqual(all.maxY, visible.maxY),
+            "the cells together span \(describe(all)), the visible frame is \(describe(visible))")
+    }
+
+    private func expectTiledRows(_ measured: [CGRect], layout: TileLayout) {
         var rows: [[CGRect]] = []
         var next = 0
         for row in layout.rows {
@@ -167,12 +186,36 @@ struct ArrangeRun {
                 }
             }
         }
+    }
 
-        let all = measured.reduce(CGRect.null) { $0.union($1) }
-        #expect(
-            approximatelyEqual(all.minX, visible.minX) && approximatelyEqual(all.minY, visible.minY)
-                && approximatelyEqual(all.maxX, visible.maxX) && approximatelyEqual(all.maxY, visible.maxY),
-            "the cells together span \(describe(all)), the visible frame is \(describe(visible))")
+    /// The columns of a column layout, the way `expectTiledRows` checks the rows of a row layout.
+    private func expectTiledColumns(_ measured: [CGRect], layout: TileLayout) {
+        var columns: [[CGRect]] = []
+        var next = 0
+        for column in layout.columns {
+            columns.append(Array(measured[next..<(next + column.heights.count)]))
+            next += column.heights.count
+        }
+
+        for (columnIndex, column) in columns.enumerated() {
+            for (above, below) in zip(column, column.dropFirst()) {
+                #expect(
+                    approximatelyEqual(above.maxY, below.minY),
+                    "column \(columnIndex): a cell ends at y \(above.maxY) and the next one starts at y \(below.minY), they should share an edge (no gap or overlap wider than \(frameTolerance) pt)"
+                )
+            }
+            if columnIndex + 1 < columns.count {
+                for left in column {
+                    for right in columns[columnIndex + 1]
+                    where min(left.maxY, right.maxY) - max(left.minY, right.minY) > frameTolerance {
+                        #expect(
+                            approximatelyEqual(left.maxX, right.minX),
+                            "a cell in column \(columnIndex) ends at x \(left.maxX) and the cell to its right starts at x \(right.minX), they should share an edge (no gap or overlap wider than \(frameTolerance) pt)"
+                        )
+                    }
+                }
+            }
+        }
     }
 
     /// The given windows that are on screen, front to back, as the window server stacks them.

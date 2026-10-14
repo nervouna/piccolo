@@ -108,6 +108,7 @@ extension ActionExecutor {
         guard
             let plan = try ArrangePlanner.plan(
                 grid: grid,
+                fillOrder: settings.gridFillOrder,
                 displayIndex: displayIndex,
                 candidates: windows.map(\.candidate),
                 history: history,
