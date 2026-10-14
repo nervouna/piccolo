@@ -5,28 +5,37 @@ import PiccoloSystem
 import Testing
 
 extension ConfigDirectory {
-    /// Writes a config with no bindings and this resize step as `name`, and returns its URL.
+    /// Writes a config with no bindings, this resize step and this grid fill order as `name`, and
+    /// returns its URL.
     @discardableResult
-    func write(resizeStep: Double, as name: String = "config.json") throws -> URL {
+    func write(
+        resizeStep: Double, gridFillOrder: GridFillOrder = .rows, as name: String = "config.json"
+    ) throws -> URL {
         let target = file(name)
-        try ConfigStore(url: target).save(Config(resizeStep: resizeStep, bindings: []))
+        try ConfigStore(url: target).save(
+            Config(resizeStep: resizeStep, gridFillOrder: gridFillOrder, bindings: []))
         return target
     }
 }
 
-/// Runs `body` against a Piccolo whose config has no bindings and the resize step `step`, so that
-/// the expected frames do not depend on the config of whoever runs the tests, and with a fixture that
-/// starts with no windows. Afterwards the fixture windows are closed and Piccolo is back on its
-/// default config (see `withConfigDirectory`).
+/// Runs `body` against a Piccolo whose config has no bindings, the resize step `step` and the grid
+/// fill order `gridFillOrder`, so that the expected frames do not depend on the config of whoever runs
+/// the tests, and with a fixture that starts with no windows. Afterwards the fixture windows are closed
+/// and Piccolo is back on its default config (see `withConfigDirectory`).
 func withLinkedResize<Result>(
     step: Double = LinkedRun.defaultStep,
+    gridFillOrder: GridFillOrder = .rows,
     _ body: (LinkedRun) async throws -> Result
 ) async throws -> Result {
     let screen = try await ArrangeRun.screens()[0]
     return try await withConfigDirectory { directory in
-        try PiccoloClient().loadConfig(at: try directory.write(resizeStep: step))
+        try PiccoloClient().loadConfig(
+            at: try directory.write(resizeStep: step, gridFillOrder: gridFillOrder))
         return try await withFixture { fixture in
-            try await body(LinkedRun(run: ArrangeRun(fixture: fixture), screen: screen, step: step))
+            try await body(
+                LinkedRun(
+                    run: ArrangeRun(fixture: fixture), screen: screen, step: step,
+                    fillOrder: gridFillOrder))
         }
     }
 }
@@ -53,6 +62,8 @@ struct LinkedRun {
     let screen: ScreenInfo
     /// The resize step of the config in effect, as a fraction.
     let step: Double
+    /// The grid fill order of the config in effect: it decides which cell is cell `i` of an arrangement.
+    var fillOrder: GridFillOrder = .rows
 
     var fixture: FixtureApp { run.fixture }
     var piccolo: PiccoloClient { run.piccolo }
@@ -65,16 +76,17 @@ struct LinkedRun {
     }
 
     /// Focuses the windows so that the first one is the most recently focused, and arranges them in
-    /// `grid`. Window `i` ends up in cell `i` (row-major), whatever the layout. Checks the
-    /// arrangement and the group Piccolo records for it.
+    /// `grid`. Window `i` ends up in cell `i` (row-major, or column-major with columns first),
+    /// whatever the layout. Checks the arrangement and the group Piccolo records for it.
     ///
     /// - Returns: The layout and the frames the windows are measured at.
     @discardableResult
     func arrange(_ windows: [FixtureWindow], in grid: GridSpec) async throws -> (layout: TileLayout, frames: [CGRect]) {
         try await run.focus(windows.reversed())
         let result = try run.arrange(grid)
-        let measured = try await run.expectArranged(result, order: windows, grid: grid, on: screen)
-        let layout = ArrangeRun.cells(windows.count, in: grid, on: screen).layout
+        let measured = try await run.expectArranged(
+            result, order: windows, grid: grid, on: screen, fillOrder: fillOrder)
+        let layout = ArrangeRun.cells(windows.count, in: grid, on: screen, fillOrder: fillOrder).layout
         run.expectTiled(measured, layout: layout, on: screen)
         try expectGroup(windows, layout: layout, frames: measured)
         return (layout, measured)
@@ -195,20 +207,49 @@ struct LinkedRun {
         }
     }
 
-    /// Checks that two layouts have the same rows and cells, with fractions within 0.003.
+    /// Checks that two layouts have the same orientation, the same rows (columns) and cells, with
+    /// fractions within 0.003.
     static func expectClose(_ actual: TileLayout, _ expected: TileLayout) {
         let tolerance = 0.003
-        guard actual.rows.count == expected.rows.count,
-            zip(actual.rows, expected.rows).allSatisfy({ $0.widths.count == $1.widths.count })
-        else {
-            Issue.record("the group's layout is \(actual.rows), expected \(expected.rows)")
+        guard actual.orientation == expected.orientation else {
+            Issue.record("the group's layout is \(layoutText(actual)), expected \(layoutText(expected))")
             return
         }
-        for (row, wanted) in zip(actual.rows, expected.rows) {
-            #expect(
-                abs(row.height - wanted.height) <= tolerance
-                    && zip(row.widths, wanted.widths).allSatisfy { abs($0 - $1) <= tolerance },
-                "the group's row is \(row), expected \(wanted)")
+        switch expected.orientation {
+        case .rows:
+            guard actual.rows.count == expected.rows.count,
+                zip(actual.rows, expected.rows).allSatisfy({ $0.widths.count == $1.widths.count })
+            else {
+                Issue.record("the group's layout is \(layoutText(actual)), expected \(layoutText(expected))")
+                return
+            }
+            for (row, wanted) in zip(actual.rows, expected.rows) {
+                #expect(
+                    abs(row.height - wanted.height) <= tolerance
+                        && zip(row.widths, wanted.widths).allSatisfy { abs($0 - $1) <= tolerance },
+                    "the group's row is \(row), expected \(wanted)")
+            }
+        case .columns:
+            guard actual.columns.count == expected.columns.count,
+                zip(actual.columns, expected.columns).allSatisfy({ $0.heights.count == $1.heights.count })
+            else {
+                Issue.record("the group's layout is \(layoutText(actual)), expected \(layoutText(expected))")
+                return
+            }
+            for (column, wanted) in zip(actual.columns, expected.columns) {
+                #expect(
+                    abs(column.width - wanted.width) <= tolerance
+                        && zip(column.heights, wanted.heights).allSatisfy { abs($0 - $1) <= tolerance },
+                    "the group's column is \(column), expected \(wanted)")
+            }
+        }
+    }
+
+    /// A layout for a failure message: its rows or its columns.
+    private static func layoutText(_ layout: TileLayout) -> String {
+        switch layout.orientation {
+        case .rows: return "rows \(layout.rows)"
+        case .columns: return "columns \(layout.columns)"
         }
     }
 
@@ -237,6 +278,15 @@ struct LinkedRun {
     /// A single column with horizontal dividers at these positions, as fractions of the height.
     static func column(dividers: [Double]) -> TileLayout {
         TileLayout(rows: fractions(dividers).map { TileLayout.Row(height: $0, widths: [1]) })
+    }
+
+    /// Two columns side by side with a vertical divider at `divider` (a fraction of the width). The left
+    /// column holds `left` equal cells, the right one `right` equal cells, top to bottom.
+    static func twoColumns(divider: Double, left: Int, right: Int) -> TileLayout {
+        TileLayout(columns: [
+            TileLayout.Column(width: divider, heights: Array(repeating: 1 / Double(left), count: left)),
+            TileLayout.Column(width: 1 - divider, heights: Array(repeating: 1 / Double(right), count: right)),
+        ])
     }
 
     /// The fractions between consecutive dividers, from 0 to 1.
