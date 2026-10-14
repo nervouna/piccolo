@@ -25,7 +25,8 @@ public final class ShortcutManager {
         /// The shortcuts that are registered, in binding order.
         public var registered: [ShortcutPlan.Registration]
         /// One line for each problem: bindings skipped while loading, shortcuts that may not be
-        /// registered, shortcuts the system refused. Empty when everything is in order.
+        /// registered, shortcuts the system refused, and, after a save that copied the file, where
+        /// the copy is. Empty when everything is in order.
         public var issues: [String]
 
         public init(
@@ -55,6 +56,12 @@ public final class ShortcutManager {
     private var url: URL
     /// The problems the last load found in the file itself, before the shortcuts were looked at.
     private var loadIssues: [String] = []
+    /// Whether the file the last ``load(from:)`` read held entries that the load did not keep: a
+    /// skipped binding or an invalid `resizeStep`. A save over such a file copies it first.
+    private var droppedEntries = false
+    /// The copy made of the file before a save, since the last ``load(from:)``. There is at most
+    /// one per load: later saves make no further copy, and the issues name this one until the next load.
+    private var backupCopy: URL?
 
     /// Nothing is registered until the first ``load(from:)``.
     public private(set) var status: Status
@@ -89,21 +96,8 @@ public final class ShortcutManager {
     /// and nothing stays registered.
     @discardableResult
     public func load(from url: URL) -> Status {
-        var issues: [String] = []
-        var config = Config.default
-        var sourceIndices: [UUID: Int] = [:]
-        do {
-            let result = try ConfigStore(url: url).load()
-            config = result.config
-            sourceIndices = result.sourceIndices
-            issues += result.issues
-        } catch {
-            issues.append("\(url.lastPathComponent) could not be read: \(error.localizedDescription)")
-        }
-        self.url = url
-        self.config = config
-        self.sourceIndices = sourceIndices
-        loadIssues = issues
+        droppedEntries = read(url)
+        backupCopy = nil
         return register()
     }
 
@@ -111,12 +105,25 @@ public final class ShortcutManager {
     /// creating its folder when needed, and loads it again, so that the shortcuts take effect at
     /// once and ``status`` describes the saved file.
     ///
+    /// When the last ``load(from:)`` dropped entries from that file, the file is first copied next
+    /// to itself as `config.backup-<yyyyMMdd-HHmmss>.json`. That happens once per load: a save that
+    /// follows makes no further copy, and the issues say where the copy is until the next load.
+    ///
     /// - Throws: `ConfigStoreError` when the config is invalid or the file is from a newer
-    ///   version, and the I/O error when it cannot be written. Nothing changes then.
+    ///   version, and the I/O error when the copy or the file cannot be written. Nothing is
+    ///   copied or changed when the config is refused.
     @discardableResult
     public func save(_ config: Config) throws -> Status {
-        try ConfigStore(url: url).save(config)
-        return load(from: url)
+        let store = ConfigStore(url: url)
+        try store.checkSave(config)
+        if droppedEntries && backupCopy == nil {
+            backupCopy = try store.backUp()
+        }
+        try store.save(config)
+        // The file now holds what was saved. Its own load drops nothing, so the flag stays as the
+        // last load left it, and the copy and its notice stay until the next load.
+        _ = read(url)
+        return register()
     }
 
     /// Releases every hotkey (`true`) or registers the loaded config's shortcuts again (`false`).
@@ -127,6 +134,29 @@ public final class ShortcutManager {
         guard suspended != isSuspended else { return status }
         isSuspended = suspended
         return register()
+    }
+
+    /// Reads the config at `url` into ``config``, ``sourceIndices`` and ``loadIssues``, and answers
+    /// whether the file held entries that the load did not keep.
+    private func read(_ url: URL) -> Bool {
+        var issues: [String] = []
+        var config = Config.default
+        var sourceIndices: [UUID: Int] = [:]
+        var dropped = false
+        do {
+            let result = try ConfigStore(url: url).load()
+            config = result.config
+            sourceIndices = result.sourceIndices
+            issues += result.issues
+            dropped = result.droppedEntries
+        } catch {
+            issues.append("\(url.lastPathComponent) could not be read: \(error.localizedDescription)")
+        }
+        self.url = url
+        self.config = config
+        self.sourceIndices = sourceIndices
+        loadIssues = issues
+        return dropped
     }
 
     /// Registers what the loaded config allows (nothing while suspended) and records the outcome.
@@ -140,6 +170,12 @@ public final class ShortcutManager {
         }
         for refusal in refusals {
             issues.append("\(bindingName(refusal.id)) shortcut was refused: \(refusal.reason); it is not registered")
+        }
+        if let backupCopy {
+            issues.append(
+                "\(url.lastPathComponent) had entries that did not load, and saving leaves them out; "
+                    + "the file as it was before the first save since loading is kept as "
+                    + "\(backupCopy.lastPathComponent), next to it")
         }
 
         let registered = registrar.registered

@@ -8,11 +8,17 @@ public struct LoadResult: Equatable, Sendable {
     /// The zero-based position in the file of each binding of `config`, by binding ID. Empty when
     /// the config did not come from a file: a missing or unusable file, or a newer version.
     public let sourceIndices: [UUID: Int]
+    /// Whether the file held something this load did not keep: a binding that was skipped, or an
+    /// invalid `resizeStep` that was replaced. Saving over such a file would lose it.
+    public let droppedEntries: Bool
 
-    init(config: Config, issues: [String], sourceIndices: [UUID: Int] = [:]) {
+    init(
+        config: Config, issues: [String], sourceIndices: [UUID: Int] = [:], droppedEntries: Bool = false
+    ) {
         self.config = config
         self.issues = issues
         self.sourceIndices = sourceIndices
+        self.droppedEntries = droppedEntries
     }
 }
 
@@ -77,6 +83,7 @@ public struct ConfigStore: Sendable {
         }
 
         var issues: [String] = []
+        var droppedEntries = false
 
         var resizeStep = Config.defaultResizeStep
         if let stored = file.resizeStep {
@@ -87,11 +94,13 @@ public struct ConfigStore: Sendable {
                     resizeStep = value
                 } catch {
                     issues.append("\(error); using the default \(Config.defaultResizeStep)")
+                    droppedEntries = true
                 }
             case .failure(let error):
                 issues.append(
                     "resizeStep could not be read (\(describeFailure(error))); "
                         + "using the default \(Config.defaultResizeStep)")
+                droppedEntries = true
             }
         }
 
@@ -105,16 +114,19 @@ public struct ConfigStore: Sendable {
                 binding = value
             case .failure(let error):
                 issues.append("bindings[\(index)] skipped: \(describeFailure(error))")
+                droppedEntries = true
                 continue
             }
             do {
                 try binding.validate()
             } catch {
                 issues.append("bindings[\(index)] skipped: \(error)")
+                droppedEntries = true
                 continue
             }
             guard seen.insert(binding.id).inserted else {
                 issues.append("bindings[\(index)] skipped: duplicate id \(binding.id.uuidString)")
+                droppedEntries = true
                 continue
             }
             bindings.append(binding)
@@ -124,7 +136,8 @@ public struct ConfigStore: Sendable {
         return LoadResult(
             config: Config(resizeStep: resizeStep, bindings: bindings),
             issues: issues,
-            sourceIndices: sourceIndices)
+            sourceIndices: sourceIndices,
+            droppedEntries: droppedEntries)
     }
 
     /// Validates, creates the parent directory and writes atomically.
@@ -132,6 +145,17 @@ public struct ConfigStore: Sendable {
     /// Throws `ConfigStoreError.invalid` for an invalid config and
     /// `ConfigStoreError.newerFileVersion` when the file on disk is from a newer version.
     public func save(_ config: Config) throws {
+        try checkSave(config)
+        try FileManager.default.createDirectory(
+            at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try ConfigJSON.data(for: config).write(to: url, options: .atomic)
+    }
+
+    /// Answers whether `save(_:)` would accept `config`, without writing anything.
+    ///
+    /// Throws the same errors `save(_:)` throws, so that a caller can refuse a save before it
+    /// copies the file.
+    public func checkSave(_ config: Config) throws {
         do {
             try config.validate()
         } catch {
@@ -140,9 +164,18 @@ public struct ConfigStore: Sendable {
         if let onDisk = try versionOnDisk(), onDisk > Config.currentVersion {
             throw ConfigStoreError.newerFileVersion(onDisk)
         }
-        try FileManager.default.createDirectory(
-            at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
-        try ConfigJSON.data(for: config).write(to: url, options: .atomic)
+    }
+
+    /// Copies the file next to itself, as `<stem>.backup-<yyyyMMdd-HHmmss>.<ext>`, and answers the copy.
+    /// The file itself is left in place. An earlier copy is never replaced.
+    public func backUp() throws -> URL {
+        try backUp(at: Date())
+    }
+
+    func backUp(at date: Date) throws -> URL {
+        let destination = copyURL(tag: "backup", at: date)
+        try FileManager.default.copyItem(at: url, to: destination)
+        return destination
     }
 
     /// The version of the file on disk, or `nil` when there is no file or it has no readable version.
@@ -154,7 +187,7 @@ public struct ConfigStore: Sendable {
 
     /// Moves an unusable file aside and reports it. Never overwrites an earlier copy.
     private func quarantine(reason: String) throws -> LoadResult {
-        let destination = corruptCopyURL(for: Date())
+        let destination = copyURL(tag: "corrupt", at: Date())
         try FileManager.default.moveItem(at: url, to: destination)
         return LoadResult(
             config: .default,
@@ -164,7 +197,9 @@ public struct ConfigStore: Sendable {
             ])
     }
 
-    private func corruptCopyURL(for date: Date) -> URL {
+    /// A free name next to the file for a copy tagged `tag`: `<stem>.<tag>-<yyyyMMdd-HHmmss>.<ext>`,
+    /// with `-2`, `-3`, ... before the extension when that name is taken.
+    private func copyURL(tag: String, at date: Date) -> URL {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyyMMdd-HHmmss"
@@ -175,7 +210,7 @@ public struct ConfigStore: Sendable {
 
         var attempt = 1
         while true {
-            var name = "\(stem).corrupt-\(stamp)"
+            var name = "\(stem).\(tag)-\(stamp)"
             if attempt > 1 {
                 name += "-\(attempt)"
             }
