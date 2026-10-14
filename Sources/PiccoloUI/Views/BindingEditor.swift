@@ -12,10 +12,12 @@ struct BindingEditor: View {
         HStack(alignment: .top, spacing: 0) {
             Form {
                 Section {
-                    Picker("Action", selection: kind) {
+                    Picker(selection: kind) {
                         ForEach(ActionKind.allCases, id: \.self) { kind in
                             Text(kind.title).tag(kind)
                         }
+                    } label: {
+                        Text(localized: "Action")
                     }
                     parameters
                 }
@@ -26,7 +28,7 @@ struct BindingEditor: View {
             // of the window by the custom frame's four fields.
             if let rects = ActionPreview.rects(for: binding.action) {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Preview")
+                    Text(localized: "Preview")
                         .font(.headline)
                     FramePreview(rects: rects)
                 }
@@ -56,18 +58,22 @@ struct BindingEditor: View {
         case .placeWindow(let frame):
             placeWindowParameters(frame)
         case .moveToDisplay(let direction):
-            Picker("Direction", selection: displayDirection(direction)) {
+            Picker(selection: displayDirection(direction)) {
                 ForEach(DisplayDirection.allCases, id: \.self) { direction in
                     Text(ActionSummary.name(of: direction)).tag(direction)
                 }
+            } label: {
+                Text(localized: "Direction")
             }
         case .arrangeGrid(let grid):
             gridParameters(grid)
         case .moveDivider(let direction):
-            Picker("Direction", selection: dividerDirection(direction)) {
+            Picker(selection: dividerDirection(direction)) {
                 ForEach(Direction.allCases, id: \.self) { direction in
                     Text(ActionSummary.name(of: direction)).tag(direction)
                 }
+            } label: {
+                Text(localized: "Direction")
             }
         }
     }
@@ -93,18 +99,24 @@ struct BindingEditor: View {
 
     @ViewBuilder
     private func placeWindowParameters(_ frame: FrameSpec) -> some View {
-        Picker("Frame", selection: frameChoice(frame)) {
+        Picker(selection: frameChoice(frame)) {
             ForEach(Preset.allCases, id: \.self) { preset in
                 Text(ActionSummary.name(of: preset)).tag(FrameChoice.preset(preset))
             }
             Divider()
-            Text("Custom").tag(FrameChoice.custom)
+            Text(localized: "Custom").tag(FrameChoice.custom)
+        } label: {
+            Text(localized: "Frame")
         }
         if case .custom(let rect) = frame {
-            customField("Left", rect.x, range: 0...1) { var r = rect; r.x = $0; return r }
-            customField("Top", rect.y, range: 0...1) { var r = rect; r.y = $0; return r }
-            customField("Width", rect.width, range: 0.01...1) { var r = rect; r.width = $0; return r }
-            customField("Height", rect.height, range: 0.01...1) { var r = rect; r.height = $0; return r }
+            let left = String(localized: "Left", bundle: .module)
+            let top = String(localized: "Top", bundle: .module)
+            let width = String(localized: "Width", bundle: .module)
+            let height = String(localized: "Height", bundle: .module)
+            customField(left, rect.x, range: 0...1) { var r = rect; r.x = $0; return r }
+            customField(top, rect.y, range: 0...1) { var r = rect; r.y = $0; return r }
+            customField(width, rect.width, range: 0.01...1) { var r = rect; r.width = $0; return r }
+            customField(height, rect.height, range: 0.01...1) { var r = rect; r.height = $0; return r }
         }
     }
 
@@ -144,9 +156,10 @@ struct BindingEditor: View {
 
     @ViewBuilder
     private func gridParameters(_ grid: GridSpec) -> some View {
-        gridStepper("Windows", grid, \.count, in: 1...max(1, grid.rows * grid.columns))
-        gridStepper("Rows", grid, \.rows, in: 1...max(8, grid.rows))
-        gridStepper("Columns", grid, \.columns, in: 1...max(8, grid.columns))
+        gridStepper(
+            String(localized: "Windows", bundle: .module), grid, \.count, in: 1...max(1, grid.rows * grid.columns))
+        gridStepper(String(localized: "Rows", bundle: .module), grid, \.rows, in: 1...max(8, grid.rows))
+        gridStepper(String(localized: "Columns", bundle: .module), grid, \.columns, in: 1...max(8, grid.columns))
     }
 
     /// A whole number with the usual arrows, laid out like the percentage fields.
@@ -156,7 +169,7 @@ struct BindingEditor: View {
     ) -> some View {
         LabeledContent(title) {
             HStack(spacing: 4) {
-                Text("\(grid[keyPath: field])")
+                Text(verbatim: "\(grid[keyPath: field])")
                     .monospacedDigit()
                 Stepper(title, value: gridValue(grid, field), in: range)
                     .labelsHidden()

@@ -10,7 +10,8 @@ import PiccoloUI
 /// `settings.state`, the view state (`settings.select`, `settings.showTab`), the edits
 /// (`settings.addBinding`, `settings.removeBinding`, `settings.updateAction`,
 /// `settings.setResizeStep`, `settings.setAnimation`, `settings.setGridFillOrder`,
-/// `settings.setDestinationPreview`, `settings.restoreDefaults`) and recording
+/// `settings.setDestinationPreview`, `settings.setLanguage`, `settings.restoreDefaults`), the restart
+/// that applies a new language (`settings.restartNow`) and recording
 /// (`settings.beginRecording`, `settings.cancelRecording`, `settings.record`), and the login item
 /// (`loginItem.status`, `loginItem.set`).
 ///
@@ -21,6 +22,10 @@ import PiccoloUI
 extension DebugControlServer {
     /// How long `settings.record` waits for the recorder to receive the key press it posted.
     private nonisolated static let recordTimeout: TimeInterval = 3
+
+    /// How long `settings.restartNow` waits before it quits Piccolo: long enough for the answer to
+    /// reach the caller.
+    private nonisolated static let restartDelay: TimeInterval = 0.3
 
     nonisolated static func registerSettingsCommands(in router: inout ControlRouter) {
         // Opens the window and activates the app. Since macOS 14 the system may refuse the
@@ -143,6 +148,34 @@ extension DebugControlServer {
                 guard model.setDestinationPreview(enabled) else { throw rejection(of: model) }
                 return settingsState()
             }
+        }
+
+        // The language of the interface: "system", or one of the codes "en", "zh-Hans", "zh-Hant", "ja",
+        // "fr", "es", "pt-BR" and "de". It is stored for the next launch, as the picker does; the
+        // running app keeps its language, which `effectiveLanguage` reports.
+        router.register("settings.setLanguage") { params in
+            let name = try params.decode(LanguageParams.self).language
+            guard let language = AppLanguage(rawValue: name) else {
+                let known = AppLanguage.allCases.map { "\"\($0.rawValue)\"" }.joined(separator: ", ")
+                throw ControlCommandError.invalidParams("language must be one of \(known), not \"\(name)\"")
+            }
+            return onMainActor {
+                SettingsController.shared.model.setLanguage(language)
+                return settingsState()
+            }
+        }
+
+        // Quits Piccolo and starts it again, as the Restart Now button does. The answer goes out first:
+        // the quit follows a moment later (`restartDelay`), and the state it carries says that the
+        // restart was asked for. A restart that cannot be arranged leaves Piccolo running, with the
+        // reason in the state's `restartError`.
+        router.register("settings.restartNow") { _ in
+            DispatchQueue.main.asyncAfter(deadline: .now() + restartDelay) {
+                MainActor.assumeIsolated {
+                    _ = SettingsController.shared.model.restartNow()
+                }
+            }
+            return onMainActor { settingsState(adding: ["restarting": .bool(true)]) }
         }
 
         // Replaces the bindings with the default shortcuts, as the Restore button does once confirmed,
@@ -284,6 +317,7 @@ extension DebugControlServer {
         // Read from the system, so that the state agrees with `loginItem.status` whatever the
         // user did in System Settings since the model last looked.
         model.refreshLoginItem()
+        model.refreshLanguage()
         var state: [String: JSONValue] = [
             "isOpen": .bool(settings.isOpen),
             "bindings": .array(
@@ -309,6 +343,9 @@ extension DebugControlServer {
             "issues": .array(model.issues.map { .string($0) }),
             "tab": .string(model.tab.rawValue),
             "loginItem": .string(model.loginItemStatus.rawValue),
+            "language": .string(model.language.rawValue),
+            "effectiveLanguage": .string(model.effectiveLanguage.rawValue),
+            "restartRequired": .bool(model.restartRequired),
         ]
         if let selected = model.selectedBindingID {
             state["selectedBindingID"] = .string(selected.uuidString)
@@ -318,6 +355,9 @@ extension DebugControlServer {
         }
         if let recording = model.recordingBindingID {
             state["recordingBindingID"] = .string(recording.uuidString)
+        }
+        if let restartError = model.restartError {
+            state["restartError"] = .string(restartError)
         }
         state.merge(extra) { _, new in new }
         return .object(state)
@@ -357,6 +397,10 @@ extension DebugControlServer {
 
     private struct EnabledParams: Decodable {
         var enabled: Bool
+    }
+
+    private struct LanguageParams: Decodable {
+        var language: String
     }
 
     private struct UpdateActionParams: Decodable {

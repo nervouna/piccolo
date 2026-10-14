@@ -13,7 +13,7 @@ struct LoginItemModelTests {
     ) -> (model: SettingsModel, loginItem: FakeLoginItem, backend: InMemorySettingsBackend) {
         let backend = InMemorySettingsBackend(config: UIFixture.twoBindings())
         let loginItem = FakeLoginItem(status: status)
-        let model = SettingsModel(backend: backend, loginItem: loginItem) { _ in nil }
+        let model = SettingsModel(backend: backend, loginItem: loginItem, language: FakeLanguage()) { _ in nil }
         return (model, loginItem, backend)
     }
 
