@@ -6,8 +6,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "%@ cannot be a global shortcut: it needs ⌃, ⌥ or ⌘, or has to be a function key."
+            "state" : "translated",
+            "value" : "%@ kann kein globaler Tastaturkurzbefehl sein: Er braucht ⌃, ⌥ oder ⌘ oder muss eine Funktionstaste sein."
           }
         },
         "en" : {
@@ -18,26 +18,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "%@ cannot be a global shortcut: it needs ⌃, ⌥ or ⌘, or has to be a function key."
+            "state" : "translated",
+            "value" : "%@ no puede ser un atajo global: necesita ⌃, ⌥ o ⌘, o tiene que ser una tecla de función."
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "%@ cannot be a global shortcut: it needs ⌃, ⌥ or ⌘, or has to be a function key."
+            "state" : "translated",
+            "value" : "%@ ne peut pas être un raccourci global : il doit comporter ⌃, ⌥ ou ⌘, ou être une touche de fonction."
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "%@ cannot be a global shortcut: it needs ⌃, ⌥ or ⌘, or has to be a function key."
+            "state" : "translated",
+            "value" : "%@ はグローバルショートカットに使用できません。⌃、⌥、⌘ のいずれかを含めるか、ファンクションキーにしてください。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "%@ cannot be a global shortcut: it needs ⌃, ⌥ or ⌘, or has to be a function key."
+            "state" : "translated",
+            "value" : "%@ não pode ser um atalho global: precisa de ⌃, ⌥ ou ⌘, ou ser uma tecla de função."
           }
         },
         "zh-Hans" : {
@@ -48,8 +48,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "%@ cannot be a global shortcut: it needs ⌃, ⌥ or ⌘, or has to be a function key."
+            "state" : "translated",
+            "value" : "%@ 不能作為全域快速鍵：需要 ⌃、⌥ 或 ⌘，或必須是功能鍵。"
           }
         }
       }
@@ -59,8 +59,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ is already used by %2$@."
+            "state" : "translated",
+            "value" : "%1$@ wird bereits von %2$@ verwendet."
           }
         },
         "en" : {
@@ -71,26 +71,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ is already used by %2$@."
+            "state" : "translated",
+            "value" : "%1$@ ya está en uso por %2$@."
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ is already used by %2$@."
+            "state" : "translated",
+            "value" : "%1$@ est déjà utilisé par %2$@."
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ is already used by %2$@."
+            "state" : "translated",
+            "value" : "%1$@ は既に %2$@ で使用されています。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ is already used by %2$@."
+            "state" : "translated",
+            "value" : "%1$@ já é usado por %2$@."
           }
         },
         "zh-Hans" : {
@@ -101,8 +101,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ is already used by %2$@."
+            "state" : "translated",
+            "value" : "%1$@ 已被「%2$@」使用。"
           }
         }
       }
@@ -112,8 +112,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "%@ must be a number."
+            "state" : "translated",
+            "value" : "%@ muss eine Zahl sein."
           }
         },
         "en" : {
@@ -124,26 +124,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "%@ must be a number."
+            "state" : "translated",
+            "value" : "%@ debe ser un número."
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "%@ must be a number."
+            "state" : "translated",
+            "value" : "%@ doit être un nombre."
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "%@ must be a number."
+            "state" : "translated",
+            "value" : "%@は数値である必要があります。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "%@ must be a number."
+            "state" : "translated",
+            "value" : "%@ precisa ser um número."
           }
         },
         "zh-Hans" : {
@@ -154,8 +154,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "%@ must be a number."
+            "state" : "translated",
+            "value" : "%@必須是數字。"
           }
         }
       }
@@ -165,8 +165,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Accessibility"
+            "state" : "translated",
+            "value" : "Bedienungshilfen"
           }
         },
         "en" : {
@@ -177,26 +177,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Accessibility"
+            "state" : "translated",
+            "value" : "Accesibilidad"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Accessibility"
+            "state" : "translated",
+            "value" : "Accessibilité"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Accessibility"
+            "state" : "translated",
+            "value" : "アクセシビリティ"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Accessibility"
+            "state" : "translated",
+            "value" : "Acessibilidade"
           }
         },
         "zh-Hans" : {
@@ -207,8 +207,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Accessibility"
+            "state" : "translated",
+            "value" : "輔助使用"
           }
         }
       }
@@ -218,8 +218,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Action"
+            "state" : "translated",
+            "value" : "Aktion"
           }
         },
         "en" : {
@@ -230,26 +230,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Action"
+            "state" : "translated",
+            "value" : "Acción"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
+            "state" : "translated",
             "value" : "Action"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Action"
+            "state" : "translated",
+            "value" : "アクション"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Action"
+            "state" : "translated",
+            "value" : "Ação"
           }
         },
         "zh-Hans" : {
@@ -260,8 +260,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Action"
+            "state" : "translated",
+            "value" : "動作"
           }
         }
       }
@@ -271,8 +271,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Add Shortcut"
+            "state" : "translated",
+            "value" : "Tastaturkurzbefehl hinzufügen"
           }
         },
         "en" : {
@@ -283,26 +283,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Add Shortcut"
+            "state" : "translated",
+            "value" : "Añadir atajo"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Add Shortcut"
+            "state" : "translated",
+            "value" : "Ajouter un raccourci"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Add Shortcut"
+            "state" : "translated",
+            "value" : "ショートカットを追加"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Add Shortcut"
+            "state" : "translated",
+            "value" : "Adicionar atalho"
           }
         },
         "zh-Hans" : {
@@ -313,8 +313,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Add Shortcut"
+            "state" : "translated",
+            "value" : "新增快速鍵"
           }
         }
       }
@@ -324,8 +324,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Add a shortcut"
+            "state" : "translated",
+            "value" : "Tastaturkurzbefehl hinzufügen"
           }
         },
         "en" : {
@@ -336,26 +336,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Add a shortcut"
+            "state" : "translated",
+            "value" : "Añadir un atajo"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Add a shortcut"
+            "state" : "translated",
+            "value" : "Ajouter un raccourci"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Add a shortcut"
+            "state" : "translated",
+            "value" : "ショートカットを追加"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Add a shortcut"
+            "state" : "translated",
+            "value" : "Adicionar um atalho"
           }
         },
         "zh-Hans" : {
@@ -366,8 +366,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Add a shortcut"
+            "state" : "translated",
+            "value" : "新增快速鍵"
           }
         }
       }
@@ -377,8 +377,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Arrange %1$lld in %2$lld × %3$lld"
+            "state" : "translated",
+            "value" : "%1$lld Fenster in %2$lld × %3$lld anordnen"
           }
         },
         "en" : {
@@ -389,26 +389,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Arrange %1$lld in %2$lld × %3$lld"
+            "state" : "translated",
+            "value" : "Organizar %1$lld ventanas en %2$lld × %3$lld"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Arrange %1$lld in %2$lld × %3$lld"
+            "state" : "translated",
+            "value" : "Disposer %1$lld fenêtres en %2$lld × %3$lld"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Arrange %1$lld in %2$lld × %3$lld"
+            "state" : "translated",
+            "value" : "%1$lld 個のウインドウを %2$lld × %3$lld に配置"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Arrange %1$lld in %2$lld × %3$lld"
+            "state" : "translated",
+            "value" : "Organizar %1$lld janelas em %2$lld × %3$lld"
           }
         },
         "zh-Hans" : {
@@ -419,8 +419,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Arrange %1$lld in %2$lld × %3$lld"
+            "state" : "translated",
+            "value" : "將 %1$lld 個視窗排成 %2$lld × %3$lld"
           }
         }
       }
@@ -430,8 +430,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Arrange Grid"
+            "state" : "translated",
+            "value" : "Im Raster anordnen"
           }
         },
         "en" : {
@@ -442,26 +442,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Arrange Grid"
+            "state" : "translated",
+            "value" : "Organizar en cuadrícula"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Arrange Grid"
+            "state" : "translated",
+            "value" : "Disposer en grille"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Arrange Grid"
+            "state" : "translated",
+            "value" : "グリッド配置"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Arrange Grid"
+            "state" : "translated",
+            "value" : "Organizar em grade"
           }
         },
         "zh-Hans" : {
@@ -472,8 +472,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Arrange Grid"
+            "state" : "translated",
+            "value" : "網格排列"
           }
         }
       }
@@ -483,8 +483,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Arranging windows"
+            "state" : "translated",
+            "value" : "Fenster werden angeordnet"
           }
         },
         "en" : {
@@ -495,26 +495,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Arranging windows"
+            "state" : "translated",
+            "value" : "Organizando ventanas"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Arranging windows"
+            "state" : "translated",
+            "value" : "Disposition des fenêtres en cours"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Arranging windows"
+            "state" : "translated",
+            "value" : "ウインドウを配置中"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Arranging windows"
+            "state" : "translated",
+            "value" : "Organizando janelas"
           }
         },
         "zh-Hans" : {
@@ -525,8 +525,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Arranging windows"
+            "state" : "translated",
+            "value" : "正在排列視窗"
           }
         }
       }
@@ -536,8 +536,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Bottom Half"
+            "state" : "translated",
+            "value" : "Untere Hälfte"
           }
         },
         "en" : {
@@ -548,26 +548,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Bottom Half"
+            "state" : "translated",
+            "value" : "Mitad inferior"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Bottom Half"
+            "state" : "translated",
+            "value" : "Moitié inférieure"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Bottom Half"
+            "state" : "translated",
+            "value" : "下半分"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Bottom Half"
+            "state" : "translated",
+            "value" : "Metade inferior"
           }
         },
         "zh-Hans" : {
@@ -578,8 +578,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Bottom Half"
+            "state" : "translated",
+            "value" : "下半部"
           }
         }
       }
@@ -589,8 +589,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Bottom Left"
+            "state" : "translated",
+            "value" : "Unten links"
           }
         },
         "en" : {
@@ -601,26 +601,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Bottom Left"
+            "state" : "translated",
+            "value" : "Abajo a la izquierda"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Bottom Left"
+            "state" : "translated",
+            "value" : "En bas à gauche"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Bottom Left"
+            "state" : "translated",
+            "value" : "左下"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Bottom Left"
+            "state" : "translated",
+            "value" : "Inferior esquerdo"
           }
         },
         "zh-Hans" : {
@@ -631,8 +631,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Bottom Left"
+            "state" : "translated",
+            "value" : "左下角"
           }
         }
       }
@@ -642,8 +642,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Bottom Right"
+            "state" : "translated",
+            "value" : "Unten rechts"
           }
         },
         "en" : {
@@ -654,26 +654,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Bottom Right"
+            "state" : "translated",
+            "value" : "Abajo a la derecha"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Bottom Right"
+            "state" : "translated",
+            "value" : "En bas à droite"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Bottom Right"
+            "state" : "translated",
+            "value" : "右下"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Bottom Right"
+            "state" : "translated",
+            "value" : "Inferior direito"
           }
         },
         "zh-Hans" : {
@@ -684,8 +684,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Bottom Right"
+            "state" : "translated",
+            "value" : "右下角"
           }
         }
       }
@@ -695,8 +695,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Cancel"
+            "state" : "translated",
+            "value" : "Abbrechen"
           }
         },
         "en" : {
@@ -707,26 +707,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Cancel"
+            "state" : "translated",
+            "value" : "Cancelar"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Cancel"
+            "state" : "translated",
+            "value" : "Annuler"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Cancel"
+            "state" : "translated",
+            "value" : "キャンセル"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Cancel"
+            "state" : "translated",
+            "value" : "Cancelar"
           }
         },
         "zh-Hans" : {
@@ -737,8 +737,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Cancel"
+            "state" : "translated",
+            "value" : "取消"
           }
         }
       }
@@ -748,8 +748,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Center"
+            "state" : "translated",
+            "value" : "Mitte"
           }
         },
         "en" : {
@@ -760,26 +760,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Center"
+            "state" : "translated",
+            "value" : "Centro"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Center"
+            "state" : "translated",
+            "value" : "Centrer"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Center"
+            "state" : "translated",
+            "value" : "中央"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Center"
+            "state" : "translated",
+            "value" : "Centro"
           }
         },
         "zh-Hans" : {
@@ -790,8 +790,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Center"
+            "state" : "translated",
+            "value" : "置中"
           }
         }
       }
@@ -801,8 +801,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Center Third"
+            "state" : "translated",
+            "value" : "Mittleres Drittel"
           }
         },
         "en" : {
@@ -813,26 +813,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Center Third"
+            "state" : "translated",
+            "value" : "Tercio central"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Center Third"
+            "state" : "translated",
+            "value" : "Tiers central"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Center Third"
+            "state" : "translated",
+            "value" : "中央の3分の1"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Center Third"
+            "state" : "translated",
+            "value" : "Terço central"
           }
         },
         "zh-Hans" : {
@@ -843,8 +843,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Center Third"
+            "state" : "translated",
+            "value" : "中間三分之一"
           }
         }
       }
@@ -854,8 +854,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Clear"
+            "state" : "translated",
+            "value" : "Löschen"
           }
         },
         "en" : {
@@ -866,26 +866,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Clear"
+            "state" : "translated",
+            "value" : "Borrar"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Clear"
+            "state" : "translated",
+            "value" : "Effacer"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Clear"
+            "state" : "translated",
+            "value" : "クリア"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Clear"
+            "state" : "translated",
+            "value" : "Limpar"
           }
         },
         "zh-Hans" : {
@@ -896,7 +896,7 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
+            "state" : "translated",
             "value" : "Clear"
           }
         }
@@ -907,8 +907,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Click, then press the shortcut"
+            "state" : "translated",
+            "value" : "Klicken, dann den Tastaturkurzbefehl drücken"
           }
         },
         "en" : {
@@ -919,26 +919,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Click, then press the shortcut"
+            "state" : "translated",
+            "value" : "Haz clic y luego pulsa el atajo"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Click, then press the shortcut"
+            "state" : "translated",
+            "value" : "Cliquez, puis appuyez sur le raccourci"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Click, then press the shortcut"
+            "state" : "translated",
+            "value" : "クリックしてからショートカットを押してください"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Click, then press the shortcut"
+            "state" : "translated",
+            "value" : "Clique e depois pressione o atalho"
           }
         },
         "zh-Hans" : {
@@ -949,8 +949,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Click, then press the shortcut"
+            "state" : "translated",
+            "value" : "點按此處，然後按下快速鍵"
           }
         }
       }
@@ -960,8 +960,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Columns"
+            "state" : "translated",
+            "value" : "Spalten"
           }
         },
         "en" : {
@@ -972,26 +972,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Columns"
+            "state" : "translated",
+            "value" : "Columnas"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Columns"
+            "state" : "translated",
+            "value" : "Colonnes"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Columns"
+            "state" : "translated",
+            "value" : "列数"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Columns"
+            "state" : "translated",
+            "value" : "Colunas"
           }
         },
         "zh-Hans" : {
@@ -1002,8 +1002,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Columns"
+            "state" : "translated",
+            "value" : "欄數"
           }
         }
       }
@@ -1013,8 +1013,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Columns first"
+            "state" : "translated",
+            "value" : "Spalten zuerst"
           }
         },
         "en" : {
@@ -1025,26 +1025,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Columns first"
+            "state" : "translated",
+            "value" : "Columnas primero"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Columns first"
+            "state" : "translated",
+            "value" : "Colonnes d'abord"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Columns first"
+            "state" : "translated",
+            "value" : "列優先"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Columns first"
+            "state" : "translated",
+            "value" : "Colunas primeiro"
           }
         },
         "zh-Hans" : {
@@ -1055,8 +1055,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Columns first"
+            "state" : "translated",
+            "value" : "欄優先"
           }
         }
       }
@@ -1066,8 +1066,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Columns must be at least 1."
+            "state" : "translated",
+            "value" : "Die Anzahl der Spalten muss mindestens 1 sein."
           }
         },
         "en" : {
@@ -1078,26 +1078,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Columns must be at least 1."
+            "state" : "translated",
+            "value" : "Las columnas deben ser al menos 1."
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Columns must be at least 1."
+            "state" : "translated",
+            "value" : "Le nombre de colonnes doit être d'au moins 1."
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Columns must be at least 1."
+            "state" : "translated",
+            "value" : "列数は 1 以上にしてください。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Columns must be at least 1."
+            "state" : "translated",
+            "value" : "As colunas devem ser pelo menos 1."
           }
         },
         "zh-Hans" : {
@@ -1108,8 +1108,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Columns must be at least 1."
+            "state" : "translated",
+            "value" : "欄數至少為 1。"
           }
         }
       }
@@ -1119,8 +1119,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Config"
+            "state" : "translated",
+            "value" : "Konfiguration"
           }
         },
         "en" : {
@@ -1131,26 +1131,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Config"
+            "state" : "translated",
+            "value" : "Configuración"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Config"
+            "state" : "translated",
+            "value" : "Configuration"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Config"
+            "state" : "translated",
+            "value" : "設定ファイル"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Config"
+            "state" : "translated",
+            "value" : "Configuração"
           }
         },
         "zh-Hans" : {
@@ -1161,8 +1161,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Config"
+            "state" : "translated",
+            "value" : "設定檔"
           }
         }
       }
@@ -1172,8 +1172,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Custom"
+            "state" : "translated",
+            "value" : "Benutzerdefiniert"
           }
         },
         "en" : {
@@ -1184,26 +1184,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Custom"
+            "state" : "translated",
+            "value" : "Personalizado"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Custom"
+            "state" : "translated",
+            "value" : "Personnalisé"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Custom"
+            "state" : "translated",
+            "value" : "カスタム"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Custom"
+            "state" : "translated",
+            "value" : "Personalizado"
           }
         },
         "zh-Hans" : {
@@ -1214,8 +1214,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Custom"
+            "state" : "translated",
+            "value" : "自訂"
           }
         }
       }
@@ -1225,8 +1225,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Custom (%1$@, %2$@, %3$@ × %4$@)"
+            "state" : "translated",
+            "value" : "Benutzerdefiniert (%1$@, %2$@, %3$@ × %4$@)"
           }
         },
         "en" : {
@@ -1237,26 +1237,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Custom (%1$@, %2$@, %3$@ × %4$@)"
+            "state" : "translated",
+            "value" : "Personalizado (%1$@, %2$@, %3$@ × %4$@)"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Custom (%1$@, %2$@, %3$@ × %4$@)"
+            "state" : "translated",
+            "value" : "Personnalisé (%1$@, %2$@, %3$@ × %4$@)"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Custom (%1$@, %2$@, %3$@ × %4$@)"
+            "state" : "translated",
+            "value" : "カスタム（%1$@、%2$@、%3$@ × %4$@）"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Custom (%1$@, %2$@, %3$@ × %4$@)"
+            "state" : "translated",
+            "value" : "Personalizado (%1$@, %2$@, %3$@ × %4$@)"
           }
         },
         "zh-Hans" : {
@@ -1267,8 +1267,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Custom (%1$@, %2$@, %3$@ × %4$@)"
+            "state" : "translated",
+            "value" : "自訂（%1$@，%2$@，%3$@ × %4$@）"
           }
         }
       }
@@ -1278,8 +1278,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Direction"
+            "state" : "translated",
+            "value" : "Richtung"
           }
         },
         "en" : {
@@ -1290,26 +1290,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Direction"
+            "state" : "translated",
+            "value" : "Dirección"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
+            "state" : "translated",
             "value" : "Direction"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Direction"
+            "state" : "translated",
+            "value" : "方向"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Direction"
+            "state" : "translated",
+            "value" : "Direção"
           }
         },
         "zh-Hans" : {
@@ -1320,8 +1320,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Direction"
+            "state" : "translated",
+            "value" : "方向"
           }
         }
       }
@@ -1331,8 +1331,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Down"
+            "state" : "translated",
+            "value" : "Unten"
           }
         },
         "en" : {
@@ -1343,26 +1343,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Down"
+            "state" : "translated",
+            "value" : "Abajo"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Down"
+            "state" : "translated",
+            "value" : "Bas"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Down"
+            "state" : "translated",
+            "value" : "下"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Down"
+            "state" : "translated",
+            "value" : "Baixo"
           }
         },
         "zh-Hans" : {
@@ -1373,8 +1373,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Down"
+            "state" : "translated",
+            "value" : "下方"
           }
         }
       }
@@ -1384,7 +1384,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
+            "state" : "translated",
             "value" : "Enter"
           }
         },
@@ -1396,25 +1396,25 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Enter"
+            "state" : "translated",
+            "value" : "Intro"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Enter"
+            "state" : "translated",
+            "value" : "Entrée"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
+            "state" : "translated",
             "value" : "Enter"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
+            "state" : "translated",
             "value" : "Enter"
           }
         },
@@ -1426,7 +1426,7 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
+            "state" : "translated",
             "value" : "Enter"
           }
         }
@@ -1437,8 +1437,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Fast"
+            "state" : "translated",
+            "value" : "Schnell"
           }
         },
         "en" : {
@@ -1449,26 +1449,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Fast"
+            "state" : "translated",
+            "value" : "Rápida"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Fast"
+            "state" : "translated",
+            "value" : "Rapide"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Fast"
+            "state" : "translated",
+            "value" : "速い"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Fast"
+            "state" : "translated",
+            "value" : "Rápida"
           }
         },
         "zh-Hans" : {
@@ -1479,8 +1479,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Fast"
+            "state" : "translated",
+            "value" : "快"
           }
         }
       }
@@ -1490,8 +1490,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Fill order"
+            "state" : "translated",
+            "value" : "Füllreihenfolge"
           }
         },
         "en" : {
@@ -1502,26 +1502,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Fill order"
+            "state" : "translated",
+            "value" : "Orden de relleno"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Fill order"
+            "state" : "translated",
+            "value" : "Ordre de remplissage"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Fill order"
+            "state" : "translated",
+            "value" : "配置順序"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Fill order"
+            "state" : "translated",
+            "value" : "Ordem de preenchimento"
           }
         },
         "zh-Hans" : {
@@ -1532,8 +1532,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Fill order"
+            "state" : "translated",
+            "value" : "填滿順序"
           }
         }
       }
@@ -1543,8 +1543,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Frame"
+            "state" : "translated",
+            "value" : "Position"
           }
         },
         "en" : {
@@ -1555,26 +1555,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Frame"
+            "state" : "translated",
+            "value" : "Posición"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Frame"
+            "state" : "translated",
+            "value" : "Position"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Frame"
+            "state" : "translated",
+            "value" : "位置とサイズ"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Frame"
+            "state" : "translated",
+            "value" : "Posição"
           }
         },
         "zh-Hans" : {
@@ -1585,8 +1585,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Frame"
+            "state" : "translated",
+            "value" : "視窗位置"
           }
         }
       }
@@ -1596,8 +1596,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "General"
+            "state" : "translated",
+            "value" : "Allgemein"
           }
         },
         "en" : {
@@ -1608,26 +1608,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
+            "state" : "translated",
             "value" : "General"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "General"
+            "state" : "translated",
+            "value" : "Général"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "General"
+            "state" : "translated",
+            "value" : "一般"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "General"
+            "state" : "translated",
+            "value" : "Geral"
           }
         },
         "zh-Hans" : {
@@ -1638,8 +1638,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "General"
+            "state" : "translated",
+            "value" : "一般"
           }
         }
       }
@@ -1649,8 +1649,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Granted"
+            "state" : "translated",
+            "value" : "Erlaubt"
           }
         },
         "en" : {
@@ -1661,26 +1661,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Granted"
+            "state" : "translated",
+            "value" : "Concedida"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Granted"
+            "state" : "translated",
+            "value" : "Autorisée"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Granted"
+            "state" : "translated",
+            "value" : "許可済み"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Granted"
+            "state" : "translated",
+            "value" : "Permitida"
           }
         },
         "zh-Hans" : {
@@ -1691,8 +1691,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Granted"
+            "state" : "translated",
+            "value" : "已授權"
           }
         }
       }
@@ -1702,8 +1702,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Height"
+            "state" : "translated",
+            "value" : "Höhe"
           }
         },
         "en" : {
@@ -1714,26 +1714,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Height"
+            "state" : "translated",
+            "value" : "Alto"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Height"
+            "state" : "translated",
+            "value" : "Hauteur"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Height"
+            "state" : "translated",
+            "value" : "高さ"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Height"
+            "state" : "translated",
+            "value" : "Altura"
           }
         },
         "zh-Hans" : {
@@ -1744,8 +1744,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Height"
+            "state" : "translated",
+            "value" : "高度"
           }
         }
       }
@@ -1755,8 +1755,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Height must be more than 0%."
+            "state" : "translated",
+            "value" : "Die Höhe muss größer als 0 % sein."
           }
         },
         "en" : {
@@ -1767,26 +1767,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Height must be more than 0%."
+            "state" : "translated",
+            "value" : "El alto debe ser mayor que 0 %."
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Height must be more than 0%."
+            "state" : "translated",
+            "value" : "La hauteur doit être supérieure à 0 %."
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Height must be more than 0%."
+            "state" : "translated",
+            "value" : "高さは 0% より大きくしてください。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Height must be more than 0%."
+            "state" : "translated",
+            "value" : "A altura deve ser maior que 0%."
           }
         },
         "zh-Hans" : {
@@ -1797,8 +1797,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Height must be more than 0%."
+            "state" : "translated",
+            "value" : "高度必須大於 0%。"
           }
         }
       }
@@ -1808,8 +1808,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Help"
+            "state" : "translated",
+            "value" : "Hilfe"
           }
         },
         "en" : {
@@ -1820,26 +1820,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Help"
+            "state" : "translated",
+            "value" : "Ayuda"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Help"
+            "state" : "translated",
+            "value" : "Aide"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Help"
+            "state" : "translated",
+            "value" : "ヘルプ"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Help"
+            "state" : "translated",
+            "value" : "Ajuda"
           }
         },
         "zh-Hans" : {
@@ -1850,7 +1850,7 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
+            "state" : "translated",
             "value" : "Help"
           }
         }
@@ -1861,8 +1861,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Hold a shortcut to see where windows will go, release it to move them, or press Escape to cancel. When off, windows move as soon as the shortcut is pressed."
+            "state" : "translated",
+            "value" : "Halte einen Tastaturkurzbefehl gedrückt, um zu sehen, wohin die Fenster verschoben werden, lass ihn los, um sie zu verschieben, oder drücke Esc zum Abbrechen. Wenn diese Option deaktiviert ist, werden die Fenster verschoben, sobald der Tastaturkurzbefehl gedrückt wird."
           }
         },
         "en" : {
@@ -1873,26 +1873,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Hold a shortcut to see where windows will go, release it to move them, or press Escape to cancel. When off, windows move as soon as the shortcut is pressed."
+            "state" : "translated",
+            "value" : "Mantén pulsado un atajo para ver adónde irán las ventanas, suéltalo para moverlas o pulsa Esc para cancelar. Si está desactivado, las ventanas se mueven en cuanto se pulsa el atajo."
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Hold a shortcut to see where windows will go, release it to move them, or press Escape to cancel. When off, windows move as soon as the shortcut is pressed."
+            "state" : "translated",
+            "value" : "Maintenez un raccourci enfoncé pour voir où les fenêtres iront, relâchez-le pour les déplacer, ou appuyez sur Échap pour annuler. Lorsque cette option est désactivée, les fenêtres se déplacent dès que le raccourci est pressé."
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Hold a shortcut to see where windows will go, release it to move them, or press Escape to cancel. When off, windows move as soon as the shortcut is pressed."
+            "state" : "translated",
+            "value" : "ショートカットを押している間、ウインドウの移動先を表示します。キーを離すとウインドウが移動し、Esc キーを押すとキャンセルされます。オフのときは、ショートカットを押すとすぐにウインドウが移動します。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Hold a shortcut to see where windows will go, release it to move them, or press Escape to cancel. When off, windows move as soon as the shortcut is pressed."
+            "state" : "translated",
+            "value" : "Mantenha um atalho pressionado para ver para onde as janelas irão, solte-o para movê-las ou pressione Esc para cancelar. Quando desativado, as janelas se movem assim que o atalho é pressionado."
           }
         },
         "zh-Hans" : {
@@ -1903,8 +1903,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Hold a shortcut to see where windows will go, release it to move them, or press Escape to cancel. When off, windows move as soon as the shortcut is pressed."
+            "state" : "translated",
+            "value" : "按住快速鍵即可查看視窗將移至的位置，放開即可移動視窗，按下 Esc 則取消。關閉時，按下快速鍵後視窗會立即移動。"
           }
         }
       }
@@ -1914,8 +1914,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "How far a linked resize moves a divider, as a share of the screen. Between 0% and 50%."
+            "state" : "translated",
+            "value" : "Wie weit eine verknüpfte Größenänderung eine Trennlinie verschiebt, als Anteil am Bildschirm. Zwischen 0 % und 50 %."
           }
         },
         "en" : {
@@ -1926,26 +1926,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "How far a linked resize moves a divider, as a share of the screen. Between 0% and 50%."
+            "state" : "translated",
+            "value" : "Distancia que recorre un divisor al redimensionar en grupo, como porcentaje de la pantalla. Entre 0 % y 50 %."
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "How far a linked resize moves a divider, as a share of the screen. Between 0% and 50%."
+            "state" : "translated",
+            "value" : "Distance dont un redimensionnement lié déplace un séparateur, en pourcentage de l'écran. Entre 0 % et 50 %."
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "How far a linked resize moves a divider, as a share of the screen. Between 0% and 50%."
+            "state" : "translated",
+            "value" : "連動リサイズで区切り線を動かす距離を、画面に対する割合で指定します。0% から 50% までの範囲です。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "How far a linked resize moves a divider, as a share of the screen. Between 0% and 50%."
+            "state" : "translated",
+            "value" : "O quanto um redimensionamento vinculado move um divisor, como porcentagem da tela. Entre 0% e 50%."
           }
         },
         "zh-Hans" : {
@@ -1956,8 +1956,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "How far a linked resize moves a divider, as a share of the screen. Between 0% and 50%."
+            "state" : "translated",
+            "value" : "聯動調整時分隔線每次移動的距離，以螢幕尺寸的百分比表示。範圍為 0% 到 50%。"
           }
         }
       }
@@ -1967,8 +1967,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "How long a window takes to move to its new place."
+            "state" : "translated",
+            "value" : "Wie lange ein Fenster braucht, um an seine neue Position zu wechseln."
           }
         },
         "en" : {
@@ -1979,26 +1979,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "How long a window takes to move to its new place."
+            "state" : "translated",
+            "value" : "Tiempo que tarda una ventana en moverse a su nueva posición."
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "How long a window takes to move to its new place."
+            "state" : "translated",
+            "value" : "Durée nécessaire à une fenêtre pour rejoindre son nouvel emplacement."
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "How long a window takes to move to its new place."
+            "state" : "translated",
+            "value" : "ウインドウが新しい位置へ移動するまでの時間です。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "How long a window takes to move to its new place."
+            "state" : "translated",
+            "value" : "Quanto tempo uma janela leva para se mover até o novo lugar."
           }
         },
         "zh-Hans" : {
@@ -2009,8 +2009,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "How long a window takes to move to its new place."
+            "state" : "translated",
+            "value" : "視窗移至新位置所需的時間。"
           }
         }
       }
@@ -2020,8 +2020,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Key %lld"
+            "state" : "translated",
+            "value" : "Taste %lld"
           }
         },
         "en" : {
@@ -2032,26 +2032,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Key %lld"
+            "state" : "translated",
+            "value" : "Tecla %lld"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Key %lld"
+            "state" : "translated",
+            "value" : "Touche %lld"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Key %lld"
+            "state" : "translated",
+            "value" : "キー %lld"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Key %lld"
+            "state" : "translated",
+            "value" : "Tecla %lld"
           }
         },
         "zh-Hans" : {
@@ -2062,8 +2062,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Key %lld"
+            "state" : "translated",
+            "value" : "按鍵 %lld"
           }
         }
       }
@@ -2073,8 +2073,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Keypad %@"
+            "state" : "translated",
+            "value" : "Ziffernblock %@"
           }
         },
         "en" : {
@@ -2085,26 +2085,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Keypad %@"
+            "state" : "translated",
+            "value" : "Teclado numérico %@"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Keypad %@"
+            "state" : "translated",
+            "value" : "Pavé numérique %@"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Keypad %@"
+            "state" : "translated",
+            "value" : "テンキー %@"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Keypad %@"
+            "state" : "translated",
+            "value" : "Teclado numérico %@"
           }
         },
         "zh-Hans" : {
@@ -2115,8 +2115,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Keypad %@"
+            "state" : "translated",
+            "value" : "數字鍵台 %@"
           }
         }
       }
@@ -2126,8 +2126,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Language"
+            "state" : "translated",
+            "value" : "Sprache"
           }
         },
         "en" : {
@@ -2138,26 +2138,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Language"
+            "state" : "translated",
+            "value" : "Idioma"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Language"
+            "state" : "translated",
+            "value" : "Langue"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Language"
+            "state" : "translated",
+            "value" : "言語"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Language"
+            "state" : "translated",
+            "value" : "Idioma"
           }
         },
         "zh-Hans" : {
@@ -2168,8 +2168,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Language"
+            "state" : "translated",
+            "value" : "語言"
           }
         }
       }
@@ -2179,8 +2179,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Launch at login"
+            "state" : "translated",
+            "value" : "Beim Anmelden öffnen"
           }
         },
         "en" : {
@@ -2191,26 +2191,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Launch at login"
+            "state" : "translated",
+            "value" : "Abrir al iniciar sesión"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Launch at login"
+            "state" : "translated",
+            "value" : "Ouvrir à la connexion"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Launch at login"
+            "state" : "translated",
+            "value" : "ログイン時に開く"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Launch at login"
+            "state" : "translated",
+            "value" : "Abrir ao iniciar sessão"
           }
         },
         "zh-Hans" : {
@@ -2221,8 +2221,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Launch at login"
+            "state" : "translated",
+            "value" : "登入時開啟"
           }
         }
       }
@@ -2232,8 +2232,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Launch at login could not be turned off."
+            "state" : "translated",
+            "value" : "„Beim Anmelden öffnen“ konnte nicht deaktiviert werden."
           }
         },
         "en" : {
@@ -2244,26 +2244,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Launch at login could not be turned off."
+            "state" : "translated",
+            "value" : "No se pudo desactivar «Abrir al iniciar sesión»."
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Launch at login could not be turned off."
+            "state" : "translated",
+            "value" : "Impossible de désactiver « Ouvrir à la connexion »."
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Launch at login could not be turned off."
+            "state" : "translated",
+            "value" : "「ログイン時に開く」をオフにできませんでした。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Launch at login could not be turned off."
+            "state" : "translated",
+            "value" : "Não foi possível desativar “Abrir ao iniciar sessão”."
           }
         },
         "zh-Hans" : {
@@ -2274,8 +2274,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Launch at login could not be turned off."
+            "state" : "translated",
+            "value" : "無法關閉「登入時開啟」。"
           }
         }
       }
@@ -2285,8 +2285,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Launch at login could not be turned off: %@"
+            "state" : "translated",
+            "value" : "„Beim Anmelden öffnen“ konnte nicht deaktiviert werden: %@"
           }
         },
         "en" : {
@@ -2297,26 +2297,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Launch at login could not be turned off: %@"
+            "state" : "translated",
+            "value" : "No se pudo desactivar «Abrir al iniciar sesión»: %@"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Launch at login could not be turned off: %@"
+            "state" : "translated",
+            "value" : "Impossible de désactiver « Ouvrir à la connexion » : %@"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Launch at login could not be turned off: %@"
+            "state" : "translated",
+            "value" : "「ログイン時に開く」をオフにできませんでした：%@"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Launch at login could not be turned off: %@"
+            "state" : "translated",
+            "value" : "Não foi possível desativar “Abrir ao iniciar sessão”: %@"
           }
         },
         "zh-Hans" : {
@@ -2327,8 +2327,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Launch at login could not be turned off: %@"
+            "state" : "translated",
+            "value" : "無法關閉「登入時開啟」：%@"
           }
         }
       }
@@ -2338,8 +2338,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Launch at login could not be turned on."
+            "state" : "translated",
+            "value" : "„Beim Anmelden öffnen“ konnte nicht aktiviert werden."
           }
         },
         "en" : {
@@ -2350,26 +2350,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Launch at login could not be turned on."
+            "state" : "translated",
+            "value" : "No se pudo activar «Abrir al iniciar sesión»."
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Launch at login could not be turned on."
+            "state" : "translated",
+            "value" : "Impossible d'activer « Ouvrir à la connexion »."
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Launch at login could not be turned on."
+            "state" : "translated",
+            "value" : "「ログイン時に開く」をオンにできませんでした。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Launch at login could not be turned on."
+            "state" : "translated",
+            "value" : "Não foi possível ativar “Abrir ao iniciar sessão”."
           }
         },
         "zh-Hans" : {
@@ -2380,8 +2380,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Launch at login could not be turned on."
+            "state" : "translated",
+            "value" : "無法開啟「登入時開啟」。"
           }
         }
       }
@@ -2391,8 +2391,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Launch at login could not be turned on: %@"
+            "state" : "translated",
+            "value" : "„Beim Anmelden öffnen“ konnte nicht aktiviert werden: %@"
           }
         },
         "en" : {
@@ -2403,26 +2403,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Launch at login could not be turned on: %@"
+            "state" : "translated",
+            "value" : "No se pudo activar «Abrir al iniciar sesión»: %@"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Launch at login could not be turned on: %@"
+            "state" : "translated",
+            "value" : "Impossible d'activer « Ouvrir à la connexion » : %@"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Launch at login could not be turned on: %@"
+            "state" : "translated",
+            "value" : "「ログイン時に開く」をオンにできませんでした：%@"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Launch at login could not be turned on: %@"
+            "state" : "translated",
+            "value" : "Não foi possível ativar “Abrir ao iniciar sessão”: %@"
           }
         },
         "zh-Hans" : {
@@ -2433,8 +2433,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Launch at login could not be turned on: %@"
+            "state" : "translated",
+            "value" : "無法開啟「登入時開啟」：%@"
           }
         }
       }
@@ -2444,8 +2444,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Left"
+            "state" : "translated",
+            "value" : "Links"
           }
         },
         "en" : {
@@ -2456,26 +2456,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Left"
+            "state" : "translated",
+            "value" : "Izquierda"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Left"
+            "state" : "translated",
+            "value" : "Gauche"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Left"
+            "state" : "translated",
+            "value" : "左"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Left"
+            "state" : "translated",
+            "value" : "Esquerda"
           }
         },
         "zh-Hans" : {
@@ -2486,8 +2486,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Left"
+            "state" : "translated",
+            "value" : "左側"
           }
         }
       }
@@ -2497,8 +2497,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Left Half"
+            "state" : "translated",
+            "value" : "Linke Hälfte"
           }
         },
         "en" : {
@@ -2509,26 +2509,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Left Half"
+            "state" : "translated",
+            "value" : "Mitad izquierda"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Left Half"
+            "state" : "translated",
+            "value" : "Moitié gauche"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Left Half"
+            "state" : "translated",
+            "value" : "左半分"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Left Half"
+            "state" : "translated",
+            "value" : "Metade esquerda"
           }
         },
         "zh-Hans" : {
@@ -2539,8 +2539,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Left Half"
+            "state" : "translated",
+            "value" : "左半部"
           }
         }
       }
@@ -2550,8 +2550,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Left Third"
+            "state" : "translated",
+            "value" : "Linkes Drittel"
           }
         },
         "en" : {
@@ -2562,26 +2562,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Left Third"
+            "state" : "translated",
+            "value" : "Tercio izquierdo"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Left Third"
+            "state" : "translated",
+            "value" : "Tiers gauche"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Left Third"
+            "state" : "translated",
+            "value" : "左の3分の1"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Left Third"
+            "state" : "translated",
+            "value" : "Terço esquerdo"
           }
         },
         "zh-Hans" : {
@@ -2592,8 +2592,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Left Third"
+            "state" : "translated",
+            "value" : "左側三分之一"
           }
         }
       }
@@ -2603,8 +2603,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Left Two Thirds"
+            "state" : "translated",
+            "value" : "Linke zwei Drittel"
           }
         },
         "en" : {
@@ -2615,26 +2615,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Left Two Thirds"
+            "state" : "translated",
+            "value" : "Dos tercios izquierdos"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Left Two Thirds"
+            "state" : "translated",
+            "value" : "Deux tiers gauche"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Left Two Thirds"
+            "state" : "translated",
+            "value" : "左の3分の2"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Left Two Thirds"
+            "state" : "translated",
+            "value" : "Dois terços esquerdos"
           }
         },
         "zh-Hans" : {
@@ -2645,8 +2645,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Left Two Thirds"
+            "state" : "translated",
+            "value" : "左側三分之二"
           }
         }
       }
@@ -2656,8 +2656,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Left must be 0% or more."
+            "state" : "translated",
+            "value" : "Der Wert für „Links“ muss mindestens 0 % sein."
           }
         },
         "en" : {
@@ -2668,26 +2668,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Left must be 0% or more."
+            "state" : "translated",
+            "value" : "El valor de la izquierda debe ser al menos 0 %."
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Left must be 0% or more."
+            "state" : "translated",
+            "value" : "La valeur de gauche doit être supérieure ou égale à 0 %."
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Left must be 0% or more."
+            "state" : "translated",
+            "value" : "左は 0% 以上にしてください。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Left must be 0% or more."
+            "state" : "translated",
+            "value" : "O valor da esquerda deve ser de pelo menos 0%."
           }
         },
         "zh-Hans" : {
@@ -2698,8 +2698,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Left must be 0% or more."
+            "state" : "translated",
+            "value" : "左側不能小於 0%。"
           }
         }
       }
@@ -2709,8 +2709,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Left plus width must not be more than 100%."
+            "state" : "translated",
+            "value" : "„Links“ plus Breite darf nicht mehr als 100 % sein."
           }
         },
         "en" : {
@@ -2721,26 +2721,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Left plus width must not be more than 100%."
+            "state" : "translated",
+            "value" : "El valor de la izquierda más el ancho no puede superar el 100 %."
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Left plus width must not be more than 100%."
+            "state" : "translated",
+            "value" : "La valeur de gauche plus la largeur ne doit pas dépasser 100 %."
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Left plus width must not be more than 100%."
+            "state" : "translated",
+            "value" : "左 + 幅が 100% を超えないようにしてください。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Left plus width must not be more than 100%."
+            "state" : "translated",
+            "value" : "A esquerda mais a largura não pode passar de 100%."
           }
         },
         "zh-Hans" : {
@@ -2751,8 +2751,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Left plus width must not be more than 100%."
+            "state" : "translated",
+            "value" : "左側加寬度不能超過 100%。"
           }
         }
       }
@@ -2762,8 +2762,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Maximize"
+            "state" : "translated",
+            "value" : "Maximieren"
           }
         },
         "en" : {
@@ -2774,26 +2774,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Maximize"
+            "state" : "translated",
+            "value" : "Maximizar"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Maximize"
+            "state" : "translated",
+            "value" : "Maximiser"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Maximize"
+            "state" : "translated",
+            "value" : "最大化"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Maximize"
+            "state" : "translated",
+            "value" : "Maximizar"
           }
         },
         "zh-Hans" : {
@@ -2804,8 +2804,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Maximize"
+            "state" : "translated",
+            "value" : "最大化"
           }
         }
       }
@@ -2815,8 +2815,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Medium"
+            "state" : "translated",
+            "value" : "Mittel"
           }
         },
         "en" : {
@@ -2827,26 +2827,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Medium"
+            "state" : "translated",
+            "value" : "Media"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Medium"
+            "state" : "translated",
+            "value" : "Moyenne"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Medium"
+            "state" : "translated",
+            "value" : "中"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Medium"
+            "state" : "translated",
+            "value" : "Média"
           }
         },
         "zh-Hans" : {
@@ -2857,8 +2857,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Medium"
+            "state" : "translated",
+            "value" : "中"
           }
         }
       }
@@ -2868,8 +2868,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Move Divider"
+            "state" : "translated",
+            "value" : "Trennlinie verschieben"
           }
         },
         "en" : {
@@ -2880,26 +2880,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Move Divider"
+            "state" : "translated",
+            "value" : "Mover divisor"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Move Divider"
+            "state" : "translated",
+            "value" : "Déplacer le séparateur"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Move Divider"
+            "state" : "translated",
+            "value" : "区切り線を移動"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Move Divider"
+            "state" : "translated",
+            "value" : "Mover divisor"
           }
         },
         "zh-Hans" : {
@@ -2910,8 +2910,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Move Divider"
+            "state" : "translated",
+            "value" : "移動分隔線"
           }
         }
       }
@@ -2921,8 +2921,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Move Divider Down"
+            "state" : "translated",
+            "value" : "Trennlinie nach unten verschieben"
           }
         },
         "en" : {
@@ -2933,26 +2933,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Move Divider Down"
+            "state" : "translated",
+            "value" : "Mover divisor hacia abajo"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Move Divider Down"
+            "state" : "translated",
+            "value" : "Déplacer le séparateur vers le bas"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Move Divider Down"
+            "state" : "translated",
+            "value" : "区切り線を下に移動"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Move Divider Down"
+            "state" : "translated",
+            "value" : "Mover divisor para baixo"
           }
         },
         "zh-Hans" : {
@@ -2963,8 +2963,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Move Divider Down"
+            "state" : "translated",
+            "value" : "向下移動分隔線"
           }
         }
       }
@@ -2974,8 +2974,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Move Divider Left"
+            "state" : "translated",
+            "value" : "Trennlinie nach links verschieben"
           }
         },
         "en" : {
@@ -2986,26 +2986,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Move Divider Left"
+            "state" : "translated",
+            "value" : "Mover divisor hacia la izquierda"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Move Divider Left"
+            "state" : "translated",
+            "value" : "Déplacer le séparateur vers la gauche"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Move Divider Left"
+            "state" : "translated",
+            "value" : "区切り線を左に移動"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Move Divider Left"
+            "state" : "translated",
+            "value" : "Mover divisor para a esquerda"
           }
         },
         "zh-Hans" : {
@@ -3016,8 +3016,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Move Divider Left"
+            "state" : "translated",
+            "value" : "向左移動分隔線"
           }
         }
       }
@@ -3027,8 +3027,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Move Divider Right"
+            "state" : "translated",
+            "value" : "Trennlinie nach rechts verschieben"
           }
         },
         "en" : {
@@ -3039,26 +3039,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Move Divider Right"
+            "state" : "translated",
+            "value" : "Mover divisor hacia la derecha"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Move Divider Right"
+            "state" : "translated",
+            "value" : "Déplacer le séparateur vers la droite"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Move Divider Right"
+            "state" : "translated",
+            "value" : "区切り線を右に移動"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Move Divider Right"
+            "state" : "translated",
+            "value" : "Mover divisor para a direita"
           }
         },
         "zh-Hans" : {
@@ -3069,8 +3069,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Move Divider Right"
+            "state" : "translated",
+            "value" : "向右移動分隔線"
           }
         }
       }
@@ -3080,8 +3080,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Move Divider Up"
+            "state" : "translated",
+            "value" : "Trennlinie nach oben verschieben"
           }
         },
         "en" : {
@@ -3092,26 +3092,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Move Divider Up"
+            "state" : "translated",
+            "value" : "Mover divisor hacia arriba"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Move Divider Up"
+            "state" : "translated",
+            "value" : "Déplacer le séparateur vers le haut"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Move Divider Up"
+            "state" : "translated",
+            "value" : "区切り線を上に移動"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Move Divider Up"
+            "state" : "translated",
+            "value" : "Mover divisor para cima"
           }
         },
         "zh-Hans" : {
@@ -3122,8 +3122,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Move Divider Up"
+            "state" : "translated",
+            "value" : "向上移動分隔線"
           }
         }
       }
@@ -3133,8 +3133,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Move to Display"
+            "state" : "translated",
+            "value" : "Auf Display verschieben"
           }
         },
         "en" : {
@@ -3145,26 +3145,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Move to Display"
+            "state" : "translated",
+            "value" : "Mover a pantalla"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Move to Display"
+            "state" : "translated",
+            "value" : "Déplacer vers l'écran"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Move to Display"
+            "state" : "translated",
+            "value" : "ディスプレイへ移動"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Move to Display"
+            "state" : "translated",
+            "value" : "Mover para a tela"
           }
         },
         "zh-Hans" : {
@@ -3175,8 +3175,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Move to Display"
+            "state" : "translated",
+            "value" : "移到顯示器"
           }
         }
       }
@@ -3186,8 +3186,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Next Display"
+            "state" : "translated",
+            "value" : "Nächstes Display"
           }
         },
         "en" : {
@@ -3198,26 +3198,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Next Display"
+            "state" : "translated",
+            "value" : "Pantalla siguiente"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Next Display"
+            "state" : "translated",
+            "value" : "Écran suivant"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Next Display"
+            "state" : "translated",
+            "value" : "次のディスプレイ"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Next Display"
+            "state" : "translated",
+            "value" : "Próxima tela"
           }
         },
         "zh-Hans" : {
@@ -3228,8 +3228,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Next Display"
+            "state" : "translated",
+            "value" : "下一個顯示器"
           }
         }
       }
@@ -3239,8 +3239,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "No shortcuts yet. Click + to add one."
+            "state" : "translated",
+            "value" : "Noch keine Tastaturkurzbefehle. Klicke auf +, um einen hinzuzufügen."
           }
         },
         "en" : {
@@ -3251,26 +3251,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "No shortcuts yet. Click + to add one."
+            "state" : "translated",
+            "value" : "Aún no hay atajos. Haz clic en + para añadir uno."
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "No shortcuts yet. Click + to add one."
+            "state" : "translated",
+            "value" : "Aucun raccourci pour l'instant. Cliquez sur + pour en ajouter un."
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "No shortcuts yet. Click + to add one."
+            "state" : "translated",
+            "value" : "ショートカットはまだありません。+ をクリックして追加してください。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "No shortcuts yet. Click + to add one."
+            "state" : "translated",
+            "value" : "Ainda não há atalhos. Clique em + para adicionar um."
           }
         },
         "zh-Hans" : {
@@ -3281,8 +3281,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "No shortcuts yet. Click + to add one."
+            "state" : "translated",
+            "value" : "尚無快速鍵。點按 + 即可新增。"
           }
         }
       }
@@ -3292,8 +3292,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Not granted"
+            "state" : "translated",
+            "value" : "Nicht erlaubt"
           }
         },
         "en" : {
@@ -3304,26 +3304,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Not granted"
+            "state" : "translated",
+            "value" : "No concedida"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Not granted"
+            "state" : "translated",
+            "value" : "Non autorisée"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Not granted"
+            "state" : "translated",
+            "value" : "未許可"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Not granted"
+            "state" : "translated",
+            "value" : "Não permitida"
           }
         },
         "zh-Hans" : {
@@ -3334,8 +3334,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Not granted"
+            "state" : "translated",
+            "value" : "未授權"
           }
         }
       }
@@ -3345,8 +3345,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Off"
+            "state" : "translated",
+            "value" : "Aus"
           }
         },
         "en" : {
@@ -3357,26 +3357,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Off"
+            "state" : "translated",
+            "value" : "Desactivada"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Off"
+            "state" : "translated",
+            "value" : "Désactivée"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Off"
+            "state" : "translated",
+            "value" : "オフ"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Off"
+            "state" : "translated",
+            "value" : "Desativada"
           }
         },
         "zh-Hans" : {
@@ -3387,8 +3387,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Off"
+            "state" : "translated",
+            "value" : "關閉"
           }
         }
       }
@@ -3398,8 +3398,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Open Accessibility Settings…"
+            "state" : "translated",
+            "value" : "Bedienungshilfen-Einstellungen öffnen…"
           }
         },
         "en" : {
@@ -3410,26 +3410,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Open Accessibility Settings…"
+            "state" : "translated",
+            "value" : "Abrir ajustes de Accesibilidad…"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Open Accessibility Settings…"
+            "state" : "translated",
+            "value" : "Ouvrir les réglages d'Accessibilité…"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Open Accessibility Settings…"
+            "state" : "translated",
+            "value" : "「アクセシビリティ」設定を開く…"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Open Accessibility Settings…"
+            "state" : "translated",
+            "value" : "Abrir ajustes de Acessibilidade…"
           }
         },
         "zh-Hans" : {
@@ -3440,8 +3440,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Open Accessibility Settings…"
+            "state" : "translated",
+            "value" : "打開「輔助使用」設定…"
           }
         }
       }
@@ -3451,8 +3451,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Open Login Items Settings…"
+            "state" : "translated",
+            "value" : "Einstellungen für „Anmeldeobjekte“ öffnen…"
           }
         },
         "en" : {
@@ -3463,26 +3463,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Open Login Items Settings…"
+            "state" : "translated",
+            "value" : "Abrir ajustes de «Elementos de inicio de sesión»…"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Open Login Items Settings…"
+            "state" : "translated",
+            "value" : "Ouvrir les réglages de « Éléments de connexion »…"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Open Login Items Settings…"
+            "state" : "translated",
+            "value" : "「ログイン項目」設定を開く…"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Open Login Items Settings…"
+            "state" : "translated",
+            "value" : "Abrir ajustes de “Itens de Início de Sessão”…"
           }
         },
         "zh-Hans" : {
@@ -3493,8 +3493,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Open Login Items Settings…"
+            "state" : "translated",
+            "value" : "打開「登入項目」設定…"
           }
         }
       }
@@ -3504,8 +3504,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Piccolo Settings"
+            "state" : "translated",
+            "value" : "Piccolo-Einstellungen"
           }
         },
         "en" : {
@@ -3516,26 +3516,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Piccolo Settings"
+            "state" : "translated",
+            "value" : "Ajustes de Piccolo"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Piccolo Settings"
+            "state" : "translated",
+            "value" : "Réglages de Piccolo"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Piccolo Settings"
+            "state" : "translated",
+            "value" : "Piccolo 設定"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Piccolo Settings"
+            "state" : "translated",
+            "value" : "Ajustes do Piccolo"
           }
         },
         "zh-Hans" : {
@@ -3546,8 +3546,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Piccolo Settings"
+            "state" : "translated",
+            "value" : "Piccolo 設定"
           }
         }
       }
@@ -3557,8 +3557,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Piccolo could not restart: %@"
+            "state" : "translated",
+            "value" : "Piccolo konnte nicht neu gestartet werden: %@"
           }
         },
         "en" : {
@@ -3569,26 +3569,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Piccolo could not restart: %@"
+            "state" : "translated",
+            "value" : "Piccolo no se pudo reiniciar: %@"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Piccolo could not restart: %@"
+            "state" : "translated",
+            "value" : "Piccolo n'a pas pu redémarrer : %@"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Piccolo could not restart: %@"
+            "state" : "translated",
+            "value" : "Piccolo を再起動できませんでした：%@"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Piccolo could not restart: %@"
+            "state" : "translated",
+            "value" : "O Piccolo não pôde ser reiniciado: %@"
           }
         },
         "zh-Hans" : {
@@ -3599,8 +3599,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Piccolo could not restart: %@"
+            "state" : "translated",
+            "value" : "Piccolo 無法重新啟動：%@"
           }
         }
       }
@@ -3610,8 +3610,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Piccolo is waiting for your approval. Allow it in Login Items in System Settings."
+            "state" : "translated",
+            "value" : "Piccolo wartet auf Genehmigung. Erlaube es in den Systemeinstellungen unter „Anmeldeobjekte“."
           }
         },
         "en" : {
@@ -3622,26 +3622,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Piccolo is waiting for your approval. Allow it in Login Items in System Settings."
+            "state" : "translated",
+            "value" : "Piccolo espera tu aprobación. Permítelo en «Elementos de inicio de sesión» en los Ajustes del Sistema."
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Piccolo is waiting for your approval. Allow it in Login Items in System Settings."
+            "state" : "translated",
+            "value" : "Piccolo attend votre autorisation. Autorisez-le dans « Éléments de connexion » des Réglages Système."
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Piccolo is waiting for your approval. Allow it in Login Items in System Settings."
+            "state" : "translated",
+            "value" : "Piccolo の許可を待っています。システム設定の「ログイン項目」で許可してください。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Piccolo is waiting for your approval. Allow it in Login Items in System Settings."
+            "state" : "translated",
+            "value" : "O Piccolo está aguardando sua aprovação. Permita-o em “Itens de Início de Sessão” nos Ajustes do Sistema."
           }
         },
         "zh-Hans" : {
@@ -3652,8 +3652,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Piccolo is waiting for your approval. Allow it in Login Items in System Settings."
+            "state" : "translated",
+            "value" : "Piccolo 正在等待你的允許。請在「系統設定」的「登入項目」中允許 Piccolo。"
           }
         }
       }
@@ -3663,8 +3663,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Place Window"
+            "state" : "translated",
+            "value" : "Fenster platzieren"
           }
         },
         "en" : {
@@ -3675,26 +3675,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Place Window"
+            "state" : "translated",
+            "value" : "Colocar ventana"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Place Window"
+            "state" : "translated",
+            "value" : "Placer la fenêtre"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Place Window"
+            "state" : "translated",
+            "value" : "ウインドウを配置"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Place Window"
+            "state" : "translated",
+            "value" : "Posicionar janela"
           }
         },
         "zh-Hans" : {
@@ -3705,8 +3705,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Place Window"
+            "state" : "translated",
+            "value" : "放置視窗"
           }
         }
       }
@@ -3716,8 +3716,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Press the new shortcut, Escape to cancel, Delete to clear"
+            "state" : "translated",
+            "value" : "Neuen Tastaturkurzbefehl drücken, Esc zum Abbrechen, Entf zum Löschen"
           }
         },
         "en" : {
@@ -3728,26 +3728,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Press the new shortcut, Escape to cancel, Delete to clear"
+            "state" : "translated",
+            "value" : "Pulsa el nuevo atajo, Esc para cancelar, Supr para borrar"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Press the new shortcut, Escape to cancel, Delete to clear"
+            "state" : "translated",
+            "value" : "Appuyez sur le nouveau raccourci, Échap pour annuler, Suppr pour effacer"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Press the new shortcut, Escape to cancel, Delete to clear"
+            "state" : "translated",
+            "value" : "新しいショートカットを押してください。Esc でキャンセル、Delete で消去"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Press the new shortcut, Escape to cancel, Delete to clear"
+            "state" : "translated",
+            "value" : "Pressione o novo atalho; Esc para cancelar, Delete para limpar"
           }
         },
         "zh-Hans" : {
@@ -3758,8 +3758,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Press the new shortcut, Escape to cancel, Delete to clear"
+            "state" : "translated",
+            "value" : "按下新的快速鍵；按 Esc 取消，按 Delete 清除"
           }
         }
       }
@@ -3769,8 +3769,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Preview"
+            "state" : "translated",
+            "value" : "Vorschau"
           }
         },
         "en" : {
@@ -3781,26 +3781,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Preview"
+            "state" : "translated",
+            "value" : "Vista previa"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Preview"
+            "state" : "translated",
+            "value" : "Aperçu"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Preview"
+            "state" : "translated",
+            "value" : "プレビュー"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Preview"
+            "state" : "translated",
+            "value" : "Prévia"
           }
         },
         "zh-Hans" : {
@@ -3811,8 +3811,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Preview"
+            "state" : "translated",
+            "value" : "預覽"
           }
         }
       }
@@ -3822,8 +3822,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Preview of the window layout"
+            "state" : "translated",
+            "value" : "Vorschau der Fensteranordnung"
           }
         },
         "en" : {
@@ -3834,26 +3834,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Preview of the window layout"
+            "state" : "translated",
+            "value" : "Vista previa de la disposición de las ventanas"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Preview of the window layout"
+            "state" : "translated",
+            "value" : "Aperçu de la disposition des fenêtres"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Preview of the window layout"
+            "state" : "translated",
+            "value" : "ウインドウ配置のプレビュー"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Preview of the window layout"
+            "state" : "translated",
+            "value" : "Prévia da disposição das janelas"
           }
         },
         "zh-Hans" : {
@@ -3864,8 +3864,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Preview of the window layout"
+            "state" : "translated",
+            "value" : "視窗排列預覽"
           }
         }
       }
@@ -3875,8 +3875,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Previous Display"
+            "state" : "translated",
+            "value" : "Vorheriges Display"
           }
         },
         "en" : {
@@ -3887,26 +3887,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Previous Display"
+            "state" : "translated",
+            "value" : "Pantalla anterior"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Previous Display"
+            "state" : "translated",
+            "value" : "Écran précédent"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Previous Display"
+            "state" : "translated",
+            "value" : "前のディスプレイ"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Previous Display"
+            "state" : "translated",
+            "value" : "Tela anterior"
           }
         },
         "zh-Hans" : {
@@ -3917,8 +3917,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Previous Display"
+            "state" : "translated",
+            "value" : "上一個顯示器"
           }
         }
       }
@@ -3928,8 +3928,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Record Shortcut"
+            "state" : "translated",
+            "value" : "Tastaturkurzbefehl aufnehmen"
           }
         },
         "en" : {
@@ -3940,26 +3940,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Record Shortcut"
+            "state" : "translated",
+            "value" : "Grabar atajo"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Record Shortcut"
+            "state" : "translated",
+            "value" : "Enregistrer le raccourci"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Record Shortcut"
+            "state" : "translated",
+            "value" : "ショートカットを記録"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Record Shortcut"
+            "state" : "translated",
+            "value" : "Gravar atalho"
           }
         },
         "zh-Hans" : {
@@ -3970,8 +3970,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Record Shortcut"
+            "state" : "translated",
+            "value" : "錄製快速鍵"
           }
         }
       }
@@ -3981,8 +3981,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Remove Shortcut"
+            "state" : "translated",
+            "value" : "Tastaturkurzbefehl entfernen"
           }
         },
         "en" : {
@@ -3993,26 +3993,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Remove Shortcut"
+            "state" : "translated",
+            "value" : "Quitar atajo"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Remove Shortcut"
+            "state" : "translated",
+            "value" : "Supprimer le raccourci"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Remove Shortcut"
+            "state" : "translated",
+            "value" : "ショートカットを削除"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Remove Shortcut"
+            "state" : "translated",
+            "value" : "Remover atalho"
           }
         },
         "zh-Hans" : {
@@ -4023,8 +4023,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Remove Shortcut"
+            "state" : "translated",
+            "value" : "移除快速鍵"
           }
         }
       }
@@ -4034,8 +4034,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Remove the selected shortcut"
+            "state" : "translated",
+            "value" : "Ausgewählten Tastaturkurzbefehl entfernen"
           }
         },
         "en" : {
@@ -4046,26 +4046,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Remove the selected shortcut"
+            "state" : "translated",
+            "value" : "Quitar el atajo seleccionado"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Remove the selected shortcut"
+            "state" : "translated",
+            "value" : "Supprimer le raccourci sélectionné"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Remove the selected shortcut"
+            "state" : "translated",
+            "value" : "選択したショートカットを削除"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Remove the selected shortcut"
+            "state" : "translated",
+            "value" : "Remover o atalho selecionado"
           }
         },
         "zh-Hans" : {
@@ -4076,8 +4076,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Remove the selected shortcut"
+            "state" : "translated",
+            "value" : "移除所選快速鍵"
           }
         }
       }
@@ -4087,8 +4087,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Replace every shortcut with the defaults. A copy of the config file is kept next to it."
+            "state" : "translated",
+            "value" : "Ersetzt alle Tastaturkurzbefehle durch die Standardwerte. Eine Kopie der Konfigurationsdatei wird daneben aufbewahrt."
           }
         },
         "en" : {
@@ -4099,26 +4099,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Replace every shortcut with the defaults. A copy of the config file is kept next to it."
+            "state" : "translated",
+            "value" : "Sustituye todos los atajos por los predeterminados. Se guarda una copia del archivo de configuración junto a él."
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Replace every shortcut with the defaults. A copy of the config file is kept next to it."
+            "state" : "translated",
+            "value" : "Remplace tous les raccourcis par les valeurs par défaut. Une copie du fichier de configuration est conservée à côté."
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Replace every shortcut with the defaults. A copy of the config file is kept next to it."
+            "state" : "translated",
+            "value" : "すべてのショートカットを初期設定に置き換えます。設定ファイルのコピーが隣に保存されます。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Replace every shortcut with the defaults. A copy of the config file is kept next to it."
+            "state" : "translated",
+            "value" : "Substitui todos os atalhos pelos padrões. Uma cópia do arquivo de configuração é mantida ao lado dele."
           }
         },
         "zh-Hans" : {
@@ -4129,8 +4129,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Replace every shortcut with the defaults. A copy of the config file is kept next to it."
+            "state" : "translated",
+            "value" : "將所有快速鍵替換為預設值。設定檔的一份副本會保存在它旁邊。"
           }
         }
       }
@@ -4140,8 +4140,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Resize step"
+            "state" : "translated",
+            "value" : "Schrittweite"
           }
         },
         "en" : {
@@ -4152,26 +4152,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Resize step"
+            "state" : "translated",
+            "value" : "Paso de redimensionamiento"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Resize step"
+            "state" : "translated",
+            "value" : "Pas de redimensionnement"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Resize step"
+            "state" : "translated",
+            "value" : "調整ステップ"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Resize step"
+            "state" : "translated",
+            "value" : "Passo de redimensionamento"
           }
         },
         "zh-Hans" : {
@@ -4182,8 +4182,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Resize step"
+            "state" : "translated",
+            "value" : "調整步長"
           }
         }
       }
@@ -4193,8 +4193,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Restart Now"
+            "state" : "translated",
+            "value" : "Jetzt neu starten"
           }
         },
         "en" : {
@@ -4205,26 +4205,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Restart Now"
+            "state" : "translated",
+            "value" : "Reiniciar ahora"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Restart Now"
+            "state" : "translated",
+            "value" : "Redémarrer maintenant"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Restart Now"
+            "state" : "translated",
+            "value" : "今すぐ再起動"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Restart Now"
+            "state" : "translated",
+            "value" : "Reiniciar agora"
           }
         },
         "zh-Hans" : {
@@ -4235,8 +4235,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Restart Now"
+            "state" : "translated",
+            "value" : "立即重新啟動"
           }
         }
       }
@@ -4246,8 +4246,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Restore"
+            "state" : "translated",
+            "value" : "Wiederherstellen"
           }
         },
         "en" : {
@@ -4258,26 +4258,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Restore"
+            "state" : "translated",
+            "value" : "Restaurar"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Restore"
+            "state" : "translated",
+            "value" : "Rétablir"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Restore"
+            "state" : "translated",
+            "value" : "戻す"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Restore"
+            "state" : "translated",
+            "value" : "Restaurar"
           }
         },
         "zh-Hans" : {
@@ -4288,8 +4288,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Restore"
+            "state" : "translated",
+            "value" : "恢復"
           }
         }
       }
@@ -4299,8 +4299,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Restore Default Shortcuts…"
+            "state" : "translated",
+            "value" : "Standard-Tastaturkurzbefehle wiederherstellen…"
           }
         },
         "en" : {
@@ -4311,26 +4311,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Restore Default Shortcuts…"
+            "state" : "translated",
+            "value" : "Restaurar atajos predeterminados…"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Restore Default Shortcuts…"
+            "state" : "translated",
+            "value" : "Rétablir les raccourcis par défaut…"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Restore Default Shortcuts…"
+            "state" : "translated",
+            "value" : "初期設定のショートカットに戻す…"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Restore Default Shortcuts…"
+            "state" : "translated",
+            "value" : "Restaurar atalhos padrão…"
           }
         },
         "zh-Hans" : {
@@ -4341,8 +4341,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Restore Default Shortcuts…"
+            "state" : "translated",
+            "value" : "恢復預設快速鍵…"
           }
         }
       }
@@ -4352,8 +4352,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Restore the default shortcuts?"
+            "state" : "translated",
+            "value" : "Standard-Tastaturkurzbefehle wiederherstellen?"
           }
         },
         "en" : {
@@ -4364,26 +4364,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Restore the default shortcuts?"
+            "state" : "translated",
+            "value" : "¿Restaurar los atajos predeterminados?"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Restore the default shortcuts?"
+            "state" : "translated",
+            "value" : "Rétablir les raccourcis par défaut ?"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Restore the default shortcuts?"
+            "state" : "translated",
+            "value" : "初期設定のショートカットに戻しますか？"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Restore the default shortcuts?"
+            "state" : "translated",
+            "value" : "Restaurar os atalhos padrão?"
           }
         },
         "zh-Hans" : {
@@ -4394,8 +4394,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Restore the default shortcuts?"
+            "state" : "translated",
+            "value" : "要恢復預設快速鍵嗎？"
           }
         }
       }
@@ -4405,8 +4405,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Reveal Config in Finder"
+            "state" : "translated",
+            "value" : "Konfiguration im Finder zeigen"
           }
         },
         "en" : {
@@ -4417,26 +4417,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Reveal Config in Finder"
+            "state" : "translated",
+            "value" : "Mostrar configuración en el Finder"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Reveal Config in Finder"
+            "state" : "translated",
+            "value" : "Afficher la configuration dans le Finder"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Reveal Config in Finder"
+            "state" : "translated",
+            "value" : "設定ファイルを Finder で表示"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Reveal Config in Finder"
+            "state" : "translated",
+            "value" : "Mostrar configuração no Finder"
           }
         },
         "zh-Hans" : {
@@ -4447,8 +4447,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Reveal Config in Finder"
+            "state" : "translated",
+            "value" : "在 Finder 中顯示設定檔"
           }
         }
       }
@@ -4458,8 +4458,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Right"
+            "state" : "translated",
+            "value" : "Rechts"
           }
         },
         "en" : {
@@ -4470,26 +4470,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Right"
+            "state" : "translated",
+            "value" : "Derecha"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Right"
+            "state" : "translated",
+            "value" : "Droite"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Right"
+            "state" : "translated",
+            "value" : "右"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Right"
+            "state" : "translated",
+            "value" : "Direita"
           }
         },
         "zh-Hans" : {
@@ -4500,8 +4500,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Right"
+            "state" : "translated",
+            "value" : "右側"
           }
         }
       }
@@ -4511,8 +4511,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Right Half"
+            "state" : "translated",
+            "value" : "Rechte Hälfte"
           }
         },
         "en" : {
@@ -4523,26 +4523,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Right Half"
+            "state" : "translated",
+            "value" : "Mitad derecha"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Right Half"
+            "state" : "translated",
+            "value" : "Moitié droite"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Right Half"
+            "state" : "translated",
+            "value" : "右半分"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Right Half"
+            "state" : "translated",
+            "value" : "Metade direita"
           }
         },
         "zh-Hans" : {
@@ -4553,8 +4553,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Right Half"
+            "state" : "translated",
+            "value" : "右半部"
           }
         }
       }
@@ -4564,8 +4564,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Right Third"
+            "state" : "translated",
+            "value" : "Rechtes Drittel"
           }
         },
         "en" : {
@@ -4576,26 +4576,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Right Third"
+            "state" : "translated",
+            "value" : "Tercio derecho"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Right Third"
+            "state" : "translated",
+            "value" : "Tiers droit"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Right Third"
+            "state" : "translated",
+            "value" : "右の3分の1"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Right Third"
+            "state" : "translated",
+            "value" : "Terço direito"
           }
         },
         "zh-Hans" : {
@@ -4606,8 +4606,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Right Third"
+            "state" : "translated",
+            "value" : "右側三分之一"
           }
         }
       }
@@ -4617,8 +4617,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Right Two Thirds"
+            "state" : "translated",
+            "value" : "Rechte zwei Drittel"
           }
         },
         "en" : {
@@ -4629,26 +4629,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Right Two Thirds"
+            "state" : "translated",
+            "value" : "Dos tercios derechos"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Right Two Thirds"
+            "state" : "translated",
+            "value" : "Deux tiers droits"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Right Two Thirds"
+            "state" : "translated",
+            "value" : "右の3分の2"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Right Two Thirds"
+            "state" : "translated",
+            "value" : "Dois terços direitos"
           }
         },
         "zh-Hans" : {
@@ -4659,8 +4659,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Right Two Thirds"
+            "state" : "translated",
+            "value" : "右側三分之二"
           }
         }
       }
@@ -4670,8 +4670,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Rows"
+            "state" : "translated",
+            "value" : "Zeilen"
           }
         },
         "en" : {
@@ -4682,26 +4682,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Rows"
+            "state" : "translated",
+            "value" : "Filas"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Rows"
+            "state" : "translated",
+            "value" : "Lignes"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Rows"
+            "state" : "translated",
+            "value" : "行数"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Rows"
+            "state" : "translated",
+            "value" : "Linhas"
           }
         },
         "zh-Hans" : {
@@ -4712,8 +4712,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Rows"
+            "state" : "translated",
+            "value" : "行數"
           }
         }
       }
@@ -4723,8 +4723,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Rows first"
+            "state" : "translated",
+            "value" : "Zeilen zuerst"
           }
         },
         "en" : {
@@ -4735,26 +4735,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Rows first"
+            "state" : "translated",
+            "value" : "Filas primero"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Rows first"
+            "state" : "translated",
+            "value" : "Lignes d'abord"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Rows first"
+            "state" : "translated",
+            "value" : "行優先"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Rows first"
+            "state" : "translated",
+            "value" : "Linhas primeiro"
           }
         },
         "zh-Hans" : {
@@ -4765,8 +4765,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Rows first"
+            "state" : "translated",
+            "value" : "行優先"
           }
         }
       }
@@ -4776,8 +4776,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Rows must be at least 1."
+            "state" : "translated",
+            "value" : "Die Anzahl der Zeilen muss mindestens 1 sein."
           }
         },
         "en" : {
@@ -4788,26 +4788,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Rows must be at least 1."
+            "state" : "translated",
+            "value" : "Las filas deben ser al menos 1."
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Rows must be at least 1."
+            "state" : "translated",
+            "value" : "Le nombre de lignes doit être d'au moins 1."
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Rows must be at least 1."
+            "state" : "translated",
+            "value" : "行数は 1 以上にしてください。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Rows must be at least 1."
+            "state" : "translated",
+            "value" : "As linhas devem ser pelo menos 1."
           }
         },
         "zh-Hans" : {
@@ -4818,8 +4818,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Rows must be at least 1."
+            "state" : "translated",
+            "value" : "行數至少為 1。"
           }
         }
       }
@@ -4829,8 +4829,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Select a shortcut to edit what it does."
+            "state" : "translated",
+            "value" : "Wähle einen Tastaturkurzbefehl aus, um zu bearbeiten, was er tut."
           }
         },
         "en" : {
@@ -4841,26 +4841,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Select a shortcut to edit what it does."
+            "state" : "translated",
+            "value" : "Selecciona un atajo para editar lo que hace."
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Select a shortcut to edit what it does."
+            "state" : "translated",
+            "value" : "Sélectionnez un raccourci pour modifier son action."
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Select a shortcut to edit what it does."
+            "state" : "translated",
+            "value" : "ショートカットを選択すると、その動作を編集できます。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Select a shortcut to edit what it does."
+            "state" : "translated",
+            "value" : "Selecione um atalho para editar o que ele faz."
           }
         },
         "zh-Hans" : {
@@ -4871,8 +4871,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Select a shortcut to edit what it does."
+            "state" : "translated",
+            "value" : "選擇一個快速鍵，以編輯它的功能。"
           }
         }
       }
@@ -4882,8 +4882,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Shortcuts"
+            "state" : "translated",
+            "value" : "Tastaturkurzbefehle"
           }
         },
         "en" : {
@@ -4894,26 +4894,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Shortcuts"
+            "state" : "translated",
+            "value" : "Atajos"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Shortcuts"
+            "state" : "translated",
+            "value" : "Raccourcis"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Shortcuts"
+            "state" : "translated",
+            "value" : "ショートカット"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Shortcuts"
+            "state" : "translated",
+            "value" : "Atalhos"
           }
         },
         "zh-Hans" : {
@@ -4924,8 +4924,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Shortcuts"
+            "state" : "translated",
+            "value" : "快速鍵"
           }
         }
       }
@@ -4935,8 +4935,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Show destination while a shortcut is held"
+            "state" : "translated",
+            "value" : "Ziel anzeigen, solange ein Tastaturkurzbefehl gehalten wird"
           }
         },
         "en" : {
@@ -4947,26 +4947,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Show destination while a shortcut is held"
+            "state" : "translated",
+            "value" : "Mostrar el destino mientras se mantiene un atajo"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Show destination while a shortcut is held"
+            "state" : "translated",
+            "value" : "Afficher la destination pendant l'appui sur un raccourci"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Show destination while a shortcut is held"
+            "state" : "translated",
+            "value" : "ショートカットを押している間、移動先を表示"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Show destination while a shortcut is held"
+            "state" : "translated",
+            "value" : "Mostrar o destino enquanto um atalho é pressionado"
           }
         },
         "zh-Hans" : {
@@ -4977,8 +4977,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Show destination while a shortcut is held"
+            "state" : "translated",
+            "value" : "按住快速鍵時顯示目標位置"
           }
         }
       }
@@ -4988,8 +4988,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Slow"
+            "state" : "translated",
+            "value" : "Langsam"
           }
         },
         "en" : {
@@ -5000,26 +5000,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Slow"
+            "state" : "translated",
+            "value" : "Lenta"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Slow"
+            "state" : "translated",
+            "value" : "Lente"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Slow"
+            "state" : "translated",
+            "value" : "遅い"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Slow"
+            "state" : "translated",
+            "value" : "Lenta"
           }
         },
         "zh-Hans" : {
@@ -5030,8 +5030,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Slow"
+            "state" : "translated",
+            "value" : "慢"
           }
         }
       }
@@ -5041,8 +5041,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Space"
+            "state" : "translated",
+            "value" : "Leertaste"
           }
         },
         "en" : {
@@ -5053,26 +5053,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Space"
+            "state" : "translated",
+            "value" : "Espacio"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Space"
+            "state" : "translated",
+            "value" : "Espace"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Space"
+            "state" : "translated",
+            "value" : "スペース"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Space"
+            "state" : "translated",
+            "value" : "Espaço"
           }
         },
         "zh-Hans" : {
@@ -5083,8 +5083,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Space"
+            "state" : "translated",
+            "value" : "空白鍵"
           }
         }
       }
@@ -5094,7 +5094,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
+            "state" : "translated",
             "value" : "Status"
           }
         },
@@ -5106,26 +5106,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Status"
+            "state" : "translated",
+            "value" : "Estado"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Status"
+            "state" : "translated",
+            "value" : "État"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Status"
+            "state" : "translated",
+            "value" : "状態"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Status"
+            "state" : "translated",
+            "value" : "Estado"
           }
         },
         "zh-Hans" : {
@@ -5136,8 +5136,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Status"
+            "state" : "translated",
+            "value" : "狀態"
           }
         }
       }
@@ -5147,8 +5147,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "System default"
+            "state" : "translated",
+            "value" : "Systemstandard"
           }
         },
         "en" : {
@@ -5159,26 +5159,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "System default"
+            "state" : "translated",
+            "value" : "Predeterminado del sistema"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "System default"
+            "state" : "translated",
+            "value" : "Réglage du système"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "System default"
+            "state" : "translated",
+            "value" : "システムの初期設定"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "System default"
+            "state" : "translated",
+            "value" : "Padrão do sistema"
           }
         },
         "zh-Hans" : {
@@ -5189,8 +5189,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "System default"
+            "state" : "translated",
+            "value" : "系統預設"
           }
         }
       }
@@ -5200,8 +5200,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "That binding no longer exists."
+            "state" : "translated",
+            "value" : "Diese Zuweisung existiert nicht mehr."
           }
         },
         "en" : {
@@ -5212,26 +5212,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "That binding no longer exists."
+            "state" : "translated",
+            "value" : "Esa asignación ya no existe."
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "That binding no longer exists."
+            "state" : "translated",
+            "value" : "Cette liaison n'existe plus."
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "That binding no longer exists."
+            "state" : "translated",
+            "value" : "その割り当ては既に存在しません。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "That binding no longer exists."
+            "state" : "translated",
+            "value" : "Essa associação não existe mais."
           }
         },
         "zh-Hans" : {
@@ -5242,8 +5242,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "That binding no longer exists."
+            "state" : "translated",
+            "value" : "該快速鍵已不存在。"
           }
         }
       }
@@ -5253,8 +5253,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The change could not be saved: %@"
+            "state" : "translated",
+            "value" : "Die Änderung konnte nicht gespeichert werden: %@"
           }
         },
         "en" : {
@@ -5265,26 +5265,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The change could not be saved: %@"
+            "state" : "translated",
+            "value" : "No se pudo guardar el cambio: %@"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The change could not be saved: %@"
+            "state" : "translated",
+            "value" : "La modification n'a pas pu être enregistrée : %@"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The change could not be saved: %@"
+            "state" : "translated",
+            "value" : "変更を保存できませんでした：%@"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The change could not be saved: %@"
+            "state" : "translated",
+            "value" : "Não foi possível salvar a alteração: %@"
           }
         },
         "zh-Hans" : {
@@ -5295,8 +5295,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The change could not be saved: %@"
+            "state" : "translated",
+            "value" : "無法儲存變更：%@"
           }
         }
       }
@@ -5306,8 +5306,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The current shortcuts will be replaced by the defaults. A copy of the config file is kept next to it."
+            "state" : "translated",
+            "value" : "Die aktuellen Tastaturkurzbefehle werden durch die Standardwerte ersetzt. Eine Kopie der Konfigurationsdatei wird daneben aufbewahrt."
           }
         },
         "en" : {
@@ -5318,26 +5318,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The current shortcuts will be replaced by the defaults. A copy of the config file is kept next to it."
+            "state" : "translated",
+            "value" : "Los atajos actuales se sustituirán por los predeterminados. Se guarda una copia del archivo de configuración junto a él."
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The current shortcuts will be replaced by the defaults. A copy of the config file is kept next to it."
+            "state" : "translated",
+            "value" : "Les raccourcis actuels seront remplacés par les valeurs par défaut. Une copie du fichier de configuration est conservée à côté."
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The current shortcuts will be replaced by the defaults. A copy of the config file is kept next to it."
+            "state" : "translated",
+            "value" : "現在のショートカットは初期設定に置き換えられます。設定ファイルのコピーが隣に保存されます。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The current shortcuts will be replaced by the defaults. A copy of the config file is kept next to it."
+            "state" : "translated",
+            "value" : "Os atalhos atuais serão substituídos pelos padrões. Uma cópia do arquivo de configuração é mantida ao lado dele."
           }
         },
         "zh-Hans" : {
@@ -5348,8 +5348,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The current shortcuts will be replaced by the defaults. A copy of the config file is kept next to it."
+            "state" : "translated",
+            "value" : "目前的快速鍵將被預設值取代，設定檔的一份副本會保存在它旁邊。"
           }
         }
       }
@@ -5359,8 +5359,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The new language applies after Piccolo restarts."
+            "state" : "translated",
+            "value" : "Die neue Sprache wird nach einem Neustart von Piccolo übernommen."
           }
         },
         "en" : {
@@ -5371,26 +5371,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The new language applies after Piccolo restarts."
+            "state" : "translated",
+            "value" : "El nuevo idioma se aplicará cuando Piccolo se reinicie."
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The new language applies after Piccolo restarts."
+            "state" : "translated",
+            "value" : "La nouvelle langue sera appliquée après le redémarrage de Piccolo."
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The new language applies after Piccolo restarts."
+            "state" : "translated",
+            "value" : "新しい言語は Piccolo の再起動後に適用されます。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The new language applies after Piccolo restarts."
+            "state" : "translated",
+            "value" : "O novo idioma será aplicado depois que o Piccolo for reiniciado."
           }
         },
         "zh-Hans" : {
@@ -5401,8 +5401,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The new language applies after Piccolo restarts."
+            "state" : "translated",
+            "value" : "新的語言將在 Piccolo 重新啟動後生效。"
           }
         }
       }
@@ -5412,8 +5412,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The number of windows cannot be more than rows × columns."
+            "state" : "translated",
+            "value" : "Die Anzahl der Fenster darf nicht größer als Zeilen × Spalten sein."
           }
         },
         "en" : {
@@ -5424,26 +5424,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The number of windows cannot be more than rows × columns."
+            "state" : "translated",
+            "value" : "El número de ventanas no puede ser mayor que filas × columnas."
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The number of windows cannot be more than rows × columns."
+            "state" : "translated",
+            "value" : "Le nombre de fenêtres ne peut pas dépasser lignes × colonnes."
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The number of windows cannot be more than rows × columns."
+            "state" : "translated",
+            "value" : "ウインドウ数は 行数 × 列数 を超えられません。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The number of windows cannot be more than rows × columns."
+            "state" : "translated",
+            "value" : "O número de janelas não pode ser maior que linhas × colunas."
           }
         },
         "zh-Hans" : {
@@ -5454,8 +5454,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The number of windows cannot be more than rows × columns."
+            "state" : "translated",
+            "value" : "視窗數量不能超過行數 × 欄數。"
           }
         }
       }
@@ -5465,8 +5465,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The number of windows must be at least 1."
+            "state" : "translated",
+            "value" : "Die Anzahl der Fenster muss mindestens 1 sein."
           }
         },
         "en" : {
@@ -5477,26 +5477,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The number of windows must be at least 1."
+            "state" : "translated",
+            "value" : "El número de ventanas debe ser al menos 1."
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The number of windows must be at least 1."
+            "state" : "translated",
+            "value" : "Le nombre de fenêtres doit être d'au moins 1."
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The number of windows must be at least 1."
+            "state" : "translated",
+            "value" : "ウインドウ数は 1 以上にしてください。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The number of windows must be at least 1."
+            "state" : "translated",
+            "value" : "O número de janelas deve ser pelo menos 1."
           }
         },
         "zh-Hans" : {
@@ -5507,8 +5507,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The number of windows must be at least 1."
+            "state" : "translated",
+            "value" : "視窗數量至少為 1。"
           }
         }
       }
@@ -5518,8 +5518,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The resize step"
+            "state" : "translated",
+            "value" : "Die Schrittweite"
           }
         },
         "en" : {
@@ -5530,26 +5530,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The resize step"
+            "state" : "translated",
+            "value" : "El paso de redimensionamiento"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The resize step"
+            "state" : "translated",
+            "value" : "Le pas de redimensionnement"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The resize step"
+            "state" : "translated",
+            "value" : "調整ステップ"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The resize step"
+            "state" : "translated",
+            "value" : "O passo de redimensionamento"
           }
         },
         "zh-Hans" : {
@@ -5560,8 +5560,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The resize step"
+            "state" : "translated",
+            "value" : "調整步長"
           }
         }
       }
@@ -5571,8 +5571,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The resize step must be more than 0% and at most 50%."
+            "state" : "translated",
+            "value" : "Die Schrittweite muss größer als 0 % und höchstens 50 % sein."
           }
         },
         "en" : {
@@ -5583,26 +5583,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The resize step must be more than 0% and at most 50%."
+            "state" : "translated",
+            "value" : "El paso de redimensionamiento debe ser mayor que 0 % y como máximo 50 %."
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The resize step must be more than 0% and at most 50%."
+            "state" : "translated",
+            "value" : "Le pas de redimensionnement doit être supérieur à 0 % et inférieur ou égal à 50 %."
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The resize step must be more than 0% and at most 50%."
+            "state" : "translated",
+            "value" : "調整ステップは 0% より大きく、50% 以下にしてください。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The resize step must be more than 0% and at most 50%."
+            "state" : "translated",
+            "value" : "O passo de redimensionamento deve ser maior que 0% e no máximo 50%."
           }
         },
         "zh-Hans" : {
@@ -5613,8 +5613,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The resize step must be more than 0% and at most 50%."
+            "state" : "translated",
+            "value" : "調整步長必須大於 0%，且不超過 50%。"
           }
         }
       }
@@ -5624,8 +5624,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Top"
+            "state" : "translated",
+            "value" : "Oben"
           }
         },
         "en" : {
@@ -5636,26 +5636,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Top"
+            "state" : "translated",
+            "value" : "Arriba"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Top"
+            "state" : "translated",
+            "value" : "Haut"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Top"
+            "state" : "translated",
+            "value" : "上"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Top"
+            "state" : "translated",
+            "value" : "Topo"
           }
         },
         "zh-Hans" : {
@@ -5666,8 +5666,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Top"
+            "state" : "translated",
+            "value" : "頂部"
           }
         }
       }
@@ -5677,8 +5677,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Top Half"
+            "state" : "translated",
+            "value" : "Obere Hälfte"
           }
         },
         "en" : {
@@ -5689,26 +5689,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Top Half"
+            "state" : "translated",
+            "value" : "Mitad superior"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Top Half"
+            "state" : "translated",
+            "value" : "Moitié supérieure"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Top Half"
+            "state" : "translated",
+            "value" : "上半分"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Top Half"
+            "state" : "translated",
+            "value" : "Metade superior"
           }
         },
         "zh-Hans" : {
@@ -5719,8 +5719,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Top Half"
+            "state" : "translated",
+            "value" : "上半部"
           }
         }
       }
@@ -5730,8 +5730,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Top Left"
+            "state" : "translated",
+            "value" : "Oben links"
           }
         },
         "en" : {
@@ -5742,26 +5742,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Top Left"
+            "state" : "translated",
+            "value" : "Arriba a la izquierda"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Top Left"
+            "state" : "translated",
+            "value" : "En haut à gauche"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Top Left"
+            "state" : "translated",
+            "value" : "左上"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Top Left"
+            "state" : "translated",
+            "value" : "Superior esquerdo"
           }
         },
         "zh-Hans" : {
@@ -5772,8 +5772,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Top Left"
+            "state" : "translated",
+            "value" : "左上角"
           }
         }
       }
@@ -5783,8 +5783,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Top Right"
+            "state" : "translated",
+            "value" : "Oben rechts"
           }
         },
         "en" : {
@@ -5795,26 +5795,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Top Right"
+            "state" : "translated",
+            "value" : "Arriba a la derecha"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Top Right"
+            "state" : "translated",
+            "value" : "En haut à droite"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Top Right"
+            "state" : "translated",
+            "value" : "右上"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Top Right"
+            "state" : "translated",
+            "value" : "Superior direito"
           }
         },
         "zh-Hans" : {
@@ -5825,8 +5825,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Top Right"
+            "state" : "translated",
+            "value" : "右上角"
           }
         }
       }
@@ -5836,8 +5836,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Top must be 0% or more."
+            "state" : "translated",
+            "value" : "Der Wert für „Oben“ muss mindestens 0 % sein."
           }
         },
         "en" : {
@@ -5848,26 +5848,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Top must be 0% or more."
+            "state" : "translated",
+            "value" : "El valor de arriba debe ser al menos 0 %."
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Top must be 0% or more."
+            "state" : "translated",
+            "value" : "La valeur du haut doit être supérieure ou égale à 0 %."
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Top must be 0% or more."
+            "state" : "translated",
+            "value" : "上は 0% 以上にしてください。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Top must be 0% or more."
+            "state" : "translated",
+            "value" : "O valor do topo deve ser de pelo menos 0%."
           }
         },
         "zh-Hans" : {
@@ -5878,8 +5878,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Top must be 0% or more."
+            "state" : "translated",
+            "value" : "頂部不能小於 0%。"
           }
         }
       }
@@ -5889,8 +5889,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Top plus height must not be more than 100%."
+            "state" : "translated",
+            "value" : "„Oben“ plus Höhe darf nicht mehr als 100 % sein."
           }
         },
         "en" : {
@@ -5901,26 +5901,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Top plus height must not be more than 100%."
+            "state" : "translated",
+            "value" : "El valor de arriba más el alto no puede superar el 100 %."
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Top plus height must not be more than 100%."
+            "state" : "translated",
+            "value" : "La valeur du haut plus la hauteur ne doit pas dépasser 100 %."
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Top plus height must not be more than 100%."
+            "state" : "translated",
+            "value" : "上 + 高さが 100% を超えないようにしてください。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Top plus height must not be more than 100%."
+            "state" : "translated",
+            "value" : "O topo mais a altura não pode passar de 100%."
           }
         },
         "zh-Hans" : {
@@ -5931,8 +5931,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Top plus height must not be more than 100%."
+            "state" : "translated",
+            "value" : "頂部加高度不能超過 100%。"
           }
         }
       }
@@ -5942,8 +5942,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Type shortcut…"
+            "state" : "translated",
+            "value" : "Tastaturkurzbefehl eingeben…"
           }
         },
         "en" : {
@@ -5954,26 +5954,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Type shortcut…"
+            "state" : "translated",
+            "value" : "Escribe un atajo…"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Type shortcut…"
+            "state" : "translated",
+            "value" : "Saisir un raccourci…"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Type shortcut…"
+            "state" : "translated",
+            "value" : "ショートカットを入力…"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Type shortcut…"
+            "state" : "translated",
+            "value" : "Digite o atalho…"
           }
         },
         "zh-Hans" : {
@@ -5984,8 +5984,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Type shortcut…"
+            "state" : "translated",
+            "value" : "輸入快速鍵…"
           }
         }
       }
@@ -5995,8 +5995,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Up"
+            "state" : "translated",
+            "value" : "Oben"
           }
         },
         "en" : {
@@ -6007,26 +6007,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Up"
+            "state" : "translated",
+            "value" : "Arriba"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Up"
+            "state" : "translated",
+            "value" : "Haut"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Up"
+            "state" : "translated",
+            "value" : "上"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Up"
+            "state" : "translated",
+            "value" : "Cima"
           }
         },
         "zh-Hans" : {
@@ -6037,8 +6037,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Up"
+            "state" : "translated",
+            "value" : "上方"
           }
         }
       }
@@ -6048,7 +6048,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
+            "state" : "translated",
             "value" : "Version"
           }
         },
@@ -6060,26 +6060,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Version"
+            "state" : "translated",
+            "value" : "Versión"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
+            "state" : "translated",
             "value" : "Version"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Version"
+            "state" : "translated",
+            "value" : "バージョン"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Version"
+            "state" : "translated",
+            "value" : "Versão"
           }
         },
         "zh-Hans" : {
@@ -6090,8 +6090,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Version"
+            "state" : "translated",
+            "value" : "版本"
           }
         }
       }
@@ -6101,8 +6101,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "When the windows do not fill the grid. With 3 windows in 2 × 2, rows first puts two windows on top and one across the bottom; columns first puts two on the left and one down the right side."
+            "state" : "translated",
+            "value" : "Wenn die Fenster das Raster nicht ausfüllen. Bei 3 Fenstern in einem 2 × 2-Raster setzt „Zeilen zuerst“ zwei Fenster nach oben und eines quer nach unten; „Spalten zuerst“ setzt zwei nach links und eines die rechte Seite hinunter."
           }
         },
         "en" : {
@@ -6113,26 +6113,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "When the windows do not fill the grid. With 3 windows in 2 × 2, rows first puts two windows on top and one across the bottom; columns first puts two on the left and one down the right side."
+            "state" : "translated",
+            "value" : "Cuando las ventanas no llenan la cuadrícula. Con 3 ventanas en 2 × 2, «Filas primero» coloca dos ventanas arriba y una a lo ancho abajo; «Columnas primero» coloca dos a la izquierda y una a lo largo de la derecha."
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "When the windows do not fill the grid. With 3 windows in 2 × 2, rows first puts two windows on top and one across the bottom; columns first puts two on the left and one down the right side."
+            "state" : "translated",
+            "value" : "Lorsque les fenêtres ne remplissent pas la grille. Avec 3 fenêtres en 2 × 2, « Lignes d'abord » place deux fenêtres en haut et une en bas sur toute la largeur ; « Colonnes d'abord » place deux fenêtres à gauche et une à droite sur toute la hauteur."
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "When the windows do not fill the grid. With 3 windows in 2 × 2, rows first puts two windows on top and one across the bottom; columns first puts two on the left and one down the right side."
+            "state" : "translated",
+            "value" : "ウインドウがグリッドを埋めきらない場合の配置方法です。2 × 2 のグリッドに 3 個のウインドウを配置する場合、「行優先」では上に 2 個、下に横長に 1 個を配置します。「列優先」では左に 2 個、右に縦長に 1 個を配置します。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "When the windows do not fill the grid. With 3 windows in 2 × 2, rows first puts two windows on top and one across the bottom; columns first puts two on the left and one down the right side."
+            "state" : "translated",
+            "value" : "Quando as janelas não preenchem a grade. Com 3 janelas em 2 × 2, “Linhas primeiro” põe duas janelas em cima e uma ocupando a parte de baixo; “Colunas primeiro” põe duas à esquerda e uma descendo pelo lado direito."
           }
         },
         "zh-Hans" : {
@@ -6143,8 +6143,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "When the windows do not fill the grid. With 3 windows in 2 × 2, rows first puts two windows on top and one across the bottom; columns first puts two on the left and one down the right side."
+            "state" : "translated",
+            "value" : "視窗數量不足以填滿網格時的排列方式。以 2 × 2 網格排列 3 個視窗時，「行優先」會將兩個視窗放在上方，另一個橫跨下方；「欄優先」會將兩個視窗放在左側，另一個佔滿右側。"
           }
         }
       }
@@ -6154,8 +6154,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Width"
+            "state" : "translated",
+            "value" : "Breite"
           }
         },
         "en" : {
@@ -6166,26 +6166,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Width"
+            "state" : "translated",
+            "value" : "Ancho"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Width"
+            "state" : "translated",
+            "value" : "Largeur"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Width"
+            "state" : "translated",
+            "value" : "幅"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Width"
+            "state" : "translated",
+            "value" : "Largura"
           }
         },
         "zh-Hans" : {
@@ -6196,8 +6196,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Width"
+            "state" : "translated",
+            "value" : "寬度"
           }
         }
       }
@@ -6207,8 +6207,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Width must be more than 0%."
+            "state" : "translated",
+            "value" : "Die Breite muss größer als 0 % sein."
           }
         },
         "en" : {
@@ -6219,26 +6219,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Width must be more than 0%."
+            "state" : "translated",
+            "value" : "El ancho debe ser mayor que 0 %."
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Width must be more than 0%."
+            "state" : "translated",
+            "value" : "La largeur doit être supérieure à 0 %."
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Width must be more than 0%."
+            "state" : "translated",
+            "value" : "幅は 0% より大きくしてください。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Width must be more than 0%."
+            "state" : "translated",
+            "value" : "A largura deve ser maior que 0%."
           }
         },
         "zh-Hans" : {
@@ -6249,8 +6249,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Width must be more than 0%."
+            "state" : "translated",
+            "value" : "寬度必須大於 0%。"
           }
         }
       }
@@ -6260,8 +6260,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Window animation"
+            "state" : "translated",
+            "value" : "Fensteranimation"
           }
         },
         "en" : {
@@ -6272,26 +6272,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Window animation"
+            "state" : "translated",
+            "value" : "Animación de ventanas"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Window animation"
+            "state" : "translated",
+            "value" : "Animation des fenêtres"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Window animation"
+            "state" : "translated",
+            "value" : "ウインドウのアニメーション"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Window animation"
+            "state" : "translated",
+            "value" : "Animação de janelas"
           }
         },
         "zh-Hans" : {
@@ -6302,8 +6302,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Window animation"
+            "state" : "translated",
+            "value" : "視窗動畫"
           }
         }
       }
@@ -6313,8 +6313,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Windows"
+            "state" : "translated",
+            "value" : "Fenster"
           }
         },
         "en" : {
@@ -6325,26 +6325,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Windows"
+            "state" : "translated",
+            "value" : "Ventanas"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Windows"
+            "state" : "translated",
+            "value" : "Fenêtres"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Windows"
+            "state" : "translated",
+            "value" : "ウインドウ数"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Windows"
+            "state" : "translated",
+            "value" : "Janelas"
           }
         },
         "zh-Hans" : {
@@ -6355,8 +6355,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Windows"
+            "state" : "translated",
+            "value" : "視窗數"
           }
         }
       }
