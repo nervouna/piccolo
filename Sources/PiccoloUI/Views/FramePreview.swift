@@ -26,6 +26,6 @@ struct FramePreview: View {
         .aspectRatio(16.0 / 10.0, contentMode: .fit)
         .frame(maxWidth: 176)
         .accessibilityElement()
-        .accessibilityLabel("Preview of the window layout")
+        .accessibilityLabel(Text(localized: "Preview of the window layout"))
     }
 }

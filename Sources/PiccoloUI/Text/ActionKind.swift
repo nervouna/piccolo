@@ -1,3 +1,4 @@
+import Foundation
 import PiccoloCore
 
 /// The four kinds of action, as the editor offers them: the first choice for a binding, before
@@ -17,12 +18,18 @@ public enum ActionKind: CaseIterable, Hashable, Sendable {
         }
     }
 
+    /// The name of the kind, in the language of the running app.
     public var title: String {
+        title(bundle: .module)
+    }
+
+    /// The name of the kind in the language of `bundle` (see ``ActionSummary``).
+    public func title(bundle: Bundle) -> String {
         switch self {
-        case .placeWindow: "Place Window"
-        case .moveToDisplay: "Move to Display"
-        case .arrangeGrid: "Arrange Grid"
-        case .moveDivider: "Move Divider"
+        case .placeWindow: String(localized: "Place Window", bundle: bundle)
+        case .moveToDisplay: String(localized: "Move to Display", bundle: bundle)
+        case .arrangeGrid: String(localized: "Arrange Grid", bundle: bundle)
+        case .moveDivider: String(localized: "Move Divider", bundle: bundle)
         }
     }
 

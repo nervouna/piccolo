@@ -23,16 +23,19 @@ struct ShortcutRecorderButton: View {
         }
         .buttonStyle(.bordered)
         .controlSize(.small)
-        .help(isRecording ? "Press the new shortcut, Escape to cancel, Delete to clear" : "Click, then press the shortcut")
+        .help(
+            isRecording
+                ? Text(localized: "Press the new shortcut, Escape to cancel, Delete to clear")
+                : Text(localized: "Click, then press the shortcut"))
     }
 
     private func title(isRecording: Bool) -> String {
         if isRecording {
-            return "Type shortcut…"
+            return String(localized: "Type shortcut…", bundle: .module)
         }
         if let shortcut = model.binding(bindingID)?.shortcut {
             return model.shortcutText(for: shortcut)
         }
-        return "Record Shortcut"
+        return String(localized: "Record Shortcut", bundle: .module)
     }
 }

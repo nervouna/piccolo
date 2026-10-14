@@ -4,8 +4,9 @@ import PiccoloCore
 
 /// What the Settings window shows and edits: the bindings, the settings of the config (resize step,
 /// window animation, grid fill order, destination preview), the problems with the config, which
-/// binding is selected and which is recording a shortcut, and whether Piccolo launches at login
-/// (not part of the config: the system keeps it, see ``LoginItemBackend``).
+/// binding is selected and which is recording a shortcut, whether Piccolo launches at login
+/// (not part of the config: the system keeps it, see ``LoginItemBackend``) and the language of the
+/// interface (not part of the config either: macOS keeps it per app, see ``LanguageBackend``).
 ///
 /// The window and the debug control commands call the same methods. Every accepted change is
 /// persisted through the ``SettingsBackend`` before it shows: the model never holds a config that
@@ -19,6 +20,9 @@ import PiccoloCore
 @MainActor
 @Observable
 public final class SettingsModel {
+    /// The language the running app shows its texts in: one of the eight, never ``AppLanguage/system``.
+    /// It does not change until Piccolo is started again.
+    public let effectiveLanguage: AppLanguage
     /// The bindings in the order the config keeps them.
     public private(set) var bindings: [KeyBinding]
     /// Fraction of the screen a linked resize moves a divider by, as in the config file.
@@ -54,25 +58,36 @@ public final class SettingsModel {
     /// The file name of the copy the last successful restore kept next to the config file, or `nil`
     /// when it kept none (there was no file).
     public private(set) var backupName: String?
+    /// The language chosen for the interface, or ``AppLanguage/system``. macOS applies it the next time
+    /// Piccolo starts; ``effectiveLanguage`` is the one the running app shows.
+    public private(set) var language: AppLanguage
+    /// Why the last restart could not be arranged, until the next one can. Shown next to the button.
+    public private(set) var restartError: String?
 
     @ObservationIgnored private let backend: any SettingsBackend
     @ObservationIgnored private let loginItem: any LoginItemBackend
+    @ObservationIgnored private let languageBackend: any LanguageBackend
     @ObservationIgnored private let characterForKeyCode: @MainActor (Int) -> String?
 
     /// - Parameters:
     ///   - backend: Where the config is read from and saved to.
     ///   - loginItem: The system's login item for Piccolo.
+    ///   - language: Where the language of the interface is stored, and how Piccolo restarts.
     ///   - characterForKeyCode: The character a key produces on the current keyboard layout;
     ///     ``KeyboardLayout`` is the live lookup.
     public init(
         backend: any SettingsBackend,
         loginItem: any LoginItemBackend,
+        language: any LanguageBackend,
         characterForKeyCode: @escaping @MainActor (Int) -> String? = { KeyboardLayout.character(forKeyCode: $0) }
     ) {
         self.backend = backend
         self.loginItem = loginItem
+        self.languageBackend = language
         self.characterForKeyCode = characterForKeyCode
         loginItemStatus = loginItem.status
+        self.language = language.storedLanguage
+        effectiveLanguage = language.runningLanguage
         let snapshot = backend.current()
         bindings = snapshot.config.bindings
         resizeStep = snapshot.config.resizeStep
@@ -130,7 +145,7 @@ public final class SettingsModel {
     @discardableResult
     public func removeBinding(_ id: UUID) -> Bool {
         guard let index = bindings.firstIndex(where: { $0.id == id }) else {
-            return reject(SettingsMessages.bindingGone)
+            return reject(SettingsMessages.bindingGone())
         }
         var candidate = config
         candidate.bindings.remove(at: index)
@@ -149,7 +164,7 @@ public final class SettingsModel {
     @discardableResult
     public func updateAction(_ id: UUID, to action: Action) -> Bool {
         guard let index = bindings.firstIndex(where: { $0.id == id }) else {
-            return reject(SettingsMessages.bindingGone)
+            return reject(SettingsMessages.bindingGone())
         }
         var candidate = config
         candidate.bindings[index].action = action
@@ -163,7 +178,7 @@ public final class SettingsModel {
     @discardableResult
     public func setShortcut(_ id: UUID, to shortcut: Shortcut?) -> Bool {
         guard let index = bindings.firstIndex(where: { $0.id == id }) else {
-            return reject(SettingsMessages.bindingGone)
+            return reject(SettingsMessages.bindingGone())
         }
         if let shortcut {
             guard shortcut.isRegistrable else {
@@ -215,6 +230,7 @@ public final class SettingsModel {
     public func clearError() {
         error = nil
         loginItemError = nil
+        restartError = nil
     }
 
     // MARK: Restoring the defaults
@@ -294,6 +310,46 @@ public final class SettingsModel {
         loginItem.openSystemSettings()
     }
 
+    // MARK: Language
+
+    /// Whether the chosen language differs from the one the running app shows, so that a restart
+    /// is needed to see the choice. ``AppLanguage/system`` is the language the system's list gives
+    /// now (``LanguageBackend/systemLanguage``): on a Mac set to Simplified Chinese, choosing System
+    /// default while the app runs in Simplified Chinese needs no restart.
+    public var restartRequired: Bool {
+        let chosen = language == .system ? languageBackend.systemLanguage : language
+        return chosen != effectiveLanguage
+    }
+
+    /// Chooses the language of the interface and stores it for the next launch. The running app keeps
+    /// its language: ``restartRequired`` says whether it differs, and ``restartNow()`` applies it.
+    public func setLanguage(_ language: AppLanguage) {
+        languageBackend.store(language)
+        self.language = languageBackend.storedLanguage
+        restartError = nil
+    }
+
+    /// Reads the stored choice again, for example when the window opens or the app is activated: the
+    /// user can give Piccolo a language in System Settings, and a script can write the defaults.
+    public func refreshLanguage() {
+        language = languageBackend.storedLanguage
+    }
+
+    /// Quits Piccolo and starts it again, so that the stored language applies. Does not return when it
+    /// works, because the app quits. Answers `false` when the restart could not be arranged;
+    /// ``restartError`` says why and the app keeps running.
+    @discardableResult
+    public func restartNow() -> Bool {
+        do {
+            try languageBackend.restart()
+        } catch {
+            restartError = SettingsMessages.restartFailed(error.message)
+            return false
+        }
+        restartError = nil
+        return true
+    }
+
     // MARK: Recording
 
     /// Starts recording a shortcut for a binding and suspends the global hotkeys. Recording a
@@ -302,7 +358,7 @@ public final class SettingsModel {
     @discardableResult
     public func beginRecording(_ id: UUID) -> Bool {
         guard binding(id) != nil else {
-            return reject(SettingsMessages.bindingGone)
+            return reject(SettingsMessages.bindingGone())
         }
         error = nil
         selectedBindingID = id
@@ -406,6 +462,6 @@ public final class SettingsModel {
 
     private static func message(for error: any Error) -> String {
         let text = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
-        return "The change could not be saved: \(text)"
+        return SettingsMessages.notSaved(text)
     }
 }

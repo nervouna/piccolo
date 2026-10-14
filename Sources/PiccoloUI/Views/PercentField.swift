@@ -26,7 +26,7 @@ struct PercentField: View {
                     .frame(width: 64)
                     .focused($isFocused)
                     .onSubmit(apply)
-                Text("%")
+                Text(verbatim: "%")
                     .foregroundStyle(.secondary)
                 Stepper(
                     title,

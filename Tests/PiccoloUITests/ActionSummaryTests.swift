@@ -30,7 +30,7 @@ struct ActionSummaryTests {
 
     @Test("the table covers every preset, and the names are distinct")
     func presetNamesAreComplete() {
-        let names = Preset.allCases.map(ActionSummary.name(of:))
+        let names = Preset.allCases.map { ActionSummary.name(of: $0) }
         #expect(names.count == 15)
         #expect(Set(names).count == names.count)
     }

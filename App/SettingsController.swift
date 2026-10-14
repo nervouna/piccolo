@@ -19,7 +19,8 @@ final class SettingsController {
 
     private init() {
         let model = SettingsModel(
-            backend: ConfigSettingsBackend(controller: .shared), loginItem: SystemLoginItemBackend())
+            backend: ConfigSettingsBackend(controller: .shared), loginItem: SystemLoginItemBackend(),
+            language: SystemLanguageBackend())
         self.model = model
         windowController = SettingsWindowController(
             model: model,
@@ -99,8 +100,10 @@ final class ConfigSettingsBackend: SettingsBackend {
             switch storeError {
             case .newerFileVersion(let version):
                 return SettingsSaveError(
-                    "the config file has format version \(version), which this version of Piccolo cannot "
-                        + "write; the file was left untouched")
+                    String(
+                        localized:
+                            "the config file has format version \(version), which this version of Piccolo cannot write; the file was left untouched"
+                    ))
             case .invalid(let validation):
                 return SettingsSaveError("\(validation)")
             }

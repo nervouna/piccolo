@@ -3,58 +3,72 @@ import PiccoloCore
 
 /// The words the Settings window uses for actions: one short line per action, for lists, menus
 /// and error messages. Pure, so that every action and preset is covered by a unit test.
+///
+/// The words are looked up in PiccoloUI's string catalog, in the language of `bundle`: the running
+/// app's by default, and a given language's ``AppLanguage/textBundle`` when a test wants to read a
+/// translation. The examples below are the English ones.
 public enum ActionSummary {
     /// One line that says what the action does: "Left Half", "Custom (25%, 0%, 50% × 100%)",
     /// "Next Display", "Arrange 4 in 2 × 2", "Move Divider Left".
-    public static func text(for action: Action) -> String {
+    public static func text(for action: Action, bundle: Bundle = AppLanguage.currentTextBundle) -> String {
         switch action {
         case .placeWindow(.preset(let preset)):
-            return name(of: preset)
+            return name(of: preset, bundle: bundle)
         case .placeWindow(.custom(let rect)):
-            return "Custom (\(percent(rect.x)), \(percent(rect.y)), \(percent(rect.width)) × \(percent(rect.height)))"
+            return String(
+                localized:
+                    "Custom (\(percent(rect.x)), \(percent(rect.y)), \(percent(rect.width)) × \(percent(rect.height)))",
+                bundle: bundle)
         case .moveToDisplay(let direction):
-            return name(of: direction)
+            return name(of: direction, bundle: bundle)
         case .arrangeGrid(let grid):
-            return "Arrange \(grid.count) in \(grid.rows) × \(grid.columns)"
+            return String(localized: "Arrange \(grid.count) in \(grid.rows) × \(grid.columns)", bundle: bundle)
         case .moveDivider(let direction):
-            return "Move Divider \(name(of: direction))"
+            switch direction {
+            case .left: return String(localized: "Move Divider Left", bundle: bundle)
+            case .right: return String(localized: "Move Divider Right", bundle: bundle)
+            case .up: return String(localized: "Move Divider Up", bundle: bundle)
+            case .down: return String(localized: "Move Divider Down", bundle: bundle)
+            }
         }
     }
 
-    public static func name(of preset: Preset) -> String {
+    public static func name(of preset: Preset, bundle: Bundle = AppLanguage.currentTextBundle) -> String {
         switch preset {
-        case .leftHalf: "Left Half"
-        case .rightHalf: "Right Half"
-        case .topHalf: "Top Half"
-        case .bottomHalf: "Bottom Half"
-        case .topLeft: "Top Left"
-        case .topRight: "Top Right"
-        case .bottomLeft: "Bottom Left"
-        case .bottomRight: "Bottom Right"
-        case .leftThird: "Left Third"
-        case .centerThird: "Center Third"
-        case .rightThird: "Right Third"
-        case .leftTwoThirds: "Left Two Thirds"
-        case .rightTwoThirds: "Right Two Thirds"
-        case .maximize: "Maximize"
-        case .center: "Center"
+        case .leftHalf: String(localized: "Left Half", bundle: bundle)
+        case .rightHalf: String(localized: "Right Half", bundle: bundle)
+        case .topHalf: String(localized: "Top Half", bundle: bundle)
+        case .bottomHalf: String(localized: "Bottom Half", bundle: bundle)
+        case .topLeft: String(localized: "Top Left", bundle: bundle)
+        case .topRight: String(localized: "Top Right", bundle: bundle)
+        case .bottomLeft: String(localized: "Bottom Left", bundle: bundle)
+        case .bottomRight: String(localized: "Bottom Right", bundle: bundle)
+        case .leftThird: String(localized: "Left Third", bundle: bundle)
+        case .centerThird: String(localized: "Center Third", bundle: bundle)
+        case .rightThird: String(localized: "Right Third", bundle: bundle)
+        case .leftTwoThirds: String(localized: "Left Two Thirds", bundle: bundle)
+        case .rightTwoThirds: String(localized: "Right Two Thirds", bundle: bundle)
+        case .maximize: String(localized: "Maximize", bundle: bundle)
+        case .center: String(localized: "Center", bundle: bundle)
         }
     }
 
-    public static func name(of direction: DisplayDirection) -> String {
+    public static func name(
+        of direction: DisplayDirection, bundle: Bundle = AppLanguage.currentTextBundle
+    ) -> String {
         switch direction {
-        case .next: "Next Display"
-        case .previous: "Previous Display"
+        case .next: String(localized: "Next Display", bundle: bundle)
+        case .previous: String(localized: "Previous Display", bundle: bundle)
         }
     }
 
     /// "Left", "Right", "Up" or "Down".
-    public static func name(of direction: Direction) -> String {
+    public static func name(of direction: Direction, bundle: Bundle = AppLanguage.currentTextBundle) -> String {
         switch direction {
-        case .left: "Left"
-        case .right: "Right"
-        case .up: "Up"
-        case .down: "Down"
+        case .left: String(localized: "Left", bundle: bundle)
+        case .right: String(localized: "Right", bundle: bundle)
+        case .up: String(localized: "Up", bundle: bundle)
+        case .down: String(localized: "Down", bundle: bundle)
         }
     }
 
