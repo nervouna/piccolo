@@ -1,4 +1,4 @@
-// Renders design/menubar-preview.png from the three menu bar glyph drawings.
+// Renders design/menubar-preview.png from the menu bar glyph drawings.
 //
 //   swift design/render-menubar-preview.swift
 //
@@ -6,14 +6,16 @@
 // of that backing scale would draw (height in points x scale), tinted black on a
 // light bar and white on a dark bar like a template image, and copied into the
 // sheet without any resampling, so one pixel of the sheet is one pixel on screen.
+// The column marked "native" is the drawing's own height; the others scale it.
 
 import AppKit
 
 let designDirectory = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
-let candidates: [(title: String, file: String)] = [
-    ("Candidate 1: filled panes", "menubar-icon.svg"),
-    ("Candidate 1b: latte, top pane empty", "menubar-icon-latte.svg"),
-    ("Candidate 2: outline", "menubar-icon-outline.svg"),
+let candidates: [(title: String, file: String, nativeHeight: Double)] = [
+    ("Candidate 1: filled panes, 18 pt grid", "menubar-icon.svg", 18),
+    ("Latte: 16 pt grid, ships", "menubar-icon-latte.svg", 16),
+    ("Latte: old 18 pt grid, not shipped", "menubar-icon-latte-18pt.svg", 18),
+    ("Candidate 2: outline, 18 pt grid", "menubar-icon-outline.svg", 18),
 ]
 let sizes: [Double] = [16, 18, 22]
 let scales: [Int] = [1, 2]
@@ -172,6 +174,10 @@ for (index, candidate) in candidates.enumerated() {
 
 // MARK: Text
 
+func sizeLabel(_ size: Double, _ nativeHeight: Double) -> String {
+    "\(Int(size)) pt" + (size == nativeHeight ? " native" : "")
+}
+
 func text(_ s: String, x: Int, top: Int, font: NSFont = labelFont, color: NSColor = textColor) {
     NSGraphicsContext.saveGraphicsState()
     NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: sheet)
@@ -189,13 +195,13 @@ for (index, candidate) in candidates.enumerated() {
     for row in rows {
         for (k, size) in sizes.enumerated() {
             let x = blockLeft + k * (cellWidth + cellGap)
-            text("\(Int(size)) pt", x: x, top: row.top + row.stripHeight + 2, font: smallFont, color: mutedColor)
+            text(sizeLabel(size, candidate.nativeHeight), x: x, top: row.top + row.stripHeight + 2, font: smallFont, color: mutedColor)
         }
     }
     for b in 0..<bars.count {
         for (k, size) in sizes.enumerated() {
             let x = blockLeft + k * (cellWidth + cellGap)
-            text("\(Int(size)) pt", x: x, top: zoomTops[b] + zoomRowHeight + 2, font: smallFont, color: mutedColor)
+            text(sizeLabel(size, candidate.nativeHeight), x: x, top: zoomTops[b] + zoomRowHeight + 2, font: smallFont, color: mutedColor)
         }
     }
 }
