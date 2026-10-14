@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="19" height="18" viewBox="0 0 19 18">
+  <!-- Candidate 2, outline. 19 x 18 pt, black on transparent, 1 unit = 1 pt.
+       The glass outline and the two gutters are 1 pt lines, the panes are left empty.
+       Rows (y): outline 0-1, top pane 1-8, gutter 8-9, bottom panes 9-17, outline 17-18.
+       Columns at y = 9: vertical gutter 11-12.
+       The sides lean in by 1 pt over the height, like the glass. -->
+  <g fill="#000">
+    <!-- Glass outline, 1 pt thick: the silhouette minus the same shape inset by 1 pt. -->
+    <path fill-rule="evenodd" d="M0.069 1.248C0.031 0.559 0.56 0 1.25 0L17.75 0C18.44 0 18.969 0.559 18.931 1.248L18.166 15.005C18.075 16.659 16.657 18 15 18L4 18C2.343 18 0.925 16.659 0.834 15.005ZM1.834 15.003C1.895 16.106 2.84 17 3.944 17L15.056 17C16.16 17 17.105 16.106 17.166 15.003L17.931 1.25C17.938 1.112 17.833 1 17.694 1L1.306 1C1.167 1 1.062 1.112 1.069 1.25Z"/>
+    <!-- Horizontal gutter, its ends reach half a point into the outline -->
+    <path d="M0.944 8L18.056 8L18 9L1 9Z"/>
+    <!-- Vertical gutter, from the horizontal one to half a point into the outline -->
+    <path d="M11 8.5L12 8.5L12 17.5L11 17.5Z"/>
+  </g>
+</svg>
