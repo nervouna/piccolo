@@ -86,7 +86,10 @@ extension DesktopAcceptanceTests {
                 #expect(state.bindings.count == 1, "the state lists \(state.bindings.count) bindings")
                 let added = try #require(state.bindings.first)
                 #expect(added.action == .placeWindow(.preset(.leftHalf)))
-                #expect(added.summary == "Left Half")
+                let texts = try InterfaceTexts.current(piccolo)
+                #expect(
+                    added.summary == texts.summary(of: .placeWindow(.preset(.leftHalf))),
+                    "the summary is \"\(added.summary)\" (\(texts.language.rawValue))")
                 #expect(added.shortcut == nil && added.shortcutText == nil)
                 #expect(state.error == nil, "adding a binding set the error \(state.error ?? "")")
 
@@ -110,7 +113,10 @@ extension DesktopAcceptanceTests {
                 let state = try piccolo.settingsUpdateAction(binding.id, grid)
 
                 #expect(state.bindings.first?.action == grid)
-                #expect(state.bindings.first?.summary == "Arrange 4 in 2 × 2")
+                let texts = try InterfaceTexts.current(piccolo)
+                #expect(
+                    state.bindings.first?.summary == texts.summary(of: grid),
+                    "the summary is \"\(state.bindings.first?.summary ?? "nil")\" (\(texts.language.rawValue))")
                 let changed = try session.fileBytes()
                 #expect(changed != before, "the file did not change")
                 #expect(try session.fileBindings().first?.action == grid)
@@ -119,7 +125,8 @@ extension DesktopAcceptanceTests {
                 let rejected = Action.arrangeGrid(GridSpec(count: 5, rows: 2, columns: 2))
                 let message = try piccolo.settingsUpdateActionExpectingRejection(binding.id, rejected)
 
-                #expect(message.contains("rows × columns"), "the message is \"\(message)\"")
+                let tooMany = texts.message(for: .outOfRange(field: "count", rule: "must be <= rows * columns"))
+                #expect(message == tooMany, "the message is \"\(message)\", expected \"\(tooMany)\"")
                 #expect(try session.fileBytes() == changed, "the rejected action changed the file")
                 let after = try piccolo.settingsState()
                 #expect(after.bindings.first?.action == grid, "the rejected action reached the state")
@@ -196,7 +203,10 @@ extension DesktopAcceptanceTests {
                 let state = try await session.record(secondID, TestShortcut.f14)
 
                 let message = try #require(state.error, "recording a taken shortcut did not set an error")
-                #expect(message.contains("Right Half"), "the message does not name the first binding's action: \"\(message)\"")
+                let rightHalf = try InterfaceTexts.current(piccolo).summary(of: first.action)
+                #expect(
+                    message.contains(rightHalf),
+                    "the message does not name the first binding's action \"\(rightHalf)\": \"\(message)\"")
                 let second = try #require(state.bindings.first { $0.id == secondID })
                 #expect(second.shortcut == nil, "the second binding got the shortcut \(String(describing: second.shortcut))")
                 #expect(state.bindings.first { $0.id == first.id }?.shortcut == TestShortcut.f14)
@@ -401,7 +411,9 @@ extension DesktopAcceptanceTests {
 
                 let message = try piccolo.settingsSetResizeStepExpectingRejection(0.9)
 
-                #expect(message.contains("50%"), "the message is \"\(message)\"")
+                let tooBig = try InterfaceTexts.current(piccolo).message(
+                    for: .outOfRange(field: "resizeStep", rule: "must be > 0 and <= 0.5"))
+                #expect(message == tooBig, "the message is \"\(message)\", expected \"\(tooBig)\"")
                 #expect(try session.fileBytes() == saved, "the rejected step changed the file")
                 let after = try piccolo.settingsState()
                 #expect(after.resizeStep == 0.1)

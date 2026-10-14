@@ -30,6 +30,15 @@ struct SettingsState: Decodable, Equatable {
     var tab: String
     /// What the system says about starting Piccolo at login, by the name of `LoginItemStatus`.
     var loginItem: String
+    /// The language chosen for the interface: `system`, or one of the codes `en`, `zh-Hans`, `zh-Hant`,
+    /// `ja`, `fr`, `es`, `pt-BR` and `de`. It applies the next time Piccolo starts.
+    var language: String
+    /// The language the running Piccolo shows its texts in: one of the eight codes, never `system`.
+    var effectiveLanguage: String
+    /// Whether the chosen language differs from the effective one, so that a restart is needed.
+    var restartRequired: Bool
+    /// Why the last restart could not be arranged, if it could not.
+    var restartError: String?
 }
 
 /// The Settings window commands of the Debug control channel.
@@ -151,6 +160,24 @@ extension PiccoloClient {
     @discardableResult
     func settingsSetDestinationPreview(_ enabled: Bool) throws -> SettingsState {
         try settingsCommand("settings.setDestinationPreview", ["enabled": .bool(enabled)])
+    }
+
+    /// `settings.setLanguage` with `system` or a code of the interface languages.
+    @discardableResult
+    func settingsSetLanguage(_ language: String) throws -> SettingsState {
+        try settingsCommand("settings.setLanguage", ["language": .string(language)])
+    }
+
+    /// `settings.setLanguage` with a value that must be refused. Returns the message.
+    func settingsSetLanguageExpectingRefusal(_ language: String) throws -> String {
+        try settingsExpectingRefusal("settings.setLanguage", ["language": .string(language)])
+    }
+
+    /// `settings.restartNow`: the code path of the Restart Now button. Piccolo answers first and quits a
+    /// moment later, so the answer comes from the process that is about to be replaced.
+    @discardableResult
+    func settingsRestartNow() throws -> SettingsState {
+        try settingsCommand("settings.restartNow")
     }
 
     // MARK: Recording

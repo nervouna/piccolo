@@ -20,9 +20,11 @@ public final class SettingsWindowController: NSObject, NSWindowDelegate {
 
     /// The name the frame is saved under. It changed with the taller default size, so that a frame
     /// saved by an earlier version, too short for the General tab, is not restored.
-    private static let frameAutosaveName = "PiccoloSettings.v2"
-    /// Tall enough for the whole General tab without scrolling (its form is about 760 pt high).
-    private static let defaultContentSize = NSSize(width: 640, height: 820)
+    private static let frameAutosaveName = "PiccoloSettings.v3"
+    /// Tall enough for the whole General tab without scrolling (its form is about 790 pt high, and the
+    /// tabs and the padding around it take about 60 pt). The restart note of the language picker, which
+    /// is there only after a change, makes the form about 80 pt higher; it scrolls then.
+    static let defaultContentSize = NSSize(width: 640, height: 880)
     private static let minimumContentSize = NSSize(width: 560, height: 480)
 
     public init(model: SettingsModel, host: SettingsHost) {
@@ -36,12 +38,14 @@ public final class SettingsWindowController: NSObject, NSWindowDelegate {
                 self?.model.cancelRecording()
             }
         }
-        // Back from System Settings, where the user may have allowed or removed the login item.
+        // Back from System Settings, where the user may have allowed or removed the login item, or
+        // given Piccolo a language of its own.
         activationObserver = NotificationCenter.default.addObserver(
             forName: NSApplication.didBecomeActiveNotification, object: nil, queue: .main
         ) { [weak self] _ in
             MainActor.assumeIsolated {
                 self?.model.refreshLoginItem()
+                self?.model.refreshLanguage()
             }
         }
     }
@@ -84,6 +88,7 @@ public final class SettingsWindowController: NSObject, NSWindowDelegate {
         }
         installKeyMonitor()
         model.refreshLoginItem()
+        model.refreshLanguage()
         NSApp.activate()
         window.makeKeyAndOrderFront(nil)
     }
@@ -105,7 +110,7 @@ public final class SettingsWindowController: NSObject, NSWindowDelegate {
         hosting.view.frame = NSRect(origin: .zero, size: Self.defaultContentSize)
 
         let window = NSWindow(contentViewController: hosting)
-        window.title = "Piccolo Settings"
+        window.title = String(localized: "Piccolo Settings", bundle: .module)
         window.styleMask = [.titled, .closable, .miniaturizable, .resizable]
         window.isReleasedWhenClosed = false
         window.delegate = self

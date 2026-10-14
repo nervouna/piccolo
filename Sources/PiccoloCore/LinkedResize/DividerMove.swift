@@ -3,6 +3,11 @@
 /// The divider is picked from the focused cell (see `plan`). It moves by one step in the direction
 /// of the key. Vertical dividers that are aligned in other rows move with it, so that a grid stays
 /// a grid.
+///
+/// A column layout is the transpose of a row layout, and so is a move on it: `plan` moves the divider
+/// of the transposed row layout, with the direction transposed (`left` and `up` swap, `right` and
+/// `down` swap), and transposes the result. Everything below is written for rows, and holds for
+/// columns with x and y, and widths and heights, swapped.
 public enum DividerMove {
     /// Two divider positions this close are the same position, which is how aligned dividers are
     /// found.
@@ -36,10 +41,18 @@ public enum DividerMove {
     /// The result is `nil` as well when there is no divider to move: a single cell in the row for
     /// `left` and `right`, a single row for `up` and `down`, or a `focusedCell` outside the layout.
     ///
+    /// On a column layout the same holds with the directions transposed. `left` and `right` move the
+    /// vertical divider between the focused column and the column on that side (the edge on the other
+    /// side when there is none), and every cell of both columns follows. `up` and `down` move a
+    /// horizontal divider of the focused column, and the horizontal dividers of other columns at the
+    /// same height move with it. The result is a column layout, and `nil` for a single column on
+    /// `left` and `right`, or a single cell in the column on `up` and `down`.
+    ///
     /// - Parameters:
-    ///   - layout: the layout to move the divider in. It must pass `TileLayout.validate()`, and so
-    ///     does the result.
-    ///   - focusedCell: the row-major index of the focused window's cell.
+    ///   - layout: the layout to move the divider in, a row layout or a column layout. It must pass
+    ///     `TileLayout.validate()`, and so does the result, which has the layout's orientation.
+    ///   - focusedCell: the index of the focused window's cell: row-major for a row layout,
+    ///     column-major for a column layout.
     ///   - direction: the key that was pressed.
     ///   - step: the fraction a divider moves by, greater than zero.
     ///   - minimumFraction: the smallest width or height a cell may be left with, greater than zero.
@@ -55,6 +68,11 @@ public enum DividerMove {
         precondition(
             minimumFraction.isFinite && minimumFraction > 0,
             "minimumFraction must be a positive, finite fraction")
+        if layout.orientation == .columns {
+            return plan(
+                layout: layout.transposed, focusedCell: focusedCell, direction: direction.transposed,
+                step: step, minimumFraction: minimumFraction)?.transposed
+        }
         guard let cell = locate(focusedCell, in: layout) else { return nil }
         switch direction {
         case .left, .right:
@@ -165,5 +183,18 @@ public enum DividerMove {
         result.rows[divider].height += sign * amount
         result.rows[divider + 1].height -= sign * amount
         return result
+    }
+}
+
+extension Direction {
+    /// The key that does for a column layout what this key does for a row layout: `left` and `up`
+    /// swap, `right` and `down` swap.
+    fileprivate var transposed: Direction {
+        switch self {
+        case .left: .up
+        case .up: .left
+        case .right: .down
+        case .down: .right
+        }
     }
 }

@@ -14,15 +14,24 @@ struct ShortcutsTab: View {
             editor
             StatusMessages(model: model)
         }
-        .alert("Restore the default shortcuts?", isPresented: $model.isConfirmingRestore) {
-            Button("Restore", role: .destructive) {
+        .alert(
+            Text(localized: "Restore the default shortcuts?"), isPresented: $model.isConfirmingRestore
+        ) {
+            Button(role: .destructive) {
                 model.restoreDefaultShortcuts()
+            } label: {
+                Text(localized: "Restore")
             }
-            Button("Cancel", role: .cancel) {
+            Button(role: .cancel) {
                 model.cancelRestoreDefaults()
+            } label: {
+                Text(localized: "Cancel")
             }
         } message: {
-            Text("The current shortcuts will be replaced by the defaults. A copy of the config file is kept next to it.")
+            Text(
+                localized:
+                    "The current shortcuts will be replaced by the defaults. A copy of the config file is kept next to it."
+            )
         }
     }
 
@@ -43,7 +52,7 @@ struct ShortcutsTab: View {
         .frame(minHeight: 96, idealHeight: 132, maxHeight: 180)
         .overlay {
             if model.bindings.isEmpty {
-                Text("No shortcuts yet. Click + to add one.")
+                Text(localized: "No shortcuts yet. Click + to add one.")
                     .foregroundStyle(.secondary)
             }
         }
@@ -56,8 +65,8 @@ struct ShortcutsTab: View {
             } label: {
                 Image(systemName: "plus")
             }
-            .help("Add a shortcut")
-            .accessibilityLabel("Add Shortcut")
+            .help(Text(localized: "Add a shortcut"))
+            .accessibilityLabel(Text(localized: "Add Shortcut"))
 
             Button {
                 if let id = model.selectedBindingID {
@@ -67,13 +76,18 @@ struct ShortcutsTab: View {
                 Image(systemName: "minus")
             }
             .disabled(model.selectedBindingID == nil)
-            .help("Remove the selected shortcut")
-            .accessibilityLabel("Remove Shortcut")
+            .help(Text(localized: "Remove the selected shortcut"))
+            .accessibilityLabel(Text(localized: "Remove Shortcut"))
 
-            Button("Restore Default Shortcuts…") {
+            Button {
                 model.askToRestoreDefaults()
+            } label: {
+                Text(localized: "Restore Default Shortcuts…")
             }
-            .help("Replace every shortcut with the defaults. A copy of the config file is kept next to it.")
+            .help(
+                Text(
+                    localized:
+                        "Replace every shortcut with the defaults. A copy of the config file is kept next to it."))
 
             Spacer()
         }
@@ -89,9 +103,15 @@ struct ShortcutsTab: View {
         if let id = model.selectedBindingID, let binding = model.binding(id) {
             BindingEditor(model: model, binding: binding)
         } else {
-            Text(model.bindings.isEmpty ? "" : "Select a shortcut to edit what it does.")
-                .foregroundStyle(.secondary)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            Group {
+                if model.bindings.isEmpty {
+                    Text(verbatim: "")
+                } else {
+                    Text(localized: "Select a shortcut to edit what it does.")
+                }
+            }
+            .foregroundStyle(.secondary)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
 }

@@ -10,6 +10,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     #endif
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Settles the language the app runs in before anything is looked up in another one.
+        _ = SystemLanguageBackend.launchLanguage
         accessibility.start()
         config.start()
         // Records which windows are focused from now on, so that the first "arrange" has a history.

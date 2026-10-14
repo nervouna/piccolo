@@ -3,7 +3,8 @@ import CoreGraphics
 extension LayoutGroup {
     /// One window that has to be sent to a new frame.
     public struct Step: Equatable, Sendable {
-        /// The row-major index of the window's cell.
+        /// The index of the window's cell (see ``LayoutGroup``): row-major for a row layout,
+        /// column-major for a column layout.
         public var cell: Int
         public var window: WindowID
         /// The frame to send the window to.
@@ -28,12 +29,12 @@ extension LayoutGroup {
     ///
     /// The order keeps windows from overlapping while the move is under way: the windows that do
     /// not grow come first (they shrink, or only move), then the windows that grow, each group in
-    /// row-major order. A window grows when its target is wider or higher than its current frame.
+    /// cell order. A window grows when its target is wider or higher than its current frame.
     /// When the divider travels, the window it leaves room for only grows into space that the
     /// shrinking window has given up by then.
     ///
     /// - Parameters:
-    ///   - previous: the frame of every cell before the move, in row-major order.
+    ///   - previous: the frame of every cell before the move, in cell order.
     ///   - targets: the frame of every cell after the move.
     ///   - current: the frame every window has now.
     /// - Precondition: each list has one frame per window of the group.

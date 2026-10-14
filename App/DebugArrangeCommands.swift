@@ -28,8 +28,11 @@ extension DebugControlServer {
     /// - `focus.history`: `{"windows": [window numbers]}`, most recently focused first.
     /// - `groups.list`: the groups of windows Piccolo arranged and still tracks, one per display:
     ///   `[{"display": index, "visibleFrame": rect, "layout": {"rows": [{"height", "widths": [...]}]},
-    ///   "windows": [{"window": number, "frame": rect}]}]`, the windows in cell order (row-major) with the
-    ///   frames recorded for them. Empty when there is none.
+    ///   "windows": [{"window": number, "frame": rect}]}]`, the windows in cell order with the frames
+    ///   recorded for them. A row layout (rows first) is written as `{"rows": [...]}` and its cells are
+    ///   numbered row by row; a column layout (`gridFillOrder` columns) is written as
+    ///   `{"columns": [{"width", "heights": [...]}]}` and its cells are numbered column by column, top to
+    ///   bottom within a column. Empty when there is none.
     nonisolated static func registerArrangeCommands(
         in router: inout ControlRouter, executor: @escaping @Sendable () -> ActionExecutor
     ) {
@@ -124,10 +127,25 @@ extension DebugControlServer {
 
     private nonisolated static func json(for entry: LayoutGroups.Entry) -> JSONValue {
         let group = entry.group
-        let rows = group.layout.rows.map { row -> JSONValue in
-            [
-                "height": .double(row.height),
-                "widths": .array(row.widths.map { .double($0) }),
+        let layout: JSONValue
+        switch group.layout.orientation {
+        case .rows:
+            layout = [
+                "rows": .array(group.layout.rows.map { row -> JSONValue in
+                    [
+                        "height": .double(row.height),
+                        "widths": .array(row.widths.map { .double($0) }),
+                    ]
+                })
+            ]
+        case .columns:
+            layout = [
+                "columns": .array(group.layout.columns.map { column -> JSONValue in
+                    [
+                        "width": .double(column.width),
+                        "heights": .array(column.heights.map { .double($0) }),
+                    ]
+                })
             ]
         }
         let windows = zip(group.windows, group.frames).map { window, frame -> JSONValue in
@@ -139,7 +157,7 @@ extension DebugControlServer {
         return [
             "display": .int(entry.display),
             "visibleFrame": JSONValue(rect: group.visibleFrame),
-            "layout": ["rows": .array(rows)],
+            "layout": layout,
             "windows": .array(windows),
         ]
     }

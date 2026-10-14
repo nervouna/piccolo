@@ -24,10 +24,11 @@ struct SettingsViewRenderTests {
         appVersion: "0.1.0 (1)")
 
     private func model(
-        _ bindings: [KeyBinding], issues: [String] = [], loginItem: FakeLoginItem = FakeLoginItem()
+        _ bindings: [KeyBinding], issues: [String] = [], loginItem: FakeLoginItem = FakeLoginItem(),
+        language: FakeLanguage = FakeLanguage()
     ) -> SettingsModel {
         let backend = InMemorySettingsBackend(config: Config(bindings: bindings), issues: issues)
-        return SettingsModel(backend: backend, loginItem: loginItem) { code in ["0": "a", "11": "b"][String(code)] }
+        return SettingsModel(backend: backend, loginItem: loginItem, language: language) { code in ["0": "a", "11": "b"][String(code)] }
     }
 
     /// Renders `view` at `size` with the given appearance and returns the bitmap.
@@ -164,6 +165,48 @@ struct SettingsViewRenderTests {
         let notGranted = try render(GeneralTab(model: missingModel, host: missing), dark: true)
         #expect(hasContent(notGranted))
         keep(notGranted, as: "general-not-granted-dark")
+    }
+
+    @Test("the General tab renders the language picker, with the restart note and the button when a restart is needed")
+    func generalTabLanguage() throws {
+        // The app runs in English, and the system's language is English too.
+        let language = FakeLanguage(stored: .system, running: .en, system: .en)
+        let model = model([], language: language)
+        let plain = try render(GeneralTab(model: model, host: host))
+        #expect(hasContent(plain))
+        #expect(!model.restartRequired)
+        keep(plain, as: "general-language")
+
+        model.setLanguage(.zhHans)
+        #expect(model.restartRequired)
+        let restart = try render(GeneralTab(model: model, host: host))
+        #expect(hasContent(restart))
+        #expect(png(restart) != png(plain), "the tab looks the same with and without the restart note and button")
+        keep(restart, as: "general-language-restart")
+
+        // Back to the language the app runs in: the note and the button go.
+        model.setLanguage(.en)
+        #expect(png(try render(GeneralTab(model: model, host: host))) != png(restart))
+
+        // A restart that cannot be arranged says so under the button.
+        model.setLanguage(.zhHans)
+        language.restartFailure = RestartError(message: "no helper")
+        model.restartNow()
+        let failed = try render(GeneralTab(model: model, host: host))
+        #expect(png(failed) != png(restart), "the failed restart shows no message")
+        keep(failed, as: "general-language-restart-error")
+    }
+
+    @Test("the General tab fits the default size of the window without scrolling")
+    func generalTabFits() {
+        let hosting = NSHostingView(rootView: GeneralTab(model: model([]), host: host))
+        hosting.frame = NSRect(origin: .zero, size: Self.size)
+
+        // The tab strip and the padding around the tab take about 60 pt.
+        let needed = hosting.fittingSize.height + 70
+        #expect(
+            needed <= SettingsWindowController.defaultContentSize.height,
+            "the General tab needs about \(needed) pt, the window opens \(SettingsWindowController.defaultContentSize.height) pt high")
     }
 
     @Test("the General tab renders every login item status, and the approval note and the error change what it shows")

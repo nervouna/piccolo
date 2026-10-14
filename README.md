@@ -61,6 +61,7 @@ Settings opens from the menu. It also opens when you launch Piccolo again while 
 
 <img src="docs/images/settings-general.png" alt="Settings window, General tab: the Launch at login switch, the resize step, the Accessibility status, the Reveal Config in Finder button and the app version." width="640">
 
+- **Language** is the language of Piccolo's menu and Settings window: System default or one of the [supported languages](#languages). A change applies after Piccolo restarts, which the Restart Now button under the picker does.
 - **Launch at login** starts Piccolo when you log in. When macOS is waiting for you to allow it, the tab says so and offers a button to open Login Items in System Settings.
 - **Window animation** is how long a window takes to move to its new place: Off, Fast (0.15 s, the default), Medium (0.25 s) or Slow (0.4 s). It applies to every action, including Arrange Grid and Move Divider.
 - **Arranging windows: Fill order** decides where the windows go when they do not fill the grid. With 3 windows in a 2 × 2 grid, Rows first (the default) puts two windows on top and one across the bottom; Columns first puts two on the left and one down the right side.
@@ -69,6 +70,14 @@ Settings opens from the menu. It also opens when you launch Piccolo again while 
 - **Accessibility** shows the permission status and opens its settings.
 - **Config** reveals the config file in Finder.
 - **Version** shows the app version and build number.
+
+### Languages
+
+Piccolo's menu and Settings window are available in English, Simplified Chinese (简体中文), Traditional Chinese (繁體中文), Japanese (日本語), French (Français), Spanish (Español), Brazilian Portuguese (Português (Brasil)) and German (Deutsch). English and Simplified Chinese are translated. The other six show the English text until their translations are added.
+
+By default Piccolo follows the language list of macOS (System Settings, General, Language & Region): the first language of the list that Piccolo is available in. To use another language, open Settings, go to the General tab and choose it under Language. The choice applies after Piccolo restarts: a line under the picker says so, and Restart Now quits Piccolo and starts it again. System default goes back to following macOS.
+
+The choice is stored as Piccolo's own language, which is the same setting System Settings changes under Language & Region, Applications, so changing it in either place changes the other. The config file does not hold it. The list of config problems in the Settings window and the log are in English whatever the language.
 
 ## Actions
 
@@ -119,7 +128,7 @@ Arrange Grid takes the `count` most recently focused windows and places them in 
 
 - **Which windows.** Only windows that are on screen in the current Space are used, on the display that holds the focused window. Without a focused window, the display of the frontmost window is used. Only standard windows are used, not panels, sheets or other auxiliary windows. Minimized and full-screen windows are left out, and so are the windows of an application that does not answer quickly. Piccolo's own windows are never arranged.
 - **Order.** The focused window counts as the most recently focused. Piccolo knows the focus order only since it started. Windows it has not seen focused come after the others, in front-to-back order.
-- **Cells.** The most recently focused window takes the top-left cell. The others fill the cells row by row, from left to right and from top to bottom. The cell edges are whole points, and neighbouring cells share their edges.
+- **Cells.** The most recently focused window takes the top-left cell. The others fill the cells row by row, from left to right and from top to bottom; with Columns first (General tab, or `gridFillOrder` in the config file) they fill column by column instead, from top to bottom and then from left to right, and Move Divider works on such a group with Left and Right moving the divider between the columns. The cell edges are whole points, and neighbouring cells share their edges.
 - **Fewer windows than cells.** The grid is laid out for the windows there are. The cells fill row by row, a last row that is not full stretches across the width, and the rows share the height. Three windows in a 2 × 2 grid give two cells side by side on top and one across the bottom.
 - **Cells too small.** If any cell would be less than 100 pt wide or high, nothing is moved, and the reason goes to the log.
 - **Failures.** A window that cannot be moved, for example because it was closed in the meantime, does not stop the others. Arranged windows are moved, not raised or focused.

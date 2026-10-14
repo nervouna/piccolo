@@ -14,10 +14,22 @@ public struct SettingsView: View {
     public var body: some View {
         TabView(selection: $model.tab) {
             ShortcutsTab(model: model)
-                .tabItem { Label("Shortcuts", systemImage: "keyboard") }
+                .tabItem {
+                    Label {
+                        Text(localized: "Shortcuts")
+                    } icon: {
+                        Image(systemName: "keyboard")
+                    }
+                }
                 .tag(SettingsTab.shortcuts)
             GeneralTab(model: model, host: host)
-                .tabItem { Label("General", systemImage: "gearshape") }
+                .tabItem {
+                    Label {
+                        Text(localized: "General")
+                    } icon: {
+                        Image(systemName: "gearshape")
+                    }
+                }
                 .tag(SettingsTab.general)
         }
         .padding(12)

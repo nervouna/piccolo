@@ -37,14 +37,16 @@ esac
 load_signing_env
 
 if [[ -n "$SIGN_IDENTITY" ]]; then
-    signing_overrides=("CODE_SIGN_IDENTITY=$SIGN_IDENTITY" "DEVELOPMENT_TEAM=$SIGN_TEAM")
+    # CODE_SIGN_STYLE=Manual applies to the package's resource bundle targets too (PiccoloUI has
+    # resources, so Xcode builds a bundle target for it): left automatic, they refuse the identity.
+    signing_overrides=("CODE_SIGN_STYLE=Manual" "CODE_SIGN_IDENTITY=$SIGN_IDENTITY" "DEVELOPMENT_TEAM=$SIGN_TEAM")
     log "Signing with the configured identity"
     if [[ "$CONFIGURATION" == "Release" && "${PICCOLO_NOTARIZABLE:-}" == "1" ]]; then
         signing_overrides+=("CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO" "OTHER_CODE_SIGN_FLAGS=--timestamp")
         log "Release signing for notarization: no get-task-allow, secure timestamp"
     fi
 else
-    signing_overrides=("CODE_SIGN_IDENTITY=-" "DEVELOPMENT_TEAM=")
+    signing_overrides=("CODE_SIGN_STYLE=Manual" "CODE_SIGN_IDENTITY=-" "DEVELOPMENT_TEAM=")
     log "No signing identity configured: building ad-hoc signed"
 fi
 
