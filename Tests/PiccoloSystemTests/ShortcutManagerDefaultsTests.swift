@@ -155,7 +155,7 @@ struct ShortcutManagerDefaultsTests {
         fixture.manager.load(from: fixture.configURL)
         let original = try Data(contentsOf: fixture.configURL)
 
-        let replacement = try fixture.manager.replaceKeepingCopy(with: .defaultShortcuts)
+        let replacement = try fixture.manager.replaceKeepingCopy(with: Config.defaultShortcuts.bindings)
 
         let copy = try #require(replacement.copy)
         #expect(copy.lastPathComponent.wholeMatch(of: #/config\.backup-\d{8}-\d{6}(-\d+)?\.json/#) != nil)
@@ -170,7 +170,7 @@ struct ShortcutManagerDefaultsTests {
     func replaceWithoutFile() throws {
         let fixture = try Fixture()
 
-        let replacement = try fixture.manager.replaceKeepingCopy(with: .defaultShortcuts)
+        let replacement = try fixture.manager.replaceKeepingCopy(with: Config.defaultShortcuts.bindings)
 
         #expect(replacement.copy == nil)
         #expect(try fixture.backupNames().isEmpty)
@@ -186,7 +186,7 @@ struct ShortcutManagerDefaultsTests {
         fixture.manager.load(from: fixture.configURL)
 
         #expect(throws: ConfigStoreError.newerFileVersion(2)) {
-            _ = try fixture.manager.replaceKeepingCopy(with: .defaultShortcuts)
+            _ = try fixture.manager.replaceKeepingCopy(with: Config.defaultShortcuts.bindings)
         }
 
         #expect(try Data(contentsOf: fixture.configURL) == newer)
@@ -201,12 +201,32 @@ struct ShortcutManagerDefaultsTests {
         try Data(#"{"version": 1, "bindings": [\#(json), {"id": "not-a-uuid"}]}"#.utf8).write(to: fixture.configURL)
         fixture.manager.load(from: fixture.configURL)
 
-        let replacement = try fixture.manager.replaceKeepingCopy(with: .defaultShortcuts)
+        let replacement = try fixture.manager.replaceKeepingCopy(with: Config.defaultShortcuts.bindings)
         #expect(replacement.copy != nil)
         #expect(replacement.status.issues.isEmpty, "the issues are \(replacement.status.issues)")
 
         try fixture.manager.save(Config(bindings: [binding(FunctionKey.f14)]))
         let copies = try fixture.backupNames()
         #expect(copies.count == 1, "the copies are \(copies)")
+    }
+
+    @Test("restoring keeps the resize step and the window settings, in the file and in the manager")
+    func restoreKeepsSettings() throws {
+        let fixture = try Fixture()
+        try ConfigStore(url: fixture.configURL).save(
+            Config(
+                resizeStep: 0.1, animation: .slow, gridFillOrder: .columns, destinationPreview: false,
+                bindings: [binding(FunctionKey.f13)]))
+        fixture.manager.load(from: fixture.configURL)
+        let defaults = Config.defaultShortcuts.bindings
+
+        let replacement = try fixture.manager.replaceKeepingCopy(with: defaults)
+
+        let expected = Config(
+            resizeStep: 0.1, animation: .slow, gridFillOrder: .columns, destinationPreview: false,
+            bindings: defaults)
+        #expect(try ConfigStore(url: fixture.configURL).load().config == expected)
+        #expect(fixture.manager.config == expected)
+        #expect(replacement.status.issues.isEmpty, "the issues are \(replacement.status.issues)")
     }
 }

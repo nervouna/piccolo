@@ -53,7 +53,7 @@ final class InMemorySettingsBackend: SettingsBackend {
     /// The file name `backUpAndReplace` gives its copy.
     static let copyName = "config.backup-test.json"
 
-    func backUpAndReplace(with config: Config) throws -> String? {
+    func backUpAndReplace(with bindings: [KeyBinding]) throws -> String? {
         if let failure {
             throw SettingsSaveError(failure)
         }
@@ -61,8 +61,10 @@ final class InMemorySettingsBackend: SettingsBackend {
         if let copy {
             copies.append(copy)
         }
-        self.config = config
-        saved.append(config)
+        var replaced = config
+        replaced.bindings = bindings
+        config = replaced
+        saved.append(replaced)
         suspendedAtSave.append(isSuspended)
         currentIssues = issuesAfterSave
         return copy

@@ -241,4 +241,21 @@ struct ShortcutManagerBackupTests {
         #expect(try fixture.bytes(ofBackup: newest) == secondOriginal)
         #expect(status.issues.last?.contains(newest) == true, "the issues are \(status.issues)")
     }
+
+    @Test("a save after a load that replaced an unreadable window setting makes a copy too")
+    func unreadableSettingMakesCopy() throws {
+        let fixture = try Fixture()
+        let kept = binding(FunctionKey.f13)
+        let original = Data(
+            #"{"animation": "bounce", "bindings": [\#(try fixture.json(kept))], "version": 1}"#.utf8)
+        try original.write(to: fixture.configURL)
+        fixture.manager.load(from: fixture.configURL)
+
+        try fixture.manager.save(Config(bindings: [kept]))
+
+        let copies = try fixture.backupNames()
+        #expect(copies.count == 1)
+        #expect(try fixture.bytes(ofBackup: try #require(copies.first)) == original)
+        #expect(try ConfigStore(url: fixture.configURL).load().config.animation == .fast)
+    }
 }

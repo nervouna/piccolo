@@ -85,9 +85,9 @@ final class ConfigSettingsBackend: SettingsBackend {
         return controller.status.issues
     }
 
-    func backUpAndReplace(with config: Config) throws -> String? {
+    func backUpAndReplace(with bindings: [KeyBinding]) throws -> String? {
         do {
-            return try controller.replaceKeepingCopy(with: config).copy?.lastPathComponent
+            return try controller.replaceKeepingCopy(with: bindings).copy?.lastPathComponent
         } catch {
             throw Self.saveError(error)
         }

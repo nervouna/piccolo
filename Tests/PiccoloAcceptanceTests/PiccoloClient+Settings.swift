@@ -16,6 +16,11 @@ struct SettingsState: Decodable, Equatable {
     var isOpen: Bool
     var bindings: [Binding]
     var resizeStep: Double
+    /// The window animation, by its name in the config file: `off`, `fast`, `medium` or `slow`.
+    var animation: String
+    /// The grid fill order, by its name in the config file: `rows` or `columns`.
+    var gridFillOrder: String
+    var destinationPreview: Bool
     var issues: [String]
     var error: String?
     var recordingBindingID: UUID?
@@ -123,6 +128,29 @@ extension PiccoloClient {
     /// `settings.setResizeStep` with a value that must be rejected. Returns the message.
     func settingsSetResizeStepExpectingRejection(_ value: Double) throws -> String {
         try settingsExpectingRefusal("settings.setResizeStep", ["value": .double(value)])
+    }
+
+    /// `settings.setAnimation` with a name of the config file (`off`, `fast`, `medium` or `slow`).
+    @discardableResult
+    func settingsSetAnimation(_ name: String) throws -> SettingsState {
+        try settingsCommand("settings.setAnimation", ["value": .string(name)])
+    }
+
+    /// `settings.setAnimation` with a name that must be refused. Returns the message.
+    func settingsSetAnimationExpectingRefusal(_ name: String) throws -> String {
+        try settingsExpectingRefusal("settings.setAnimation", ["value": .string(name)])
+    }
+
+    /// `settings.setGridFillOrder` with a name of the config file (`rows` or `columns`).
+    @discardableResult
+    func settingsSetGridFillOrder(_ name: String) throws -> SettingsState {
+        try settingsCommand("settings.setGridFillOrder", ["value": .string(name)])
+    }
+
+    /// `settings.setDestinationPreview`.
+    @discardableResult
+    func settingsSetDestinationPreview(_ enabled: Bool) throws -> SettingsState {
+        try settingsCommand("settings.setDestinationPreview", ["enabled": .bool(enabled)])
     }
 
     // MARK: Recording

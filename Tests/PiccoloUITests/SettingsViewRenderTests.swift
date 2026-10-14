@@ -15,7 +15,7 @@ import PiccoloCore
 @MainActor
 @Suite("Settings views render")
 struct SettingsViewRenderTests {
-    private static let size = NSSize(width: 640, height: 580)
+    private static let size = NSSize(width: 640, height: 820)
 
     private let host = SettingsHost(
         isAccessibilityTrusted: { true },

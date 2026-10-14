@@ -57,7 +57,7 @@ public final class ShortcutManager {
     /// The problems the last load found in the file itself, before the shortcuts were looked at.
     private var loadIssues: [String] = []
     /// Whether the file the last ``load(from:)`` read held entries that the load did not keep: a
-    /// skipped binding or an invalid `resizeStep`. A save over such a file copies it first.
+    /// skipped binding or a setting replaced by its default. A save over such a file copies it first.
     private var droppedEntries = false
     /// The copy made of the file before a save, since the last ``load(from:)``. There is at most
     /// one per load: later saves make no further copy, and the issues name this one until the next load.
@@ -131,15 +131,19 @@ public final class ShortcutManager {
         public var status: Status
     }
 
-    /// Makes `config` the config in use, as ``save(_:)`` does, after copying the file that is in use
-    /// next to itself as `ConfigStore.backUp()` does. The copy is made whatever the last load dropped:
-    /// the bindings are replaced as a whole, so the file as it was stays recoverable. Nothing is copied
-    /// or changed when `config` is refused.
+    /// Replaces the bindings of the config in use with `bindings` and saves the result, as ``save(_:)``
+    /// does, after copying the file that is in use next to itself as `ConfigStore.backUp()` does. The
+    /// settings (resize step, window animation, grid fill order, destination preview) are kept as they
+    /// are in use. The copy is made whatever the last load dropped: the bindings are replaced as a
+    /// whole, so the file as it was stays recoverable. Nothing is copied or changed when the result is
+    /// refused.
     ///
-    /// - Throws: `ConfigStoreError` when `config` is invalid or the file is from a newer version, and
+    /// - Throws: `ConfigStoreError` when the result is invalid or the file is from a newer version, and
     ///   the I/O error when the copy or the file cannot be written.
     @discardableResult
-    public func replaceKeepingCopy(with config: Config) throws -> Replacement {
+    public func replaceKeepingCopy(with bindings: [KeyBinding]) throws -> Replacement {
+        var config = self.config
+        config.bindings = bindings
         let store = ConfigStore(url: url)
         try store.checkSave(config)
         var copy: URL?

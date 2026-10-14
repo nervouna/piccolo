@@ -8,8 +8,9 @@ public struct LoadResult: Equatable, Sendable {
     /// The zero-based position in the file of each binding of `config`, by binding ID. Empty when
     /// the config did not come from a file: a missing or unusable file, or a newer version.
     public let sourceIndices: [UUID: Int]
-    /// Whether the file held something this load did not keep: a binding that was skipped, or an
-    /// invalid `resizeStep` that was replaced. Saving over such a file would lose it.
+    /// Whether the file held something this load did not keep: a binding that was skipped, or a
+    /// setting that could not be read and was replaced by its default. Saving over such a file
+    /// would lose it.
     public let droppedEntries: Bool
 
     init(
@@ -49,6 +50,9 @@ public struct ConfigStore: Sendable {
     ///   first valid one is kept; invalid bindings never claim an ID. Each kept binding keeps the
     ///   position it had in the file, counting the skipped ones, in `LoadResult.sourceIndices`.
     /// - An invalid `resizeStep` is replaced by the default.
+    /// - An `animation`, `gridFillOrder` or `destinationPreview` that cannot be read (an unknown
+    ///   name, or a value of the wrong type, `null` included) is replaced by its default, with an
+    ///   issue that names the key. A key the file does not hold takes its default without an issue.
     public func load() throws -> LoadResult {
         guard FileManager.default.fileExists(atPath: url.path) else {
             return LoadResult(config: .default, issues: [])
@@ -104,6 +108,16 @@ public struct ConfigStore: Sendable {
             }
         }
 
+        let animation = setting(
+            "animation", file.animation, fallback: Config.defaultAnimation,
+            issues: &issues, dropped: &droppedEntries)
+        let gridFillOrder = setting(
+            "gridFillOrder", file.gridFillOrder, fallback: Config.defaultGridFillOrder,
+            issues: &issues, dropped: &droppedEntries)
+        let destinationPreview = setting(
+            "destinationPreview", file.destinationPreview, fallback: Config.defaultDestinationPreview,
+            issues: &issues, dropped: &droppedEntries)
+
         var bindings: [KeyBinding] = []
         var sourceIndices: [UUID: Int] = [:]
         var seen: Set<UUID> = []
@@ -134,7 +148,12 @@ public struct ConfigStore: Sendable {
         }
 
         return LoadResult(
-            config: Config(resizeStep: resizeStep, bindings: bindings),
+            config: Config(
+                resizeStep: resizeStep,
+                animation: animation,
+                gridFillOrder: gridFillOrder,
+                destinationPreview: destinationPreview,
+                bindings: bindings),
             issues: issues,
             sourceIndices: sourceIndices,
             droppedEntries: droppedEntries)
@@ -263,11 +282,55 @@ private struct VersionProbe: Decodable {
     let version: Int
 }
 
-/// The top level of the file. Each binding and the step decode separately, so that one bad
+/// The top level of the file. Each binding and each setting decodes separately, so that one bad
 /// entry does not discard the others.
 private struct StoredFile: Decodable {
     let resizeStep: Lenient<Double>?
+    let animation: Lenient<WindowAnimation>?
+    let gridFillOrder: Lenient<GridFillOrder>?
+    let destinationPreview: Lenient<Bool>?
     let bindings: [Lenient<KeyBinding>]
+
+    private enum Keys: String, CodingKey {
+        case resizeStep, animation, gridFillOrder, destinationPreview, bindings
+    }
+
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: Keys.self)
+        resizeStep = try container.decodeIfPresent(Lenient<Double>.self, forKey: .resizeStep)
+        animation = try Self.present(.animation, in: container)
+        gridFillOrder = try Self.present(.gridFillOrder, in: container)
+        destinationPreview = try Self.present(.destinationPreview, in: container)
+        bindings = try container.decode([Lenient<KeyBinding>].self, forKey: .bindings)
+    }
+
+    /// The setting under `key`, read leniently, or `nil` when the file does not hold the key. A key
+    /// that is there is kept even when its value is `null`, so that the value is reported as unreadable.
+    private static func present<Value: Decodable>(
+        _ key: Keys, in container: KeyedDecodingContainer<Keys>
+    ) throws -> Lenient<Value>? {
+        guard container.contains(key) else { return nil }
+        return try container.decode(Lenient<Value>.self, forKey: key)
+    }
+}
+
+/// The value of one setting of the file: the stored value when it reads, otherwise `fallback`,
+/// with an issue naming the key and why, and `dropped` set. A setting the file does not hold is
+/// `fallback` without an issue.
+private func setting<Value>(
+    _ name: String, _ stored: Lenient<Value>?, fallback: Value,
+    issues: inout [String], dropped: inout Bool
+) -> Value {
+    guard let stored else { return fallback }
+    switch stored.result {
+    case .success(let value):
+        return value
+    case .failure(let error):
+        issues.append(
+            "\(name) could not be read (\(describeFailure(error))); using the default \(fallback)")
+        dropped = true
+        return fallback
+    }
 }
 
 /// Decodes a value or keeps the error, so that a failure stays inside its container.
