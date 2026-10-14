@@ -14,6 +14,10 @@ struct SettingsState: Decodable, Equatable {
     }
 
     var isOpen: Bool
+    /// Whether Piccolo is the active application (`NSApp.isActive`).
+    var isActive: Bool
+    /// Whether the Settings window is the key window of the active application.
+    var isKey: Bool
     var bindings: [Binding]
     var resizeStep: Double
     /// The window animation, by its name in the config file: `off`, `fast`, `medium` or `slow`.
