@@ -16,14 +16,33 @@ extension DebugControlServer {
     ///   fixture's pid so that they never move anybody's real windows. The result is
     ///   `{"target", "achieved"}` for a placement, `{"nothingToDo": true}`, or for `arrangeGrid`
     ///   `{"display": index, "windows": [{"window", "target", "achieved"} | {"window", "target", "error"}]}`.
+    ///   A `moveDivider` action runs as its shortcut would, with the resize step of the loaded config, on
+    ///   the group of the focused window; `onlyPid` also restricts it (a group with a window of another
+    ///   process is dissolved, not moved). The result is `{"moved": true, "display": index, "windows":
+    ///   [...]}` as for `arrangeGrid`, in cell order, or `{"nothingToDo": true, "reason": "noFocusedWindow" |
+    ///   "noGroup" | "dissolved" | "cannotMove", "message": text}`, where `dissolved` adds `"window"` (the
+    ///   number of the first window that broke the group) and `"cause"` (`"missing"` or `"moved"`).
     /// - `focus.history`: `{"windows": [window numbers]}`, most recently focused first.
+    /// - `groups.list`: the groups of windows Piccolo arranged and still tracks, one per display:
+    ///   `[{"display": index, "visibleFrame": rect, "layout": {"rows": [{"height", "widths": [...]}]},
+    ///   "windows": [{"window": number, "frame": rect}]}]`, the windows in cell order (row-major) with the
+    ///   frames recorded for them. Empty when there is none.
     nonisolated static func registerArrangeCommands(
         in router: inout ControlRouter, executor: @escaping @Sendable () -> ActionExecutor
     ) {
         router.register("action.run") { params in
             let action = try params.decode(Action.self)
-            let outcome = try executor().run(action, onlyPid: try onlyPid(in: params))
-            return json(for: outcome)
+            let pid = try onlyPid(in: params)
+            // The step is the one of the config in effect, as for a shortcut. Only a divider move uses it.
+            var step = Config.defaultResizeStep
+            if case .moveDivider = action {
+                step = onMainActor { ConfigController.shared.config.resizeStep }
+            }
+            return json(for: try executor().run(action, onlyPid: pid, resizeStep: step))
+        }
+
+        router.register("groups.list") { _ in
+            .array(executor().linkedGroups.map(json(for:)))
         }
 
         router.register("focus.history") { _ in
@@ -54,7 +73,61 @@ extension DebugControlServer {
                 "display": .int(arrangement.displayIndex),
                 "windows": .array(arrangement.windows.map(json(for:))),
             ]
+        case .dividerMove(.moved(let moved)):
+            return [
+                "moved": .bool(true),
+                "display": .int(moved.display),
+                "windows": .array(moved.windows.map(json(for:))),
+            ]
+        case .dividerMove(.nothingToDo(let reason)):
+            return json(for: reason)
         }
+    }
+
+    private nonisolated static func json(for reason: DividerMoveOutcome.Reason) -> JSONValue {
+        var entry: [String: JSONValue] = [
+            "nothingToDo": .bool(true),
+            "message": .string(reason.message),
+        ]
+        switch reason {
+        case .noFocusedWindow:
+            entry["reason"] = .string("noFocusedWindow")
+        case .noGroup:
+            entry["reason"] = .string("noGroup")
+        case .dissolved(.missing(let window)):
+            entry["reason"] = .string("dissolved")
+            entry["cause"] = .string("missing")
+            entry["window"] = .int(Int(window.rawValue))
+        case .dissolved(.moved(let window)):
+            entry["reason"] = .string("dissolved")
+            entry["cause"] = .string("moved")
+            entry["window"] = .int(Int(window.rawValue))
+        case .cannotMove:
+            entry["reason"] = .string("cannotMove")
+        }
+        return .object(entry)
+    }
+
+    private nonisolated static func json(for entry: LayoutGroups.Entry) -> JSONValue {
+        let group = entry.group
+        let rows = group.layout.rows.map { row -> JSONValue in
+            [
+                "height": .double(row.height),
+                "widths": .array(row.widths.map { .double($0) }),
+            ]
+        }
+        let windows = zip(group.windows, group.frames).map { window, frame -> JSONValue in
+            [
+                "window": .int(Int(window.rawValue)),
+                "frame": JSONValue(rect: frame),
+            ]
+        }
+        return [
+            "display": .int(entry.display),
+            "visibleFrame": JSONValue(rect: group.visibleFrame),
+            "layout": ["rows": .array(rows)],
+            "windows": .array(windows),
+        ]
     }
 
     private nonisolated static func json(for window: ArrangedWindow) -> JSONValue {

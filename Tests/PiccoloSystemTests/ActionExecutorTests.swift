@@ -205,22 +205,31 @@ struct ExecutorMoveToDisplayTests {
 
 @Suite("ActionExecutor: errors")
 struct ExecutorErrorTests {
-    @Test("moveDivider is not implemented, and nothing is looked up or changed", arguments: Direction.allCases)
-    func moveDivider(direction: Direction) {
+    @Test("moveDivider with a resize step that is no positive number is refused, and nothing is looked up or changed",
+        arguments: [0.0, -0.05, Double.nan, Double.infinity])
+    func invalidResizeStep(step: Double) {
         let window = Rig.window(at: Rig.onPrimary)
         let calls = Calls()
 
-        #expect(throws: ActionExecutionError.notImplemented(actionType: "moveDivider")) {
-            try executor(window: window, calls: calls).run(.moveDivider(direction))
+        do {
+            _ = try executor(window: window, calls: calls).run(.moveDivider(.left), resizeStep: step)
+            Issue.record("moveDivider accepted the resize step \(step)")
+        } catch let error as ActionExecutionError {
+            guard case .invalidResizeStep = error else {
+                Issue.record("unexpected error \(error)")
+                return
+            }
+        } catch {
+            Issue.record("unexpected error \(error)")
         }
         #expect(window.calls.isEmpty)
         #expect(calls.windows == 0 && calls.displays == 0)
     }
 
-    @Test("the not implemented error says so in words")
-    func notImplementedMessage() {
-        let error = ActionExecutionError.notImplemented(actionType: "moveDivider")
-        #expect(error.errorDescription == "the moveDivider action is not implemented yet")
+    @Test("the invalid resize step error says so in words")
+    func invalidResizeStepMessage() {
+        let error = ActionExecutionError.invalidResizeStep(-1)
+        #expect(error.errorDescription == "the resize step -1.0 is not a positive number")
     }
 
     @Test("a missing focused window is passed through unchanged", arguments: [
@@ -279,7 +288,7 @@ struct ExecutorErrorTests {
     @Test("every error carries a message for the control channel")
     func messages() {
         let errors: [any Error] = [
-            ActionExecutionError.notImplemented(actionType: "moveDivider"),
+            ActionExecutionError.invalidResizeStep(0),
             ActionPlanningError.noDisplays,
             WindowError.noFocusedWindow,
         ]

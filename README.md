@@ -13,10 +13,9 @@ What works:
 - Placing the focused window at a preset or a custom frame.
 - Moving the focused window to the next or previous display.
 - Arranging the most recently focused windows in a grid.
+- Linked resize: after Arrange Grid, Move Divider moves a divider and the neighbouring windows follow, with no gap and no overlap (see [Move Divider](#move-divider)).
 - The Settings window, for editing bindings and recording shortcuts.
 - Launching at login.
-
-What does not exist yet: linked resize. The Move Divider action can be configured and is saved to the config file, but it does nothing. Pressing its shortcut only logs that the action is not implemented. The resize step on the General tab is saved as well, but no action uses it yet.
 
 ## Requirements
 
@@ -63,7 +62,7 @@ Settings opens from the menu. It also opens when you launch Piccolo again while 
 <img src="docs/images/settings-general.png" alt="Settings window, General tab: the Launch at login switch, the resize step, the Accessibility status, the Reveal Config in Finder button and the app version." width="640">
 
 - **Launch at login** starts Piccolo when you log in. When macOS is waiting for you to allow it, the tab says so and offers a button to open Login Items in System Settings.
-- **Resize step** is how far a linked resize will move a divider, as a share of the screen. The default is 5%. Typed values above 0% up to 50% are accepted. The arrows change it in steps of 1%, between 1% and 50%. Linked resize is not implemented yet (see [Status](#status)).
+- **Resize step** is how far each Move Divider key press moves a divider, as a share of the display's visible width or height (see [Move Divider](#move-divider)). The default is 5%. Typed values above 0% up to 50% are accepted. The arrows change it in steps of 1%, between 1% and 50%.
 - **Accessibility** shows the permission status and opens its settings.
 - **Config** reveals the config file in Finder.
 - **Version** shows the app version and build number.
@@ -77,7 +76,7 @@ Each binding runs one action.
 | Place Window (`placeWindow`) | `frame`: a preset, or a custom frame | Sets the frame of the focused window. |
 | Move to Display (`moveToDisplay`) | `direction`: `next` or `previous` | Moves the focused window to the neighbouring display and keeps its relative frame. |
 | Arrange Grid (`arrangeGrid`) | `count`, `rows`, `columns` | Arranges the `count` most recently focused windows in a grid of `rows` by `columns` cells. |
-| Move Divider (`moveDivider`) | `direction`: `left`, `right`, `up` or `down` | Not implemented yet. The binding is saved and does nothing. |
+| Move Divider (`moveDivider`) | `direction`: `left`, `right`, `up` or `down` | Moves a divider between windows that Arrange Grid placed by one resize step, and the neighbouring windows follow. Does nothing for a window that is in no such group. |
 
 ### Place Window
 
@@ -121,6 +120,18 @@ Arrange Grid takes the `count` most recently focused windows and places them in 
 - **Fewer windows than cells.** The grid is laid out for the windows there are. The cells fill row by row, a last row that is not full stretches across the width, and the rows share the height. Three windows in a 2 × 2 grid give two cells side by side on top and one across the bottom.
 - **Cells too small.** If any cell would be less than 100 pt wide or high, nothing is moved, and the reason goes to the log.
 - **Failures.** A window that cannot be moved, for example because it was closed in the meantime, does not stop the others. Arranged windows are moved, not raised or focused.
+
+### Move Divider
+
+Move Divider works on windows that Arrange Grid placed, and only on those. After an arrangement, its windows form a group: side by side, stacked or in a grid. The key acts on the group that holds the focused window. When the focused window is in no group, nothing happens. Windows that you placed one by one, for example with Left Half and then Right Half, never form a group.
+
+- **Which divider moves.** The key moves the edge of the focused window that faces the direction of the key, and the divider travels in that direction. When that edge is the edge of the display, the opposite edge moves instead. With three windows side by side, A | B | C, Left from A moves the divider between A and B to the left (A gets narrower, B wider), and Right from B moves the divider between B and C to the right (B grows). With two windows there is one divider, and both windows move it the same way. Up and Down do the same for the dividers between rows. A window in the middle can only grow with its own keys; to make it smaller, press a key from its neighbour.
+- **Aligned dividers.** In a grid, vertical dividers that line up move together, so that a 2 × 2 grid stays a 2 × 2 grid. A row whose dividers do not line up with the moved one is not affected: with three windows in 2 × 2, the wide bottom window does not move when the divider between the two top windows does. The divider between rows runs across the whole width.
+- **Step.** Each press moves the divider by the resize step (General tab, default 5%) of the display's visible width or height.
+- **Limit.** No window gets narrower or lower than 10% of the display's visible width or height. A press that would cross the limit moves the divider as far as the limit allows, and at the limit the key does nothing.
+- **Windows that refuse a size.** A window may not accept the size it is asked for, for example because of a minimum size, or because a terminal resizes by character cell. The divider then stops where that window ended up, and its neighbour fills the space, so there is still no gap or overlap.
+- **Order.** The windows that get smaller are resized first and those that grow after, so that no window covers another while the divider moves.
+- **When a group dissolves.** There is one group per display, and arranging again on a display replaces its group. Groups are kept in memory only and are gone when Piccolo quits. A group is checked when you press a Move Divider key: when a window of the group has been closed, minimized or has left the screen, or an edge of one is more than 2 pt from where Piccolo left it (you moved or resized it), the group is dissolved and that press does nothing. Arrange the windows again to make a new group.
 
 ## Config file
 
@@ -176,7 +187,7 @@ The five bindings do the following:
 2. `⌃⌥C` places the window in a custom frame: 25% from the left, half the width, full height.
 3. `⌃⌥→` moves the window to the next display.
 4. `⌃⌥F13` arranges the four most recently focused windows in a 2 × 2 grid.
-5. `⌃⌥⌘←` moves a divider to the left. This binding does nothing yet.
+5. `⌃⌥⌘←` moves a divider to the left, in the windows that Arrange Grid placed.
 
 The keys can appear in any order. These are the keys of the file:
 

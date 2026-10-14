@@ -332,7 +332,7 @@ extension DesktopAcceptanceTests {
 
         // MARK: 8. Actions that are refused
 
-        @Test("actions 8. moveDivider, an impossible grid and malformed params are refused, and the window stays put")
+        @Test("actions 8. an impossible grid and malformed params are refused, and the window stays put")
         func refusedActions() async throws {
             let (screens, _) = try await loadScreens()
             let start = Layout.frame(in: screens[0], offset: CGPoint(x: 120, y: 80), size: CGSize(width: 640, height: 420))
@@ -345,11 +345,6 @@ extension DesktopAcceptanceTests {
                     "a grid that cannot hold its count",
                     ["type": "arrangeGrid", "count": 5, "rows": 2, "columns": 2],
                     ["count", "rows * columns"]
-                ),
-                (
-                    "moveDivider",
-                    ["type": "moveDivider", "direction": "left"],
-                    ["not implemented"]
                 ),
                 ("no type", [:], ["type"]),
                 ("unknown type", ["type": "teleport"], ["teleport"]),
