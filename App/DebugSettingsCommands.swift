@@ -9,8 +9,9 @@ import PiccoloUI
 /// The Settings window commands of the Debug control channel: `settings.open`, `settings.close`,
 /// `settings.state`, the view state (`settings.select`, `settings.showTab`), the edits
 /// (`settings.addBinding`, `settings.removeBinding`, `settings.updateAction`,
-/// `settings.setResizeStep`) and recording (`settings.beginRecording`, `settings.cancelRecording`,
-/// `settings.record`), and the login item (`loginItem.status`, `loginItem.set`).
+/// `settings.setResizeStep`, `settings.restoreDefaults`) and recording
+/// (`settings.beginRecording`, `settings.cancelRecording`, `settings.record`), and the login item
+/// (`loginItem.status`, `loginItem.set`).
 ///
 /// They drive the model the window uses, through the same methods and properties, so a rejected
 /// edit answers `ok: false` with the model's own message and the window follows what the commands
@@ -104,6 +105,18 @@ extension DebugControlServer {
                 let model = SettingsController.shared.model
                 guard model.setResizeStep(value) else { throw rejection(of: model) }
                 return settingsState()
+            }
+        }
+
+        // Replaces the bindings with the default shortcuts, as the Restore button does once confirmed,
+        // without the alert. Answers the state and `backup`: the name of the copy kept next to the
+        // config file, or null when there was no file to copy.
+        router.register("settings.restoreDefaults") { _ in
+            try onMainActor {
+                let model = SettingsController.shared.model
+                guard model.restoreDefaultShortcuts() else { throw rejection(of: model) }
+                let backup: JSONValue = model.backupName.map { JSONValue.string($0) } ?? .null
+                return settingsState(adding: ["backup": backup])
             }
         }
 
@@ -226,9 +239,9 @@ extension DebugControlServer {
         .object(["status": .string(SettingsController.shared.model.loginItemStatus.rawValue)])
     }
 
-    /// The model and the window as the commands answer with them.
+    /// The model and the window as the commands answer with them, with `extra` added to the answer.
     @MainActor
-    private static func settingsState() -> JSONValue {
+    private static func settingsState(adding extra: [String: JSONValue] = [:]) -> JSONValue {
         let settings = SettingsController.shared
         let model = settings.model
         // Read from the system, so that the state agrees with `loginItem.status` whatever the
@@ -266,6 +279,7 @@ extension DebugControlServer {
         if let recording = model.recordingBindingID {
             state["recordingBindingID"] = .string(recording.uuidString)
         }
+        state.merge(extra) { _, new in new }
         return .object(state)
     }
 

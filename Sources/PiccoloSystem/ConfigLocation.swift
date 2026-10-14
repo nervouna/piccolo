@@ -2,8 +2,9 @@ import Foundation
 
 /// Where the config file lives.
 public enum ConfigLocation {
-    /// `~/Library/Application Support/Piccolo/config.json`. Nothing is created: a missing file
-    /// means no bindings.
+    /// `~/Library/Application Support/Piccolo/config.json`. Loading never creates it, except at
+    /// launch, when a missing file is written with the default shortcuts (`ShortcutManager.loadAtLaunch(from:)`).
+    /// Any other load of a missing file means no bindings.
     public static var defaultURL: URL {
         let support =
             (try? FileManager.default.url(

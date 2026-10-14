@@ -661,4 +661,112 @@ struct SettingsModelTests {
         backend.replaceFromOutside(UIFixture.twoBindings())
         #expect(model.selectedBindingID == UIFixture.idB)
     }
+
+    // MARK: Restoring the default shortcuts
+
+    @Test("restoring keeps a copy of the file, replaces the bindings with the 25 defaults and keeps the resize step")
+    func restoreDefaults() {
+        let (model, backend) = make(Config(resizeStep: 0.2, bindings: UIFixture.twoBindings().bindings))
+
+        #expect(model.restoreDefaultShortcuts())
+
+        #expect(backend.copies == [InMemorySettingsBackend.copyName])
+        #expect(model.backupName == InMemorySettingsBackend.copyName)
+        #expect(model.bindings.count == 25)
+        #expect(model.bindings.map(\.action) == Config.defaultShortcuts.bindings.map(\.action))
+        #expect(model.bindings.map(\.shortcut) == Config.defaultShortcuts.bindings.map(\.shortcut))
+        #expect(model.resizeStep == 0.2)
+        #expect(backend.config.resizeStep == 0.2)
+        #expect(backend.config.bindings.count == 25)
+        #expect(model.error == nil)
+        #expect(model.selectedBindingID == model.bindings.first?.id)
+    }
+
+    @Test("the restored bindings have IDs that the replaced ones did not have")
+    func restoreDefaultsNewIDs() {
+        let (model, _) = make()
+        let before = Set(model.bindings.map(\.id))
+
+        #expect(model.restoreDefaultShortcuts())
+
+        #expect(Set(model.bindings.map(\.id)).isDisjoint(with: before))
+    }
+
+    @Test("asking and then cancelling changes nothing: no copy, no save, the bindings stay")
+    func restoreCancelChangesNothing() {
+        let (model, backend) = make()
+        let before = model.config
+
+        model.askToRestoreDefaults()
+        #expect(model.isConfirmingRestore)
+        model.cancelRestoreDefaults()
+
+        #expect(!model.isConfirmingRestore)
+        #expect(model.config == before)
+        #expect(backend.saved.isEmpty)
+        #expect(backend.copies.isEmpty)
+        #expect(model.backupName == nil)
+        #expect(model.error == nil)
+    }
+
+    @Test("asking does not replace anything until the restore is performed")
+    func askingChangesNothing() {
+        let (model, backend) = make()
+        let before = model.config
+
+        model.askToRestoreDefaults()
+
+        #expect(model.config == before)
+        #expect(backend.saved.isEmpty)
+        #expect(backend.copies.isEmpty)
+    }
+
+    @Test("performing a restore dismisses the confirmation")
+    func restoreDismissesConfirmation() {
+        let (model, _) = make()
+        model.askToRestoreDefaults()
+        #expect(model.restoreDefaultShortcuts())
+        #expect(!model.isConfirmingRestore)
+    }
+
+    @Test("a restore without a config file keeps no copy and still replaces the bindings")
+    func restoreWithoutFile() {
+        let (model, backend) = make(.default)
+        backend.hasFile = false
+
+        #expect(model.restoreDefaultShortcuts())
+
+        #expect(backend.copies.isEmpty)
+        #expect(model.backupName == nil)
+        #expect(model.bindings.count == 25)
+        #expect(backend.config.bindings.count == 25)
+    }
+
+    @Test("a restore the backend cannot carry out changes nothing, and the error says why")
+    func restoreFailure() {
+        let (model, backend) = make()
+        let before = model.config
+        backend.failure = "the disk is full"
+
+        #expect(!model.restoreDefaultShortcuts())
+
+        #expect(model.config == before)
+        #expect(model.backupName == nil)
+        #expect(backend.saved.isEmpty)
+        #expect(model.error?.contains("the disk is full") == true)
+    }
+
+    @Test("a restore ends a recording, since its binding is gone, and gives the hotkeys back")
+    func restoreEndsRecording() {
+        let (model, backend) = make()
+        model.beginRecording(UIFixture.idB)
+        #expect(backend.isSuspended)
+
+        #expect(model.restoreDefaultShortcuts())
+
+        #expect(model.recordingBindingID == nil)
+        #expect(!backend.isSuspended)
+        // The new bindings were saved while the hotkeys were suspended, and then registered.
+        #expect(backend.suspendedAtSave.last == true)
+    }
 }

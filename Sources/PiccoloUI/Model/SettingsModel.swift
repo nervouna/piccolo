@@ -42,6 +42,11 @@ public final class SettingsModel {
     /// Why the last change of the login item failed, until the next one succeeds. Separate from
     /// ``error``: it is shown next to the switch it belongs to.
     public private(set) var loginItemError: String?
+    /// Whether the confirmation for restoring the default shortcuts is showing. The alert binds to it.
+    public var isConfirmingRestore = false
+    /// The file name of the copy the last successful restore kept next to the config file, or `nil`
+    /// when it kept none (there was no file).
+    public private(set) var backupName: String?
 
     @ObservationIgnored private let backend: any SettingsBackend
     @ObservationIgnored private let loginItem: any LoginItemBackend
@@ -171,6 +176,44 @@ public final class SettingsModel {
     public func clearError() {
         error = nil
         loginItemError = nil
+    }
+
+    // MARK: Restoring the defaults
+
+    /// Asks for confirmation before the bindings are replaced by the default shortcuts.
+    public func askToRestoreDefaults() {
+        isConfirmingRestore = true
+    }
+
+    /// Dismisses the confirmation without a change.
+    public func cancelRestoreDefaults() {
+        isConfirmingRestore = false
+    }
+
+    /// Replaces every binding with `Config.defaultShortcuts` and keeps the resize step. The config file in
+    /// use is copied next to itself first, when there is one (see ``SettingsBackend``), so the current
+    /// shortcuts can be recovered. A recording ends, since its binding is gone and the hotkeys come back
+    /// with the new bindings, and the list selects the first binding.
+    ///
+    /// This does not ask: the window asks first (see ``askToRestoreDefaults()``). Answers whether the
+    /// bindings were replaced; when they were not, ``error`` says why and nothing changed.
+    @discardableResult
+    public func restoreDefaultShortcuts() -> Bool {
+        isConfirmingRestore = false
+        backupName = nil
+        let candidate = Config(resizeStep: resizeStep, bindings: Config.defaultShortcuts.bindings)
+        do {
+            try candidate.validate()
+        } catch {
+            return reject(SettingsMessages.describe(error))
+        }
+        do {
+            backupName = try backend.backUpAndReplace(with: candidate)
+        } catch {
+            return reject(Self.message(for: error))
+        }
+        reload()
+        return true
     }
 
     // MARK: Launch at login

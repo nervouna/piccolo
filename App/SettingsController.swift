@@ -79,16 +79,33 @@ final class ConfigSettingsBackend: SettingsBackend {
     func save(_ config: Config) throws -> [String] {
         do {
             try controller.save(config)
-        } catch ConfigStoreError.newerFileVersion(let version) {
-            throw SettingsSaveError(
-                "the config file has format version \(version), which this version of Piccolo cannot "
-                    + "write; the file was left untouched")
-        } catch ConfigStoreError.invalid(let error) {
-            throw SettingsSaveError("\(error)")
         } catch {
-            throw SettingsSaveError(error.localizedDescription)
+            throw Self.saveError(error)
         }
         return controller.status.issues
+    }
+
+    func backUpAndReplace(with config: Config) throws -> String? {
+        do {
+            return try controller.replaceKeepingCopy(with: config).copy?.lastPathComponent
+        } catch {
+            throw Self.saveError(error)
+        }
+    }
+
+    /// The words the window shows for a config that could not be saved.
+    private static func saveError(_ error: any Error) -> SettingsSaveError {
+        if let storeError = error as? ConfigStoreError {
+            switch storeError {
+            case .newerFileVersion(let version):
+                return SettingsSaveError(
+                    "the config file has format version \(version), which this version of Piccolo cannot "
+                        + "write; the file was left untouched")
+            case .invalid(let validation):
+                return SettingsSaveError("\(validation)")
+            }
+        }
+        return SettingsSaveError(error.localizedDescription)
     }
 
     func setShortcutsSuspended(_ suspended: Bool) {
