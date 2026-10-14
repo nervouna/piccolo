@@ -985,7 +985,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "カラム数"
+            "value" : "列数"
           }
         },
         "pt-BR" : {
@@ -1003,7 +1003,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "直欄數"
+            "value" : "欄數"
           }
         }
       }
@@ -1038,7 +1038,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "カラム優先"
+            "value" : "列優先"
           }
         },
         "pt-BR" : {
@@ -1056,7 +1056,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "直欄優先"
+            "value" : "欄優先"
           }
         }
       }
@@ -1091,7 +1091,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "カラム数は 1 以上にしてください。"
+            "value" : "列数は 1 以上にしてください。"
           }
         },
         "pt-BR" : {
@@ -1109,7 +1109,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "直欄數至少為 1。"
+            "value" : "欄數至少為 1。"
           }
         }
       }
@@ -2763,7 +2763,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Füllen"
+            "value" : "Maximieren"
           }
         },
         "en" : {
@@ -2775,25 +2775,25 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rellenar"
+            "value" : "Maximizar"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Remplir"
+            "value" : "Maximiser"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "画面全体に表示"
+            "value" : "最大化"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Preencher"
+            "value" : "Maximizar"
           }
         },
         "zh-Hans" : {
@@ -2805,7 +2805,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "填滿"
+            "value" : "最大化"
           }
         }
       }
@@ -3600,7 +3600,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Piccolo 無法重新開機：%@"
+            "value" : "Piccolo 無法重新啟動：%@"
           }
         }
       }
@@ -4236,7 +4236,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "立即重新開機"
+            "value" : "立即重新啟動"
           }
         }
       }
@@ -4713,7 +4713,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "行數"
+            "value" : "列數"
           }
         }
       }
@@ -4766,7 +4766,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "行優先"
+            "value" : "列優先"
           }
         }
       }
@@ -4819,7 +4819,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "行數至少為 1。"
+            "value" : "列數至少為 1。"
           }
         }
       }
@@ -5402,7 +5402,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "新的語言將在 Piccolo 重新開機後生效。"
+            "value" : "新的語言將在 Piccolo 重新啟動後生效。"
           }
         }
       }
@@ -5437,7 +5437,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ウインドウ数は 行数 × カラム数 を超えられません。"
+            "value" : "ウインドウ数は 行数 × 列数 を超えられません。"
           }
         },
         "pt-BR" : {
@@ -5455,7 +5455,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "視窗數量不能超過行數 × 直欄數。"
+            "value" : "視窗數量不能超過列數 × 欄數。"
           }
         }
       }
@@ -6144,7 +6144,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "視窗數量不足以填滿網格時的排列方式。以 2 × 2 網格排列 3 個視窗時，「行優先」會將兩個視窗放在上方，另一個橫跨下方；「欄優先」會將兩個視窗放在左側，另一個佔滿右側。"
+            "value" : "視窗數量不足以填滿網格時的排列方式。以 2 × 2 網格排列 3 個視窗時，「列優先」會將兩個視窗放在上方，另一個橫跨下方；「欄優先」會將兩個視窗放在左側，另一個佔滿右側。"
           }
         }
       }

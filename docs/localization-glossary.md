@@ -16,8 +16,8 @@ keyboard symbols (⌃ ⌥ ⇧ ⌘) and the name "Piccolo" as they are in every l
 | Accessibility | Accessibility | 辅助功能 | 輔助使用 | アクセシビリティ | Accessibilité | Accesibilidad | Acessibilidade | Bedienungshilfen | System Settings | The macOS permission and its pane. |
 | Login Items | Login Items | 登录项 | 登入項目 | ログイン項目 | Ouverture | Ítems de inicio | Itens de Início | Anmeldeobjekte | LoginItems.appex | The macOS pane. |
 | Launch at login | Launch at login | 登录时打开 | 在登入時打開 | ログイン時に開く | Ouvrir avec la session | Abrir al iniciar sesión | Abrir no Início da Sessão | Bei der Anmeldung öffnen | LoginItems.appex (Open at Login) | The switch in General. Apple's phrase for the same thing is "Open at Login". |
-| Restart | Restart | 重新启动 | 重新開機 | 再起動 | Redémarrer | Reiniciar | Reiniciar | neu starten | AppKit Menus (Restart); loginwindow (Restart) | The verb, as in "Restart Now". |
-| Restart Now | Restart Now | 立即重新启动 | 立即重新開機 | 今すぐ再起動 | Redémarrer | Reiniciar ahora | Reiniciar Agora | Jetzt neu starten | SoftwareUpdateSettingsExtension.appex (Restart Now) | The button of the restart prompt. |
+| Restart | Restart | 重新启动 | 重新啟動 | 再起動 | Redémarrer | Reiniciar | Reiniciar | neu starten | AppKit Menus (Restart); loginwindow (Restart) | The verb, as in "Restart Now". |
+| Restart Now | Restart Now | 立即重新启动 | 立即重新啟動 | 今すぐ再起動 | Redémarrer | Reiniciar ahora | Reiniciar Agora | Jetzt neu starten | SoftwareUpdateSettingsExtension.appex (Restart Now) | The button of the restart prompt. |
 | Quit | Quit | 退出 | 結束 | 終了 | Quitter | Salir | Encerrar | Beenden | AppKit Document (Quit) | "Quit Piccolo" is "Quit" and the name: Encerrar Piccolo, Piccoloを終了. |
 | General | General | 通用 | 一般 | 一般 | Général | General | Geral | Allgemein | GeneralSettings.appex (General) | The Settings tab with the language and the login item. |
 | Display | Display | 显示器 | 顯示器 | ディスプレイ | Moniteur | Pantalla | Tela | Display | ControlCenter (Display) | A monitor, as the system shows it. The pane is "Displays". |
@@ -26,8 +26,8 @@ keyboard symbols (⌃ ⌥ ⇧ ⌘) and the name "Piccolo" as they are in every l
 | Default | Default | 默认 | 預設 | デフォルト | par défaut | Por omisión | padrão | Standard | AppKit FontManager (Default); KeyboardSettings (Default) | "System default" in the language picker means the language of the system. |
 | Restore | Restore | 恢复 | 回復 | 復元 | Restaurer | Restaurar | Restaurar | Wiederherstellen | AppKit Revisions (Restore) | The button of the confirmation. |
 | Grid | Grid | 网格 | 網格 | グリッド | grille | cuadrícula | grade | Raster | Piccolo | The layout of rows and columns. Apple's "grid" is the gridlines. |
-| Rows | Rows | 行数 | 行數 | 行数 | lignes | filas | linhas | Zeilen | Piccolo | Also "Rows first" (fill order). |
-| Columns | Columns | 列数 | 直欄數 | カラム数 | colonnes | columnas | colunas | Spalten | Finder (Columns) | Also "Columns first". Finder's column view is 直欄 and カラム. |
+| Rows | Rows | 行数 | 列數 | 行数 | lignes | filas | linhas | Zeilen | Piccolo | Also "Rows first" (fill order). |
+| Columns | Columns | 列数 | 欄數 | 列数 | colonnes | columnas | colunas | Spalten | Piccolo | Also "Columns first". Grid columns, as in a table: Taiwan writes rows 列 and columns 欄, Japanese rows 行 and columns 列. Finder's 直欄 and カラム name its column view, not a count. |
 | Arrange | Arrange | 排列 | 排列 | 配置 | Organiser | Disponer | Organizar | Anordnen | AppKit MenuCommands (Arrange) | Arrange windows in a grid. Apple's Spanish noun is Disposición. |
 | Divider | Divider | 分隔线 | 分隔線 | 区切り線 | séparateur | divisor | divisor | Trennlinie | Piccolo | The line between linked windows. |
 | Resize step | Resize step | 调整步长 | 調整步長 | 調整ステップ | pas de redimensionnement | paso de redimensionamiento | passo de redimensionamento | Schrittweite | Piccolo | The fraction a divider moves by. |
@@ -42,7 +42,7 @@ keyboard symbols (⌃ ⌥ ⇧ ⌘) and the name "Piccolo" as they are in every l
 | Right | Right | 右侧 | 右側 | 右 | Droite | Derecha | Direita | Rechts | AppKit MenuCommands (Right) | |
 | Top | Top | 顶部 | 頂部 | 上 | Haut | Superior | Superior | Oben | AppKit MenuCommands (Top) | |
 | Center | Center | 居中 | 中央 | 中央に配置 | Centrer | Centrar | Centralizar | Zentriert | AppKit MenuCommands (Center) | |
-| Maximize | Maximize | 最大化 | 填滿 | 画面全体に表示 | Remplir | Rellenar | Preencher | Füllen | AppKit MenuCommands (Fill) | Apple's Move & Resize command for the same frame is Fill. |
+| Maximize | Maximize | 最大化 | 最大化 | 最大化 | Maximiser | Maximizar | Maximizar | Maximieren | Piccolo | Apple's Move & Resize command for the same frame is Fill (Füllen, Remplir, …), but Piccolo's English says Maximize, so the translations say maximize too. |
 | Config file | Config | 配置 | 設定檔 | 設定ファイル | configuration | configuración | configuração | Konfiguration | Piccolo | The file on disk. The label is "Config" / "Configuration". |
 | Granted | Granted | 已授权 | 已允許 | 許可済み | Autorisée | Permitida | Permitida | Erlaubt | KeyboardSettings / SecurityPrivacyExtension (Allow) | Apple's word for the permission is "Allow"; the tables have no "Granted". Not granted: 未授权, 未允許, 未許可, Non autorisée, No permitida, Não permitida, Nicht erlaubt. |
 | Escape | Esc | Esc | Esc | Esc | Esc | Esc | Esc | Esc | Accessibility (hotkey.key.escape); FunctionKeyNames (Esc, pt-BR) | Key name. |
@@ -76,8 +76,10 @@ The name in brackets is the key or the English text the translation was read fro
 
 - Where our English is not the phrase Apple uses for the same thing, the Source column gives
   Apple's phrase and its translation: Launch at login is "Open at Login", Reveal Config in Finder
-  is "Show in Finder", Maximize is Apple's "Fill" in the Move & Resize menu, and "Granted" is
-  Apple's "Allow" as an adjective. The English texts stay as they are.
+  is "Show in Finder", and "Granted" is Apple's "Allow" as an adjective. The English texts stay as
+  they are. Where Apple's phrase means something else than ours, ours wins: Maximize stays
+  maximize (Apple's "Fill" is a different word), and Restart in zh-Hant is 重新啟動 (Apple's
+  重新開機 is restarting the computer).
 - Shortcut in German is Tastaturkurzbefehl (Apple's "Keyboard shortcut"), not the bare
   Kurzbefehl, which macOS uses for the Shortcuts app. The Shortcuts tab is Tastaturkurzbefehle
   for the same reason.
