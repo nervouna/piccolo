@@ -19,7 +19,10 @@ import PiccoloCore
 ///   as the keyboard's auto-repeat, only the first reached the handler. A second plain key-down
 ///   without a key-up in between was not delivered either. The keyboard's own repeat could not be
 ///   produced from here (it is generated for physical keys), so this rests on the repeat flag.
-///   Nothing relies on it, though: ``HoldRules`` ignores a repeated press of the held shortcut.
+///   ``HoldRules`` relies on it: a press of the shortcut that is already held can only mean that its
+///   release was lost, so it ends the old hold and starts a new one, instead of ignoring it as a
+///   repeat. If a keyboard's own repeat were delivered after all, each repeat would restart the hold
+///   and the preview would not stay up.
 /// - **The release is delivered when the modifiers go up first.** After a key-down with the
 ///   modifiers, a flags-changed event with no flags and then the key-up without modifiers still gave
 ///   `kEventHotKeyReleased` for the hotkey, so a hold ends when the key does, in whatever order the

@@ -147,7 +147,7 @@ struct HoldRulesTests {
 
         #expect(rules.handle(.escape) == [.hidePreview])
         #expect(rules.last == HoldRules.Outcome(id: a, result: .cancelled, previewShown: true))
-        #expect(rules.held?.id == a, "the shortcut is still held, and a repeated press must not start a new hold")
+        #expect(rules.held?.id == a, "the shortcut is still held until its release")
 
         #expect(rules.handle(.release(a)) == [])
         #expect(rules.held == nil)
@@ -182,31 +182,81 @@ struct HoldRulesTests {
         #expect(rules.last == nil)
     }
 
-    // MARK: Repeated press
+    // MARK: A press of the shortcut that is held
 
-    @Test("a repeated press of the held shortcut is ignored, before and after the timer")
-    func repeatedPress() throws {
+    // The system delivers no auto-repeat for a hotkey (see CarbonHotkeyBackend), so a press of the
+    // shortcut that is already held can only mean that its release was lost. The old hold is over
+    // (cancelled, not run), and the press starts a new one.
+
+    @Test("a press of the held shortcut while waiting cancels the old hold without running it and starts a new one")
+    func pressOfHeldWhileWaiting() throws {
         var rules = previewOn()
-        let timer = try token(of: rules.handle(.press(a)))
-        #expect(rules.handle(.press(a)) == [])
+        let first = try token(of: rules.handle(.press(a)))
 
-        _ = rules.handle(.timerFired(timer))
-        #expect(rules.handle(.press(a)) == [])
-        #expect(rules.held?.phase == .previewing)
+        let effects = rules.handle(.press(a))
 
+        #expect(!effects.contains(.run(a)))
+        #expect(!effects.contains(.hidePreview), "no preview was shown yet")
+        let second = try token(of: effects)
+        #expect(first != second)
+        #expect(rules.held?.id == a)
+        #expect(rules.held?.phase == .waiting)
+        #expect(rules.last == HoldRules.Outcome(id: a, result: .cancelled, previewShown: false))
+
+        // The old hold's timer is stale; the new one shows the preview.
+        #expect(rules.handle(.timerFired(first)) == [])
+        #expect(rules.handle(.timerFired(second)) == [.showPreview(a)])
+    }
+
+    @Test("a press of the held shortcut while the preview shows hides it and starts a new hold")
+    func pressOfHeldWhilePreviewing() throws {
+        var rules = previewOn()
+        let first = try token(of: rules.handle(.press(a)))
+        _ = rules.handle(.timerFired(first))
+
+        let effects = rules.handle(.press(a))
+
+        #expect(effects.first == .hidePreview)
+        #expect(!effects.contains(.run(a)))
+        let second = try token(of: effects)
+        #expect(rules.held?.phase == .waiting)
+        #expect(rules.last == HoldRules.Outcome(id: a, result: .cancelled, previewShown: true))
+
+        #expect(rules.handle(.timerFired(first)) == [])
+        #expect(rules.handle(.timerFired(second)) == [.showPreview(a)])
         #expect(rules.handle(.release(a)) == [.hidePreview, .run(a)])
     }
 
-    @Test("a repeated press after Escape is ignored and does not restart the hold")
-    func repeatedPressAfterEscape() throws {
+    @Test("a press of the held shortcut after Escape starts a new hold, whose release runs the action")
+    func pressOfHeldAfterEscape() throws {
         var rules = previewOn()
-        let timer = try token(of: rules.handle(.press(a)))
-        _ = rules.handle(.timerFired(timer))
+        let first = try token(of: rules.handle(.press(a)))
+        _ = rules.handle(.timerFired(first))
         _ = rules.handle(.escape)
 
-        #expect(rules.handle(.press(a)) == [])
-        #expect(rules.handle(.release(a)) == [])
-        #expect(rules.last?.result == .cancelled)
+        let effects = rules.handle(.press(a))
+
+        #expect(!effects.contains(.hidePreview), "Escape hid the preview already")
+        _ = try token(of: effects)
+        #expect(rules.held?.phase == .waiting)
+        #expect(
+            rules.last == HoldRules.Outcome(id: a, result: .cancelled, previewShown: true),
+            "the outcome Escape recorded stays until the new hold ends")
+
+        #expect(rules.handle(.release(a)) == [.run(a)])
+        #expect(rules.last == HoldRules.Outcome(id: a, result: .ran, previewShown: false))
+    }
+
+    @Test("with a lost release the shortcut is not dead: the next press and release run the action")
+    func lostReleaseDoesNotKillTheShortcut() throws {
+        var rules = previewOn()
+        let first = try token(of: rules.handle(.press(a)))
+        _ = rules.handle(.timerFired(first))
+        // The release never comes. The user presses the shortcut again.
+        _ = rules.handle(.press(a))
+
+        #expect(rules.handle(.release(a)) == [.run(a)])
+        #expect(rules.held == nil)
     }
 
     // MARK: Another shortcut

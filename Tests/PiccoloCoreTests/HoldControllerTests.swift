@@ -107,12 +107,15 @@ struct HoldControllerTests {
         #expect(seen.effects == [.showPreview(b)])
     }
 
-    @Test("a repeated press does not start another timer")
-    func repeatedPress() {
+    @Test("a press of the held shortcut (its release was lost) replaces the timer: only the new hold's timer waits")
+    func pressOfHeld() {
         controller.send(.press(a))
         controller.send(.press(a))
-        controller.send(.press(a))
-        #expect(timer.scheduled.count == 1)
+        #expect(timer.scheduled.count == 2)
+        #expect(timer.pending == 1)
+
+        timer.fireDue()
+        #expect(seen.effects == [.showPreview(a)], "one preview, from the new hold")
     }
 
     @Test("cancel-all stops the timer and hides a preview that shows")

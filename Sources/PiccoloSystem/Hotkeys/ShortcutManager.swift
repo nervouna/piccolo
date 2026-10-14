@@ -14,7 +14,11 @@ import PiccoloCore
 /// will go (`onPreview`), and Escape pressed while the shortcut is held cancels it. For Escape to
 /// reach Piccolo and not the frontmost application, it is registered as a temporary hotkey with the
 /// held shortcut's modifiers while the shortcut is held, unless the shortcut is on Escape itself.
-/// Loading, saving and suspending end whatever is held without running it.
+/// Loading, saving and suspending end whatever is held without running it, and so do the system going
+/// to sleep, the screen locking and the session being switched away (`HoldInterruptionSource`), so that
+/// no preview and no temporary Escape outlives a lock. A press of the shortcut that is held already
+/// means its release was lost (the system delivers no auto-repeat for a hotkey): the old hold ends
+/// without running and the press starts a new one.
 ///
 /// ``save(_:)`` writes an edited config to the file that is loaded and applies it.
 /// ``setSuspended(_:)`` releases every hotkey for a while, for example while a shortcut is being
@@ -78,6 +82,7 @@ public final class ShortcutManager {
     private let registrar: HotkeyRegistrar
     private let onAction: @MainActor (_ action: Action, _ bindingID: UUID) -> Void
     private let hold: HoldController
+    private let interruptions: any HoldInterruptionSource
     private var actions: [UUID: Action] = [:]
     /// The shortcut of every registered binding.
     private var shortcuts: [UUID: Shortcut] = [:]
@@ -134,22 +139,38 @@ public final class ShortcutManager {
     /// - Parameters:
     ///   - initialURL: The file reported by ``status`` before anything is loaded.
     ///   - holdTimer: Times how long a shortcut has been held.
+    ///   - interruptions: Tells when the system sleeps, locks the screen or switches the session away,
+    ///     which ends a hold (see ``cancelHold()``).
     ///   - onAction: Called on the main thread when the action of a registered shortcut is to run:
     ///     when the shortcut is pressed, or, with the destination preview on, released.
     public init(
         registrar: HotkeyRegistrar,
         initialURL: URL,
         holdTimer: any HoldTimer = MainQueueHoldTimer(),
+        interruptions: any HoldInterruptionSource = SystemHoldInterruptions(),
         onAction: @escaping @MainActor (_ action: Action, _ bindingID: UUID) -> Void
     ) {
         self.registrar = registrar
         self.onAction = onAction
         self.hold = HoldController(timer: holdTimer)
+        self.interruptions = interruptions
         self.url = initialURL
         self.status = Status(path: initialURL.path)
         hold.onEffect = { [weak self] effect in
             self?.carryOut(effect)
         }
+        interruptions.start { [weak self] in
+            self?.cancelHold()
+        }
+    }
+
+    /// Ends the shortcut that is held, if any, without running it: the preview is hidden and the
+    /// temporary Escape is released. This is what a load, a save or a suspension does, and what the
+    /// system going to sleep, locking the screen or switching the session away does: the key-up of the
+    /// shortcut may never arrive then, and nothing may stay registered across a lock.
+    public func cancelHold() {
+        hold.send(.cancelAll)
+        syncEscape()
     }
 
     /// Loads the config at `url` and registers its shortcuts, replacing whatever was loaded

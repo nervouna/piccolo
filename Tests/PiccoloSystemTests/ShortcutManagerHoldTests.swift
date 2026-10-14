@@ -30,6 +30,23 @@ final class ManualTimer: HoldTimer {
     }
 }
 
+/// Tells the shortcut manager that the system went to sleep, locked the screen and so on, when the test
+/// says so.
+@MainActor
+final class ManualInterruptions: HoldInterruptionSource {
+    private var handler: (@MainActor () -> Void)?
+    private(set) var startCount = 0
+
+    func start(_ handler: @escaping @MainActor () -> Void) {
+        startCount += 1
+        self.handler = handler
+    }
+
+    func interrupt() {
+        handler?()
+    }
+}
+
 /// The hold rules inside the shortcut manager: press, release, the preview callbacks and the
 /// temporary Escape hotkey, against the fake backend and a timer the test fires.
 @MainActor
@@ -45,6 +62,7 @@ struct ShortcutManagerHoldTests {
         let directory: URL
         let backend = FakeHotkeyBackend()
         let timer = ManualTimer()
+        let interruptions = ManualInterruptions()
         let manager: ShortcutManager
         private let log = Log()
         var runs: [UUID] { log.runs }
@@ -59,7 +77,8 @@ struct ShortcutManagerHoldTests {
             manager = ShortcutManager(
                 registrar: HotkeyRegistrar(backend: backend),
                 initialURL: directory.appending(path: "config.json"),
-                holdTimer: timer
+                holdTimer: timer,
+                interruptions: interruptions
             ) { _, id in
                 log.runs.append(id)
             }
@@ -137,20 +156,88 @@ struct ShortcutManagerHoldTests {
         #expect(rig.timer.delays == [0.2])
     }
 
-    @Test("a repeated press of the held shortcut changes nothing")
-    func repeatedPress() throws {
+    @Test("a press of the held shortcut means its release was lost: the old hold ends without running, a new one starts, and Escape stays registered")
+    func pressOfHeldShortcut() throws {
         let rig = try Rig()
         let a = binding(FunctionKey.f13, left)
         try rig.load([a])
 
         rig.backend.press(a.shortcut!)
         rig.timer.fireDue()
+        #expect(rig.previews == [.show(left, bindingID: a.id)])
+
+        // The key-up never came. The key goes down again.
         rig.backend.press(a.shortcut!)
-        rig.backend.press(a.shortcut!)
+        #expect(rig.previews == [.show(left, bindingID: a.id), .hide])
+        #expect(rig.runs.isEmpty, "the lost hold must not run")
+        #expect(rig.manager.heldBindingID == a.id)
+        #expect(rig.backend.liveShortcuts.contains(escape(hyper)))
+
+        rig.timer.fireDue()
+        #expect(rig.previews == [.show(left, bindingID: a.id), .hide, .show(left, bindingID: a.id)])
         rig.backend.release(a.shortcut!)
 
+        #expect(rig.previews == [.show(left, bindingID: a.id), .hide, .show(left, bindingID: a.id), .hide])
+        #expect(rig.runs == [a.id], "the new hold runs once, on release")
+        #expect(!rig.backend.liveShortcuts.contains(escape(hyper)))
+    }
+
+    // MARK: The system goes away
+
+    @Test("sleep, a locked screen or an inactive session ends a hold without running it: preview hidden, Escape released")
+    func interruptionCancels() throws {
+        let rig = try Rig()
+        let a = binding(FunctionKey.f13, left, [])
+        try rig.load([a])
+        #expect(rig.interruptions.startCount == 1, "the manager listens for interruptions from the start")
+
+        rig.backend.press(a.shortcut!)
+        rig.timer.fireDue()
+        #expect(rig.backend.liveShortcuts.contains(escape([])), "a bare function key takes plain Escape while held")
+
+        rig.interruptions.interrupt()
+
         #expect(rig.previews == [.show(left, bindingID: a.id), .hide])
+        #expect(rig.runs.isEmpty)
+        #expect(rig.manager.heldBindingID == nil)
+        #expect(!rig.manager.escapeIsRegistered)
+        #expect(!rig.backend.liveShortcuts.contains(escape([])), "no temporary Escape may survive")
+        #expect(rig.manager.lastHold == HoldRules.Outcome(id: a.id, result: .cancelled, previewShown: true))
+
+        // The key-up that arrives after the wake-up belongs to a hold that is over.
+        rig.backend.release(a.shortcut!)
+        #expect(rig.runs.isEmpty)
+        // And the shortcut works again.
+        rig.backend.press(a.shortcut!)
+        rig.backend.release(a.shortcut!)
         #expect(rig.runs == [a.id])
+    }
+
+    @Test("an interruption with nothing held changes nothing")
+    func interruptionWithNothingHeld() throws {
+        let rig = try Rig()
+        let a = binding(FunctionKey.f13, left)
+        try rig.load([a])
+        let calls = rig.backend.calls.count
+
+        rig.interruptions.interrupt()
+
+        #expect(rig.previews.isEmpty)
+        #expect(rig.backend.calls.count == calls)
+    }
+
+    @Test("cancelHold ends the hold the same way")
+    func cancelHold() throws {
+        let rig = try Rig()
+        let a = binding(FunctionKey.f13, left)
+        try rig.load([a])
+        rig.backend.press(a.shortcut!)
+
+        rig.manager.cancelHold()
+
+        #expect(rig.manager.heldBindingID == nil)
+        #expect(!rig.manager.escapeIsRegistered)
+        #expect(rig.runs.isEmpty)
     }
 
     @Test("a release the system delivers for a shortcut that is not held is ignored")

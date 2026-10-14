@@ -18,10 +18,12 @@ import Foundation
 ///   tap: it runs the action and nothing is shown. When the timer fires with the shortcut still held,
 ///   the preview is shown; the release then hides it and runs the action.
 /// - Escape while a shortcut is held cancels it: the preview is hidden if it was shown, and the release
-///   then does nothing. The shortcut stays held until it is released, so that its auto-repeat is not
-///   mistaken for a new press.
-/// - A repeated press of the held shortcut is ignored. A press of another shortcut cancels the held one
-///   (no action) and takes over. A release of a shortcut that is not the held one is ignored.
+///   then does nothing. The shortcut stays held until it is released.
+/// - A press of any shortcut while one is held, also of the held one, cancels the held one (no action)
+///   and takes over. The held shortcut's own press cannot be an auto-repeat, because the system
+///   delivers none for a hotkey (see `CarbonHotkeyBackend`); it means that the release was lost, and
+///   ignoring it would leave the shortcut dead, with the preview and Escape taken, until something else
+///   ended the hold. A release of a shortcut that is not the held one is ignored.
 /// - Cancel-all (the hotkeys were suspended or replaced, the preview was switched off) hides the
 ///   preview and drops the held shortcut without running it.
 public struct HoldRules: Equatable, Sendable {
@@ -30,7 +32,8 @@ public struct HoldRules: Equatable, Sendable {
 
     /// What happened.
     public enum Event: Equatable, Sendable {
-        /// The shortcut of binding `id` went down. Auto-repeat, if the system sends it, is more of these.
+        /// The shortcut of binding `id` went down. A press of the shortcut that is held already starts
+        /// a new hold: its release was lost.
         case press(UUID)
         /// The shortcut of binding `id` went up.
         case release(UUID)
@@ -135,9 +138,9 @@ public struct HoldRules: Equatable, Sendable {
             last = Outcome(id: id, result: .ran, previewShown: false)
             return undo + [.run(id)]
         }
-        if let held, held.id == id {
-            return []
-        }
+        // A press of a shortcut that is already held is a new press like any other: the system
+        // delivers no auto-repeat for a hotkey, so it can only mean that the release of the old hold
+        // was lost. The old hold is cancelled without running, and this one starts.
         let undo = cancelAll()
         let token = nextToken
         nextToken += 1
