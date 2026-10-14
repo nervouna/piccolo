@@ -212,7 +212,7 @@ struct ExecutorErrorTests {
         let calls = Calls()
 
         do {
-            _ = try executor(window: window, calls: calls).run(.moveDivider(.left), resizeStep: step)
+            _ = try executor(window: window, calls: calls).run(.moveDivider(.left), settings: ActionSettings(resizeStep: step))
             Issue.record("moveDivider accepted the resize step \(step)")
         } catch let error as ActionExecutionError {
             guard case .invalidResizeStep = error else {

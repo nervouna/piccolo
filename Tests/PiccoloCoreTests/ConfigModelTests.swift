@@ -20,6 +20,9 @@ private let sampleJSON = #"""
         { "action": { "columns": 2, "count": 4, "rows": 2, "type": "arrangeGrid" }, "id": "2C4D6E8F-1A3B-4C5D-9E7F-0A1B2C3D4E5F" },
         { "action": { "direction": "left", "type": "moveDivider" }, "id": "9B8A7C6D-5E4F-4A3B-8C2D-1E0F9A8B7C6D" }
       ],
+      "animation": "fast",
+      "destinationPreview": true,
+      "gridFillOrder": "rows",
       "resizeStep": 0.05,
       "version": 1
     }
@@ -105,6 +108,9 @@ struct ConfigModelTests {
         let expected = Config(
             version: 1,
             resizeStep: 0.05,
+            animation: .fast,
+            gridFillOrder: .rows,
+            destinationPreview: true,
             bindings: [
                 KeyBinding(
                     id: Fixture.idA,
@@ -180,6 +186,7 @@ struct ConfigFileFormatTests {
             shortcut: Shortcut(keyCode: 123, modifiers: [.shift, .option, .command, .control]))
         let expected = """
             {
+              "animation" : "fast",
               "bindings" : [
                 {
                   "action" : {
@@ -200,6 +207,8 @@ struct ConfigFileFormatTests {
                   }
                 }
               ],
+              "destinationPreview" : true,
+              "gridFillOrder" : "rows",
               "resizeStep" : 0.05,
               "version" : 1
             }
@@ -215,6 +224,7 @@ struct ConfigFileFormatTests {
             action: .placeWindow(.custom(FractionalRect(x: 0.25, y: 0, width: 0.5, height: 1))))
         let expected = """
             {
+              "animation" : "fast",
               "bindings" : [
                 {
                   "action" : {
@@ -231,6 +241,8 @@ struct ConfigFileFormatTests {
                   "id" : "7A1F3C2D-8B4E-4F6A-9C0D-1E2F3A4B5C6D"
                 }
               ],
+              "destinationPreview" : true,
+              "gridFillOrder" : "rows",
               "resizeStep" : 0.05,
               "version" : 1
             }
@@ -244,6 +256,7 @@ struct ConfigFileFormatTests {
         let binding = KeyBinding(id: Fixture.idC, action: .moveToDisplay(.next))
         let expected = """
             {
+              "animation" : "fast",
               "bindings" : [
                 {
                   "action" : {
@@ -253,6 +266,8 @@ struct ConfigFileFormatTests {
                   "id" : "0D9E8F7A-6B5C-4D3E-8F2A-1B0C9D8E7F6A"
                 }
               ],
+              "destinationPreview" : true,
+              "gridFillOrder" : "rows",
               "resizeStep" : 0.05,
               "version" : 1
             }
@@ -268,6 +283,7 @@ struct ConfigFileFormatTests {
             action: .arrangeGrid(GridSpec(count: 4, rows: 2, columns: 2)))
         let expected = """
             {
+              "animation" : "fast",
               "bindings" : [
                 {
                   "action" : {
@@ -279,6 +295,8 @@ struct ConfigFileFormatTests {
                   "id" : "2C4D6E8F-1A3B-4C5D-9E7F-0A1B2C3D4E5F"
                 }
               ],
+              "destinationPreview" : true,
+              "gridFillOrder" : "rows",
               "resizeStep" : 0.05,
               "version" : 1
             }
@@ -291,7 +309,10 @@ struct ConfigFileFormatTests {
     func emptyConfig() throws {
         let expected = """
             {
+              "animation" : "fast",
               "bindings" : [],
+              "destinationPreview" : true,
+              "gridFillOrder" : "rows",
               "resizeStep" : 0.05,
               "version" : 1
             }
@@ -312,6 +333,7 @@ struct ConfigFileFormatTests {
             shortcut: Shortcut(keyCode: 0, modifiers: []))
         let expected = """
             {
+              "animation" : "fast",
               "bindings" : [
                 {
                   "action" : {
@@ -325,6 +347,8 @@ struct ConfigFileFormatTests {
                   }
                 }
               ],
+              "destinationPreview" : true,
+              "gridFillOrder" : "rows",
               "resizeStep" : 0.05,
               "version" : 1
             }
@@ -341,6 +365,7 @@ struct ConfigFileFormatTests {
             shortcut: Shortcut(keyCode: 0, modifiers: [.command, .shift]))
         let expected = """
             {
+              "animation" : "fast",
               "bindings" : [
                 {
                   "action" : {
@@ -357,6 +382,8 @@ struct ConfigFileFormatTests {
                   }
                 }
               ],
+              "destinationPreview" : true,
+              "gridFillOrder" : "rows",
               "resizeStep" : 0.05,
               "version" : 1
             }

@@ -74,6 +74,13 @@ struct DefaultShortcutsTests {
         #expect(Config.defaultShortcuts.resizeStep == 0.05)
     }
 
+    @Test("the defaults carry the default window animation, grid fill order and destination preview")
+    func settingsDefaults() {
+        #expect(Config.defaultShortcuts.animation == .fast)
+        #expect(Config.defaultShortcuts.gridFillOrder == .rows)
+        #expect(Config.defaultShortcuts.destinationPreview == true)
+    }
+
     @Test("the defaults are exactly the 25 bindings of the table, in order, each with a shortcut")
     func exactTable() {
         let config = Config.defaultShortcuts

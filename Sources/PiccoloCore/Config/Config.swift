@@ -1,6 +1,7 @@
 import Foundation
 
-/// The user's configuration: what each shortcut does and the linked-resize step.
+/// The user's configuration: what each shortcut does, the linked-resize step, the window animation,
+/// the grid fill order and whether a held shortcut shows its destination.
 ///
 /// The JSON shape of this type is the on-disk format read by `ConfigStore`.
 /// Key names are part of that contract.
@@ -10,24 +11,43 @@ public struct Config: Codable, Equatable, Sendable {
 
     /// Linked-resize step when the file does not set one: 5% of the screen.
     public static let defaultResizeStep = 0.05
+    /// Window animation when the file does not set one.
+    public static let defaultAnimation = WindowAnimation.fast
+    /// Grid fill order when the file does not set one.
+    public static let defaultGridFillOrder = GridFillOrder.rows
+    /// Destination preview when the file does not set one.
+    public static let defaultDestinationPreview = true
 
     /// Format version of the file.
     public var version: Int
     /// Fraction of the screen a linked resize moves a divider by. Valid range: `0 < resizeStep <= 0.5`.
     public var resizeStep: Double
+    /// How long a window takes to move to its new place. File key `animation`.
+    public var animation: WindowAnimation
+    /// Where the windows of a grid go when there are fewer windows than cells. File key `gridFillOrder`.
+    public var gridFillOrder: GridFillOrder
+    /// Whether holding a shortcut shows where the windows will go before they move. File key
+    /// `destinationPreview`.
+    public var destinationPreview: Bool
     public var bindings: [KeyBinding]
 
     public init(
         version: Int = Config.currentVersion,
         resizeStep: Double = Config.defaultResizeStep,
+        animation: WindowAnimation = Config.defaultAnimation,
+        gridFillOrder: GridFillOrder = Config.defaultGridFillOrder,
+        destinationPreview: Bool = Config.defaultDestinationPreview,
         bindings: [KeyBinding] = []
     ) {
         self.version = version
         self.resizeStep = resizeStep
+        self.animation = animation
+        self.gridFillOrder = gridFillOrder
+        self.destinationPreview = destinationPreview
         self.bindings = bindings
     }
 
-    /// Version 1, default step, no bindings.
+    /// Version 1, the default settings, no bindings.
     public static let `default` = Config()
 }
 

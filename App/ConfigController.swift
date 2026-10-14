@@ -75,10 +75,10 @@ final class ConfigController {
         log("saved")
     }
 
-    /// Replaces the config in use with `config`, after copying the file in use next to itself, and
-    /// applies it (see `ShortcutManager.replaceKeepingCopy(with:)`).
-    func replaceKeepingCopy(with config: Config) throws -> ShortcutManager.Replacement {
-        let replacement = try manager.replaceKeepingCopy(with: config)
+    /// Replaces the bindings in use with `bindings`, keeping the other settings, after copying the file
+    /// in use next to itself, and applies the result (see `ShortcutManager.replaceKeepingCopy(with:)`).
+    func replaceKeepingCopy(with bindings: [KeyBinding]) throws -> ShortcutManager.Replacement {
+        let replacement = try manager.replaceKeepingCopy(with: bindings)
         status = replacement.status
         log("replaced")
         return replacement
@@ -128,11 +128,11 @@ final class ConfigController {
         pressCounts[bindingID, default: 0] += 1
         #endif
         let executor = ActionExecutor.live
-        let resizeStep = config.resizeStep
+        let settings = ActionSettings(config)
         let logger = logger
         actionQueue.async {
             do {
-                let outcome = try executor.run(action, resizeStep: resizeStep)
+                let outcome = try executor.run(action, settings: settings)
                 logger.debug(
                     "binding \(bindingID.uuidString, privacy: .public): \(String(describing: outcome), privacy: .public)"
                 )
