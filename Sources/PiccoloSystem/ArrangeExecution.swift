@@ -53,7 +53,8 @@ public struct ArrangeOutcome: Equatable, Sendable {
     }
 }
 
-/// What happened to one window of an arrangement.
+/// What happened to one window of an arrangement, or of a divider move (which sends the windows of
+/// a group to new cells).
 public struct ArrangedWindow: Equatable, Sendable {
     public var window: WindowID
     /// The cell the window was sent to.
@@ -85,6 +86,9 @@ extension ActionExecutor {
     ///   has caught up with it yet.
     /// - Every window of the plan is sent to its cell with ``FrameSetter/apply(_:to:within:)``. One
     ///   that fails does not stop the others. No window is raised or focused.
+    /// - When no window failed, the windows become the linked group of the display (see
+    ///   ``LayoutGroupStore``): the layout, the windows in cell order, the visible frame and the
+    ///   frames read back.
     func arrange(_ grid: GridSpec, onlyPid: pid_t?) throws -> ActionOutcome {
         let displays = try displaysProvider()
         guard !displays.isEmpty else { throw ActionPlanningError.noDisplays }
@@ -124,7 +128,28 @@ extension ActionExecutor {
             }
             return ArrangedWindow(window: assignment.window, target: assignment.frame, result: result)
         }
+        recordGroup(of: plan, visibleFrame: visibleFrame, arranged: arranged)
         return .arranged(ArrangeOutcome(displayIndex: plan.displayIndex, windows: arranged))
+    }
+
+    /// Records the windows of a successful arrangement as the group of their display, replacing
+    /// the one it had. An arrangement in which any window failed records nothing.
+    ///
+    /// The group keeps the frames the windows were read back at, not the cells, so that a window
+    /// that refused its cell is recognised where it is.
+    private func recordGroup(of plan: ArrangePlan, visibleFrame: CGRect, arranged: [ArrangedWindow]) {
+        let achieved = arranged.compactMap { window -> CGRect? in
+            if case .placed(let frame) = window.result { return frame }
+            return nil
+        }
+        guard achieved.count == arranged.count else { return }
+        groups.record(
+            LayoutGroup(
+                layout: plan.layout,
+                windows: plan.assignments.map(\.window),
+                visibleFrame: visibleFrame,
+                frames: achieved),
+            onDisplay: plan.displayIndex)
     }
 
     /// The frame of the focused window, or `nil` when there is none.
@@ -136,7 +161,7 @@ extension ActionExecutor {
         }
     }
 
-    private static func message(for error: any Error) -> String {
+    static func message(for error: any Error) -> String {
         if let described = (error as? any LocalizedError)?.errorDescription, !described.isEmpty {
             return described
         }

@@ -29,16 +29,35 @@ public struct LayoutGroup: Equatable, Sendable {
         windows.firstIndex(of: window)
     }
 
+    /// Why a group no longer holds: the first window, in row-major order, that is not where the
+    /// group recorded it.
+    public enum Breakage: Equatable, Sendable {
+        /// The window is not in the frames that were read: it was closed, minimized or left the
+        /// screen.
+        case missing(WindowID)
+        /// The window is there, but at least one of its edges is more than the tolerance from the
+        /// recorded frame.
+        case moved(WindowID)
+    }
+
     /// Whether every window of the group is in `currentFrames`, and each of its four edges is
     /// within `tolerance` points of the frame recorded for it.
     public func isIntact(currentFrames: [WindowID: CGRect], tolerance: CGFloat = 2) -> Bool {
-        zip(windows, frames).allSatisfy { window, recorded in
-            guard let current = currentFrames[window] else { return false }
-            return abs(current.minX - recorded.minX) <= tolerance
+        breakage(currentFrames: currentFrames, tolerance: tolerance) == nil
+    }
+
+    /// The first window that is not where the group recorded it, or `nil` when the group is
+    /// intact (see ``isIntact(currentFrames:tolerance:)``).
+    public func breakage(currentFrames: [WindowID: CGRect], tolerance: CGFloat = 2) -> Breakage? {
+        for (window, recorded) in zip(windows, frames) {
+            guard let current = currentFrames[window] else { return .missing(window) }
+            let isInPlace = abs(current.minX - recorded.minX) <= tolerance
                 && abs(current.minY - recorded.minY) <= tolerance
                 && abs(current.maxX - recorded.maxX) <= tolerance
                 && abs(current.maxY - recorded.maxY) <= tolerance
+            if !isInPlace { return .moved(window) }
         }
+        return nil
     }
 
     /// The frames `layout` gives its cells in this group's visible frame, in row-major order.

@@ -128,10 +128,11 @@ final class ConfigController {
         pressCounts[bindingID, default: 0] += 1
         #endif
         let executor = ActionExecutor.live
+        let resizeStep = config.resizeStep
         let logger = logger
         actionQueue.async {
             do {
-                let outcome = try executor.run(action)
+                let outcome = try executor.run(action, resizeStep: resizeStep)
                 logger.debug(
                     "binding \(bindingID.uuidString, privacy: .public): \(String(describing: outcome), privacy: .public)"
                 )
