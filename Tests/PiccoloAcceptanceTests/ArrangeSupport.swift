@@ -4,6 +4,21 @@ import PiccoloCore
 import PiccoloSystem
 import Testing
 
+/// Like `withFixture`, with a config in effect that has no bindings and every setting at its default
+/// (the grid fills rows first, the preview is on), loaded from a temporary file. The expected frames of
+/// the arrange tests are those of a rows-first grid, and `action.run` reads the settings of the config in
+/// effect, which would otherwise be the default location's: a machine whose owner fills grids column
+/// first (Settings → General) would fail them. Afterwards Piccolo is back on its default config (see
+/// `withConfigDirectory`).
+func withFixtureOnDefaultSettings<Result>(
+    _ body: (FixtureApp) async throws -> Result
+) async throws -> Result {
+    try await withConfigDirectory { directory in
+        try PiccoloClient().loadConfig(at: try directory.write(Config(bindings: [])))
+        return try await withFixture(body)
+    }
+}
+
 /// The steps the arrange tests share: windows opened on a display and focused in a known order, the
 /// grid the app should lay them out in, and the checks on what the window server then measures.
 ///

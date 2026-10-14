@@ -14,6 +14,7 @@ What works:
 - Moving the focused window to the next or previous display.
 - Arranging the most recently focused windows in a grid.
 - Linked resize: after Arrange Grid, Move Divider moves a divider and the neighbouring windows follow, with no gap and no overlap (see [Move Divider](#move-divider)).
+- A preview while you hold a shortcut: a highlight shows where the windows will go (see [Destination preview](#destination-preview)).
 - The Settings window, for editing bindings and recording shortcuts.
 - Launching at login.
 
@@ -70,6 +71,18 @@ Settings opens from the menu. It also opens when you launch Piccolo again while 
 - **Accessibility** shows the permission status and opens its settings.
 - **Config** reveals the config file in Finder.
 - **Version** shows the app version and build number.
+
+### Destination preview
+
+Hold a shortcut and Piccolo shows where the windows will go: a highlight in your accent colour, one rectangle for the window of a placement or a move to another display, one for each window of an arrangement, and one for each window of a divider move. Release the shortcut and the windows move there. Press Escape while you still hold it to cancel: nothing moves, and the Escape does not reach the app in front.
+
+A short tap, released within about 0.2 s, shows no highlight and runs the action when you release. The highlight never takes the focus away from the window you are working in, and it also shows over full-screen apps.
+
+When Piccolo cannot work out where the windows would go, for example because no window has the focus, no highlight shows, and releasing the shortcut does what it would do without the preview.
+
+While you hold a shortcut, Piccolo also takes Escape with the same modifiers, so that Escape can cancel it. If the shortcut is itself on Escape, or another app already has that Escape shortcut, Escape cannot cancel it; the preview still works.
+
+To turn the preview off, switch off **Show destination while a shortcut is held** in the General tab, or set `"destinationPreview": false` in the [config file](#config-file). Windows then move as soon as you press the shortcut, with no highlight.
 
 ### Languages
 

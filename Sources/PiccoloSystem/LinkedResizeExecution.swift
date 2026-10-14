@@ -82,32 +82,19 @@ extension ActionExecutor {
     /// that is still taken. The group cannot be trusted any more: it is dissolved, and the windows
     /// that were not moved are reported with the reason.
     func moveDivider(_ direction: Direction, onlyPid: pid_t?, settings: ActionSettings) throws -> ActionOutcome {
-        let step = settings.resizeStep
-        guard step.isFinite, step > 0 else { throw ActionExecutionError.invalidResizeStep(step) }
-        guard let focused = arrangement.focusedWindowID() else {
-            return .dividerMove(.nothingToDo(.noFocusedWindow))
+        let planning: DividerMovePlanning
+        switch try planDividerMove(direction, onlyPid: onlyPid, settings: settings) {
+        case .nothingToDo(let reason, let dissolve):
+            if let dissolve { groups.dissolve(display: dissolve) }
+            return .dividerMove(.nothingToDo(reason))
+        case .move(let found):
+            planning = found
         }
-        guard let entry = groups.entry(containing: focused), let cell = entry.group.cell(of: focused) else {
-            return .dividerMove(.nothingToDo(.noGroup))
-        }
-        var group = entry.group
-
-        let onScreen = try arrangement.catalog(onlyPid)
-        var handles: [WindowID: any WindowFrameAccess] = [:]
-        var frames: [WindowID: CGRect] = [:]
-        for window in onScreen where handles[window.candidate.id] == nil {
-            handles[window.candidate.id] = window.handle
-            frames[window.candidate.id] = window.candidate.frame
-        }
-        if let breakage = group.breakage(currentFrames: frames) {
-            groups.dissolve(display: entry.display)
-            return .dividerMove(.nothingToDo(.dissolved(breakage)))
-        }
-
-        guard
-            let layout = DividerMove.plan(
-                layout: group.layout, focusedCell: cell, direction: direction, step: step)
-        else { return .dividerMove(.nothingToDo(.cannotMove)) }
+        let entry = planning.entry
+        var group = planning.group
+        let handles = planning.handles
+        let frames = planning.frames
+        let layout = planning.layout
 
         let previousTargets = group.targetFrames(for: group.layout)
         let targets = group.targetFrames(for: layout)
@@ -144,6 +131,63 @@ extension ActionExecutor {
                 result: placement.failure.map { .failed(message: $0) } ?? .placed(achieved: placement.achieved))
         }
         return .dividerMove(.moved(DividerMoved(display: entry.display, windows: windows)))
+    }
+
+    /// A divider move planned, not yet carried out.
+    struct DividerMovePlanning {
+        var entry: LayoutGroups.Entry
+        var group: LayoutGroup
+        /// The handles and frames of the windows on screen.
+        var handles: [WindowID: any WindowFrameAccess]
+        var frames: [WindowID: CGRect]
+        /// The layout after the move.
+        var layout: TileLayout
+    }
+
+    /// What ``planDividerMove(_:onlyPid:settings:)`` found.
+    enum DividerPlanning {
+        case move(DividerMovePlanning)
+        /// Nothing moves. `dissolve` is the display of a group that no longer holds and that the run
+        /// dissolves; a plan leaves it alone.
+        case nothingToDo(DividerMoveOutcome.Reason, dissolve: Int?)
+    }
+
+    /// Plans the move ``moveDivider(_:onlyPid:settings:)`` carries out: steps 1 to 3 of its list. It
+    /// reads the windows on screen and touches neither a window nor a group; a group that no longer
+    /// holds is reported (`dissolve`) and left for the caller to dissolve.
+    ///
+    /// - Throws: ``ActionExecutionError`` for a `resizeStep` that is not a positive number, and
+    ///   ``WindowError`` when the windows on screen cannot be read.
+    func planDividerMove(
+        _ direction: Direction, onlyPid: pid_t?, settings: ActionSettings
+    ) throws -> DividerPlanning {
+        let step = settings.resizeStep
+        guard step.isFinite, step > 0 else { throw ActionExecutionError.invalidResizeStep(step) }
+        guard let focused = arrangement.focusedWindowID() else {
+            return .nothingToDo(.noFocusedWindow, dissolve: nil)
+        }
+        guard let entry = groups.entry(containing: focused), let cell = entry.group.cell(of: focused) else {
+            return .nothingToDo(.noGroup, dissolve: nil)
+        }
+        let group = entry.group
+
+        let onScreen = try arrangement.catalog(onlyPid)
+        var handles: [WindowID: any WindowFrameAccess] = [:]
+        var frames: [WindowID: CGRect] = [:]
+        for window in onScreen where handles[window.candidate.id] == nil {
+            handles[window.candidate.id] = window.handle
+            frames[window.candidate.id] = window.candidate.frame
+        }
+        if let breakage = group.breakage(currentFrames: frames) {
+            return .nothingToDo(.dissolved(breakage), dissolve: entry.display)
+        }
+
+        guard
+            let layout = DividerMove.plan(
+                layout: group.layout, focusedCell: cell, direction: direction, step: step)
+        else { return .nothingToDo(.cannotMove, dissolve: nil) }
+        return .move(
+            DividerMovePlanning(entry: entry, group: group, handles: handles, frames: frames, layout: layout))
     }
 
     /// What is known about one window of the group during a move.

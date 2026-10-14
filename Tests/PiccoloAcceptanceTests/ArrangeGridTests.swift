@@ -27,7 +27,7 @@ extension DesktopAcceptanceTests {
             let screen = try await ArrangeRun.screens()[0]
             let grid = Self.fourInTwoByTwo
 
-            try await withFixture { fixture in
+            try await withFixtureOnDefaultSettings { fixture in
                 let run = ArrangeRun(fixture: fixture)
                 let windows = try await run.open(["W1", "W2", "W3", "W4"], on: screen)
                 try await run.focus(windows)
@@ -63,7 +63,7 @@ extension DesktopAcceptanceTests {
             let screen = try await ArrangeRun.screens()[0]
             let grid = Self.fourInTwoByTwo
 
-            try await withFixture { fixture in
+            try await withFixtureOnDefaultSettings { fixture in
                 let run = ArrangeRun(fixture: fixture)
                 let windows = try await run.open(["W1", "W2", "W3"], on: screen)
                 try await run.focus(windows)
@@ -91,7 +91,7 @@ extension DesktopAcceptanceTests {
             let screen = try await ArrangeRun.screens()[0]
             let grid = Self.fourInTwoByTwo
 
-            try await withFixture { fixture in
+            try await withFixtureOnDefaultSettings { fixture in
                 let run = ArrangeRun(fixture: fixture)
                 let windows = try await run.open(["W1", "W2", "W3", "W4", "W5", "W6"], on: screen)
                 try await run.focus(windows)
@@ -114,7 +114,7 @@ extension DesktopAcceptanceTests {
             let sideBySide = GridSpec(count: 2, rows: 1, columns: 2)
             let stacked = GridSpec(count: 2, rows: 2, columns: 1)
 
-            try await withFixture { fixture in
+            try await withFixtureOnDefaultSettings { fixture in
                 let run = ArrangeRun(fixture: fixture)
                 let windows = try await run.open(["W1", "W2"], on: screen)
                 try await run.focus(windows)
@@ -145,7 +145,7 @@ extension DesktopAcceptanceTests {
             let screen = try await ArrangeRun.screens()[0]
             let grid = Self.fourInTwoByTwo
 
-            try await withFixture { fixture in
+            try await withFixtureOnDefaultSettings { fixture in
                 let run = ArrangeRun(fixture: fixture)
                 let windows = try await run.open(["W1", "W2", "W3", "W4"], on: screen)
                 try await run.focus(windows)
@@ -178,7 +178,7 @@ extension DesktopAcceptanceTests {
             let screens = try await ArrangeRun.screens()
             let grid = Self.fourInTwoByTwo
 
-            try await withFixture { fixture in
+            try await withFixtureOnDefaultSettings { fixture in
                 let run = ArrangeRun(fixture: fixture)
                 for screen in screens {
                     guard let other = screens.first(where: { $0.index != screen.index }) else {
@@ -219,7 +219,7 @@ extension DesktopAcceptanceTests {
                 )
             }
 
-            try await withFixture { fixture in
+            try await withFixtureOnDefaultSettings { fixture in
                 let run = ArrangeRun(fixture: fixture)
                 let windows = try await run.open(
                     ["W1", "W2", "W3", "W4"], on: screen, minSizes: ["W3": minimum])

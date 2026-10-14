@@ -26,6 +26,11 @@ enum FixtureCommands {
             onMain { windows.list() }
         }
 
+        router.register("keyEvents") { params in
+            let id = try params.decode(WindowID.self).id
+            return try onMain { try windows.keyEvents(id: id) }
+        }
+
         router.register("close") { params in
             let id = try params.decode(WindowID.self).id
             return try onMain { try windows.close(id: id) }
