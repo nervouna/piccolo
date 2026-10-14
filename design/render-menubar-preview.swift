@@ -1,4 +1,4 @@
-// Renders design/menubar-preview.png from the two menu bar glyph drawings.
+// Renders design/menubar-preview.png from the three menu bar glyph drawings.
 //
 //   swift design/render-menubar-preview.swift
 //
@@ -12,6 +12,7 @@ import AppKit
 let designDirectory = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
 let candidates: [(title: String, file: String)] = [
     ("Candidate 1: filled panes", "menubar-icon.svg"),
+    ("Candidate 1b: latte, top pane empty", "menubar-icon-latte.svg"),
     ("Candidate 2: outline", "menubar-icon-outline.svg"),
 ]
 let sizes: [Double] = [16, 18, 22]
