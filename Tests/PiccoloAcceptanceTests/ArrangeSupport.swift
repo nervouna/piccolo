@@ -172,7 +172,7 @@ struct ArrangeRun {
         #expect(
             approximatelyEqual(all.minX, visible.minX) && approximatelyEqual(all.minY, visible.minY)
                 && approximatelyEqual(all.maxX, visible.maxX) && approximatelyEqual(all.maxY, visible.maxY),
-            "the cells together span \(describe(all)), the visible frame is \(describe(visible))")
+            "the cells together span \(describe(all)), the visible frame is \(describe(visible)); the cells are \(measured.map { describe($0) })")
     }
 
     /// The given windows that are on screen, front to back, as the window server stacks them.

@@ -46,7 +46,7 @@ public struct DividerMoved: Equatable, Sendable {
     /// The display the group was arranged on, as an index into the displays the arrangement was
     /// planned on.
     public var display: Int
-    /// Every window of the group in cell order (row-major), with the last frame it was asked for
+    /// Every window of the group in cell order, with the last frame it was asked for
     /// and the frame it was read back at. A window that did not have to move is listed with its
     /// cell and the frame it already had. A window that could not be changed, or was not moved
     /// because an earlier one could not, has no achieved frame, and the group is dissolved.
@@ -68,13 +68,14 @@ extension ActionExecutor {
     ///    frame recorded for it.
     /// 3. `DividerMove.plan` gives the new layout, one `settings.resizeStep` away. Without one (a
     ///    window at its smallest, no divider in that direction) there is nothing to do.
-    /// 4. The windows whose cell changed are sent to their new frames with
-    ///    ``FrameSetter/apply(_:to:within:)`` in the group's visible frame: those that shrink first,
-    ///    then those that grow, so that no two windows overlap while it happens.
+    /// 4. The windows whose cell changed glide to their new frames together (see ``WindowAnimator``),
+    ///    then are sent there with ``FrameSetter/apply(_:to:within:)`` in the group's visible frame:
+    ///    those that shrink first, then those that grow, so that no two windows overlap while it
+    ///    happens.
     /// 5. The group records what the windows achieved (``LayoutGroup/recordAchieved(requested:achieved:)``).
     ///    When a window refused its size, the divider is recorded where that window ended up, and
     ///    the windows whose cell changed because of it are sent to their cells once more, so that
-    ///    the neighbour fills the space. The group records the result again.
+    ///    the neighbour fills the space, without a glide. The group records the result again.
     ///
     /// A window that cannot be changed (closed meanwhile, or a failing Accessibility call) ends the
     /// move: the windows after it in the order above are left alone, so that none grows into space
@@ -115,7 +116,7 @@ extension ActionExecutor {
         }
 
         var steps = group.steps(from: previousTargets, to: targets, current: placements.map(\.achieved))
-        send(steps, to: handles, within: group.visibleFrame, updating: &placements)
+        send(steps, to: handles, within: group.visibleFrame, updating: &placements, animatingWith: settings)
         if !placements.contains(where: { $0.failure != nil }) {
             group.recordAchieved(requested: layout, achieved: placements.map(\.achieved))
 
@@ -159,12 +160,29 @@ extension ActionExecutor {
     ///
     /// The order is only safe when every step before has been done, so a step that fails ends the
     /// run: the windows after it are not touched, and are reported as not moved.
+    ///
+    /// With `settings`, the windows first glide together to their targets over the duration of
+    /// `settings.animation`, the ones that shrink getting their step of every tick before the ones that
+    /// grow (the order of `steps`). The glide keeps the order's rule too: once a window is dropped from
+    /// it (it failed, or was too slow), the windows behind it stop. The windows are then sent to their
+    /// targets as without animation, in the order given.
     private func send(
         _ steps: [LayoutGroup.Step],
         to handles: [WindowID: any WindowFrameAccess],
         within visibleFrame: CGRect,
-        updating placements: inout [Placement]
+        updating placements: inout [Placement],
+        animatingWith settings: ActionSettings? = nil
     ) {
+        if let settings {
+            glide(
+                steps.compactMap { step in
+                    handles[step.window].map {
+                        AnimatedWindow(window: $0, start: placements[step.cell].achieved, target: step.target)
+                    }
+                },
+                settings: settings, displays: [Display(frame: visibleFrame, visibleFrame: visibleFrame)],
+                ordered: true)
+        }
         var failed: WindowID?
         for step in steps {
             placements[step.cell].target = step.target

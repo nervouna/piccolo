@@ -47,22 +47,30 @@ public struct ActionExecutor: Sendable {
     let displaysProvider: DisplaysProvider
     let arrangement: ArrangementSource
     let groups: LayoutGroupStore
+    /// Moves the windows in small steps before they are placed (see ``WindowAnimator``). Without one
+    /// nothing is animated, whatever `ActionSettings.animation` says.
+    var animator: WindowAnimator?
 
     /// - Parameters:
     ///   - arrangement: Where `arrangeGrid` finds the windows to arrange, and `moveDivider` the
     ///     windows of a group. The default has none, so that `arrangeGrid` has nothing to do.
     ///   - groups: Where `arrangeGrid` records the groups it makes and `moveDivider` finds them. A
     ///     copy of the executor shares it.
+    ///   - animator: What animates the windows when the settings ask for it. The default has none, so
+    ///     that an executor built without one places every window at once, like ``live`` does with
+    ///     `ActionSettings.animation` set to `off`.
     public init(
         window: @escaping WindowProvider,
         displays: @escaping DisplaysProvider,
         arrangement: ArrangementSource = .none,
-        groups: LayoutGroupStore = LayoutGroupStore()
+        groups: LayoutGroupStore = LayoutGroupStore(),
+        animator: WindowAnimator? = nil
     ) {
         self.windowProvider = window
         self.displaysProvider = displays
         self.arrangement = arrangement
         self.groups = groups
+        self.animator = animator
     }
 
     /// The focused window of the frontmost application, on the attached displays, arranging the
@@ -73,7 +81,8 @@ public struct ActionExecutor: Sendable {
     public static let live = ActionExecutor(
         window: { try FocusedWindow.current() },
         displays: { Screens.currentDisplays() },
-        arrangement: .live)
+        arrangement: .live,
+        animator: WindowAnimator())
 
     /// The windows focused so far, most recent first. Empty until the tracker has seen a window.
     public var focusHistory: [WindowID] {
@@ -92,8 +101,10 @@ public struct ActionExecutor: Sendable {
     ///   - onlyPid: Restricts the windows `arrangeGrid` may move to those of this process, and
     ///     `moveDivider` too: a group with a window of another process is dissolved instead of
     ///     moved. The other actions ignore it: they only touch the focused window.
-    ///   - settings: The settings of the config in effect. `moveDivider` uses its `resizeStep`.
-    ///     `animation` and `gridFillOrder` are not read yet; the behaviour that uses them comes later.
+    ///   - settings: The settings of the config in effect. `moveDivider` uses its `resizeStep`,
+    ///     `arrangeGrid` its `gridFillOrder`, and every action its `animation`: the windows glide to
+    ///     their new frames over its duration and are then placed exactly as without animation (see
+    ///     ``WindowAnimator``).
     /// - Throws: ``ActionExecutionError`` for a `resizeStep` that is not a positive number, before
     ///   anything is touched; ``ActionPlanningError`` for an action that cannot be planned;
     ///   ``ArrangePlannerError`` for a grid that cannot be arranged; ``WindowError`` when a window
@@ -114,11 +125,15 @@ public struct ActionExecutor: Sendable {
 
         let window = try windowProvider()
         let windowFrame = try window.frame()
-        let plan = try ActionPlanner.plan(action, windowFrame: windowFrame, displays: try displaysProvider())
+        let displays = try displaysProvider()
+        let plan = try ActionPlanner.plan(action, windowFrame: windowFrame, displays: displays)
         switch plan {
         case .nothingToDo:
             return .nothingToDo
         case .place(let target, let visibleFrame):
+            glide(
+                [AnimatedWindow(window: window, start: windowFrame, target: target)],
+                settings: settings, displays: displays)
             let achieved = try FrameSetter.apply(target, to: window, within: visibleFrame)
             return .placed(target: target, achieved: achieved)
         }

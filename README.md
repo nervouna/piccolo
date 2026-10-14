@@ -72,7 +72,7 @@ Settings opens from the menu. It also opens when you launch Piccolo again while 
 
 ## Actions
 
-Each binding runs one action.
+Each binding runs one action. The windows glide to their new frames over the time set by [Window animation](#general-tab) (0.15 s by default) and end up where they would without it.
 
 | Action | Parameters | What it does |
 |---|---|---|
