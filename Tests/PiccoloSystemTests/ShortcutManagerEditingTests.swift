@@ -182,10 +182,12 @@ struct ShortcutManagerEditingTests {
 
         manager.setSuspended(true)
         backend.press(a.shortcut!)
+        backend.release(a.shortcut!)
         #expect(fired.isEmpty)
 
         manager.setSuspended(false)
         backend.press(a.shortcut!)
+        backend.release(a.shortcut!)
         #expect(fired == [a.id])
     }
 

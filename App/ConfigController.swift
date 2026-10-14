@@ -10,6 +10,10 @@ import PiccoloSystem
 /// A hotkey runs its binding's action through `ActionExecutor`, one action at a time on a
 /// queue of its own. The main thread, where the system delivers the hotkey, only hands the
 /// action over: Accessibility calls can take seconds when an app does not answer.
+///
+/// With the destination preview on, a shortcut runs when it is released, and a shortcut held for
+/// 0.2 s shows a highlight where its windows will go (see `ShortcutManager` and `DestinationPreview`).
+/// The highlight is planned on the same queue as the actions.
 @MainActor
 @Observable
 final class ConfigController {
@@ -23,20 +27,40 @@ final class ConfigController {
     @ObservationIgnored var onExternalLoad: (@MainActor () -> Void)?
 
     #if DEBUG
-    /// How many times each binding's hotkey fired since launch. The debug channel uses it to
-    /// tell that a simulated key press reached the hotkey registry.
+    /// How many times each binding's hotkey fired (was pressed) since launch. The debug channel uses
+    /// it to tell that a simulated key press reached the hotkey registry.
     @ObservationIgnored private(set) var pressCounts: [UUID: Int] = [:]
+    /// How many times each binding's key was released since launch, and how many times the temporary
+    /// Escape hotkey fired.
+    @ObservationIgnored private(set) var releaseCounts: [UUID: Int] = [:]
+    @ObservationIgnored private(set) var escapeCount = 0
     #endif
 
     @ObservationIgnored private let logger = Logger(subsystem: "io.damao.piccolo", category: "config")
     @ObservationIgnored private let actionQueue = DispatchQueue(
         label: "io.damao.piccolo.actions", qos: .userInitiated)
-    @ObservationIgnored private lazy var manager = ShortcutManager(
-        registrar: HotkeyRegistrar(backend: CarbonHotkeyBackend()),
-        initialURL: ConfigLocation.defaultURL
-    ) { [weak self] action, bindingID in
-        self?.pressed(action, bindingID: bindingID)
+    @ObservationIgnored private(set) lazy var preview = DestinationPreview(
+        presenter: HighlightPanels(), queue: actionQueue
+    ) { action, settings in
+        try ActionExecutor.live.destinations(for: action, settings: settings)
     }
+    @ObservationIgnored private lazy var manager: ShortcutManager = {
+        let manager = ShortcutManager(
+            registrar: HotkeyRegistrar(backend: CarbonHotkeyBackend()),
+            initialURL: ConfigLocation.defaultURL
+        ) { [weak self] action, bindingID in
+            self?.run(action, bindingID: bindingID)
+        }
+        manager.onPreview = { [weak self] change in
+            self?.previewChanged(change)
+        }
+        #if DEBUG
+        manager.onHotkeyEvent = { [weak self] event in
+            self?.observe(event)
+        }
+        #endif
+        return manager
+    }()
 
     private init() {
         status = ShortcutManager.Status(path: ConfigLocation.defaultURL.path)
@@ -123,10 +147,46 @@ final class ConfigController {
         }
     }
 
-    private func pressed(_ action: Action, bindingID: UUID) {
-        #if DEBUG
-        pressCounts[bindingID, default: 0] += 1
-        #endif
+    private func previewChanged(_ change: ShortcutManager.Preview) {
+        switch change {
+        case .show(let action, let bindingID):
+            preview.show(action, settings: ActionSettings(config), bindingID: bindingID)
+        case .hide:
+            preview.hide()
+        }
+    }
+
+    #if DEBUG
+    private func observe(_ event: ShortcutManager.HotkeyEvent) {
+        switch event {
+        case .pressed(let bindingID): pressCounts[bindingID, default: 0] += 1
+        case .released(let bindingID): releaseCounts[bindingID, default: 0] += 1
+        case .escape: escapeCount += 1
+        }
+    }
+
+    /// The binding whose shortcut is down, and its shortcut.
+    var held: (id: UUID, shortcut: Shortcut)? {
+        guard let id = manager.heldBindingID,
+            let shortcut = status.registered.first(where: { $0.id == id })?.shortcut
+        else { return nil }
+        return (id, shortcut)
+    }
+
+    /// What became of the last hold: see `HoldRules.Outcome`.
+    var lastHold: HoldRules.Outcome? {
+        manager.lastHold
+    }
+
+    /// Whether the temporary Escape hotkey is registered.
+    var escapeIsRegistered: Bool {
+        manager.escapeIsRegistered
+    }
+    #endif
+
+    /// Runs the action of a binding on the action queue. With the preview on this is the release of
+    /// the shortcut, otherwise the press.
+    private func run(_ action: Action, bindingID: UUID) {
         let executor = ActionExecutor.live
         let settings = ActionSettings(config)
         let logger = logger

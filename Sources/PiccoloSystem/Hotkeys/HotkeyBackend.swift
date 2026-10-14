@@ -19,6 +19,11 @@ public protocol HotkeyBackend: AnyObject {
     /// pressed. The backend calls it on the main thread.
     var onPress: (@MainActor (UInt32) -> Void)? { get set }
 
+    /// Called with the `hotkeyID` each time the key of that shortcut goes up again, after the press
+    /// it belongs to. The backend calls it on the main thread. What the system delivers while the key
+    /// is held, and when the modifiers go up first, is described at ``CarbonHotkeyBackend``.
+    var onRelease: (@MainActor (UInt32) -> Void)? { get set }
+
     /// Registers `shortcut` as a global hotkey under `hotkeyID`, a number the caller chose.
     ///
     /// - Throws: ``HotkeyRefusal`` when the system will not take the shortcut. Nothing is

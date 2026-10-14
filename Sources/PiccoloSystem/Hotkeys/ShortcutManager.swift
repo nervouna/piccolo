@@ -9,6 +9,13 @@ import PiccoloCore
 /// `onAction` with the action of its binding, on the main thread; the closure must return
 /// quickly and run the action somewhere else.
 ///
+/// A shortcut is run by its press, or, with `Config.destinationPreview` on, by its release: a press
+/// starts a hold (see `HoldRules`), a hold longer than 0.2 s shows a preview of where the windows
+/// will go (`onPreview`), and Escape pressed while the shortcut is held cancels it. For Escape to
+/// reach Piccolo and not the frontmost application, it is registered as a temporary hotkey with the
+/// held shortcut's modifiers while the shortcut is held, unless the shortcut is on Escape itself.
+/// Loading, saving and suspending end whatever is held without running it.
+///
 /// ``save(_:)`` writes an edited config to the file that is loaded and applies it.
 /// ``setSuspended(_:)`` releases every hotkey for a while, for example while a shortcut is being
 /// recorded, and registers them again afterwards; loads and saves during that time register
@@ -49,9 +56,33 @@ public final class ShortcutManager {
         }
     }
 
+    /// What the preview should do.
+    public enum Preview: Equatable, Sendable {
+        /// Show where `action`, the action of binding `bindingID`, will send the windows.
+        case show(Action, bindingID: UUID)
+        /// Take the preview away.
+        case hide
+    }
+
+    /// What the hotkeys delivered, reported for the debug channel after the hold rules have seen it.
+    public enum HotkeyEvent: Equatable, Sendable {
+        case pressed(UUID)
+        case released(UUID)
+        /// The temporary Escape hotkey was pressed.
+        case escape
+    }
+
+    /// The key code of Escape (`kVK_Escape`).
+    public nonisolated static let escapeKeyCode = 53
+
     private let registrar: HotkeyRegistrar
     private let onAction: @MainActor (_ action: Action, _ bindingID: UUID) -> Void
+    private let hold: HoldController
     private var actions: [UUID: Action] = [:]
+    /// The shortcut of every registered binding.
+    private var shortcuts: [UUID: Shortcut] = [:]
+    /// The held shortcut that Escape is registered for.
+    private var escapeFor: UUID?
     /// The file the last ``load(from:)`` read, and where ``save(_:)`` writes.
     private var url: URL
     /// The problems the last load found in the file itself, before the shortcuts were looked at.
@@ -77,18 +108,48 @@ public final class ShortcutManager {
     /// Whether the hotkeys are released for the time being. See ``setSuspended(_:)``.
     public private(set) var isSuspended = false
 
+    /// Called on the main thread to show or hide the preview of a held shortcut. Set it once, before
+    /// the first load.
+    public var onPreview: (@MainActor (Preview) -> Void)?
+
+    /// Called on the main thread for every press, release and Escape the hotkeys deliver, after the
+    /// hold rules have dealt with it. For the debug channel.
+    public var onHotkeyEvent: (@MainActor (HotkeyEvent) -> Void)?
+
+    /// The binding whose shortcut is down, until it is released. Also after Escape cancelled it.
+    public var heldBindingID: UUID? {
+        hold.held?.id
+    }
+
+    /// What became of the last hold, or of the last press when the preview is off.
+    public var lastHold: HoldRules.Outcome? {
+        hold.last
+    }
+
+    /// Whether the temporary Escape hotkey is registered right now.
+    public var escapeIsRegistered: Bool {
+        escapeFor != nil
+    }
+
     /// - Parameters:
     ///   - initialURL: The file reported by ``status`` before anything is loaded.
-    ///   - onAction: Called on the main thread when a registered shortcut is pressed.
+    ///   - holdTimer: Times how long a shortcut has been held.
+    ///   - onAction: Called on the main thread when the action of a registered shortcut is to run:
+    ///     when the shortcut is pressed, or, with the destination preview on, released.
     public init(
         registrar: HotkeyRegistrar,
         initialURL: URL,
+        holdTimer: any HoldTimer = MainQueueHoldTimer(),
         onAction: @escaping @MainActor (_ action: Action, _ bindingID: UUID) -> Void
     ) {
         self.registrar = registrar
         self.onAction = onAction
+        self.hold = HoldController(timer: holdTimer)
         self.url = initialURL
         self.status = Status(path: initialURL.path)
+        hold.onEffect = { [weak self] effect in
+            self?.carryOut(effect)
+        }
     }
 
     /// Loads the config at `url` and registers its shortcuts, replacing whatever was loaded
@@ -220,9 +281,16 @@ public final class ShortcutManager {
         let plan = ShortcutPlan.resolve(config.bindings, sourceIndices: sourceIndices)
         issues += plan.issues
 
-        let refusals = registrar.apply(isSuspended ? [] : plan.registrations) { [weak self] bindingID in
-            self?.pressed(bindingID)
-        }
+        // Whatever is held is void: the hotkeys are about to be replaced, and the setting may have
+        // changed. The hold ends first, so that its preview goes and Escape is released.
+        hold.send(.cancelAll)
+        hold.setPreviewEnabled(config.destinationPreview)
+        syncEscape()
+
+        let refusals = registrar.apply(
+            isSuspended ? [] : plan.registrations,
+            onRelease: { [weak self] bindingID in self?.released(bindingID) },
+            handler: { [weak self] bindingID in self?.pressed(bindingID) })
         for refusal in refusals {
             issues.append("\(bindingName(refusal.id)) shortcut was refused: \(refusal.reason); it is not registered")
         }
@@ -238,6 +306,8 @@ public final class ShortcutManager {
         actions = Dictionary(
             config.bindings.filter { registeredIDs.contains($0.id) }.map { ($0.id, $0.action) },
             uniquingKeysWith: { first, _ in first })
+        shortcuts = Dictionary(
+            registered.map { ($0.id, $0.shortcut) }, uniquingKeysWith: { first, _ in first })
 
         status = Status(
             path: url.path, bindingCount: config.bindings.count, registered: registered, issues: issues)
@@ -250,8 +320,64 @@ public final class ShortcutManager {
         return position.map { "bindings[\($0)]" } ?? "binding \(bindingID.uuidString)"
     }
 
+    // MARK: Hotkey events
+
     private func pressed(_ bindingID: UUID) {
-        guard let action = actions[bindingID] else { return }
-        onAction(action, bindingID)
+        guard actions[bindingID] != nil else { return }
+        hold.send(.press(bindingID))
+        syncEscape()
+        onHotkeyEvent?(.pressed(bindingID))
+    }
+
+    private func released(_ bindingID: UUID) {
+        guard actions[bindingID] != nil else { return }
+        hold.send(.release(bindingID))
+        syncEscape()
+        onHotkeyEvent?(.released(bindingID))
+    }
+
+    private func escapePressed() {
+        hold.send(.escape)
+        onHotkeyEvent?(.escape)
+    }
+
+    private func carryOut(_ effect: HoldRules.Effect) {
+        switch effect {
+        case .run(let bindingID):
+            if let action = actions[bindingID] {
+                onAction(action, bindingID)
+            }
+        case .showPreview(let bindingID):
+            if let action = actions[bindingID] {
+                onPreview?(.show(action, bindingID: bindingID))
+            }
+        case .hidePreview:
+            onPreview?(.hide)
+        case .startTimer:
+            break
+        }
+    }
+
+    /// Keeps the temporary Escape hotkey in step with the held shortcut: registered with its
+    /// modifiers from the press until the release, whatever ends the hold in between (Escape itself
+    /// included: the shortcut is still down, and Escape's key-up should not reach another app). A
+    /// shortcut on Escape registers nothing, and a refusal by the system leaves Escape to the
+    /// frontmost application: the hold works all the same, only Escape cannot cancel it.
+    private func syncEscape() {
+        let held = hold.held?.id
+        guard held != escapeFor else { return }
+        registrar.unregisterTemporary()
+        escapeFor = nil
+        guard let held, let shortcut = shortcuts[held], shortcut.keyCode != Self.escapeKeyCode else { return }
+        do {
+            try registrar.registerTemporary(
+                Shortcut(keyCode: Self.escapeKeyCode, modifiers: shortcut.modifiers)
+            ) { [weak self] in
+                self?.escapePressed()
+            }
+            escapeFor = held
+        } catch {
+            // Escape stays with the frontmost application.
+        }
     }
 }

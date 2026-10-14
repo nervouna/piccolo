@@ -12,6 +12,7 @@ final class FakeHotkeyBackend: HotkeyBackend {
     }
 
     var onPress: (@MainActor (UInt32) -> Void)?
+    var onRelease: (@MainActor (UInt32) -> Void)?
 
     /// Shortcuts the "system" refuses whatever happens, with the reason it gives.
     private var refusals: [(shortcut: Shortcut, reason: String)] = []
@@ -49,6 +50,19 @@ final class FakeHotkeyBackend: HotkeyBackend {
     func press(_ shortcut: Shortcut) {
         guard let hotkeyID = live.first(where: { $0.value == shortcut })?.key else { return }
         onPress?(hotkeyID)
+    }
+
+    /// The user lets go of the key of `shortcut`. Nothing happens when it is not registered, as in the
+    /// system.
+    func release(_ shortcut: Shortcut) {
+        guard let hotkeyID = live.first(where: { $0.value == shortcut })?.key else { return }
+        onRelease?(hotkeyID)
+    }
+
+    /// The system delivers a release for `hotkeyID` that is no longer registered, for example one for
+    /// a key that went down before the shortcut was replaced.
+    func releaseStale(hotkeyID: UInt32) {
+        onRelease?(hotkeyID)
     }
 
     /// The system delivers a press for `hotkeyID` that is no longer registered, for example one

@@ -8,9 +8,30 @@ import PiccoloCore
 /// itself watches the keyboard and tells the app that registered a shortcut when it is pressed,
 /// without the app seeing any other key. Events arrive on the main thread, through an event
 /// handler installed on the application event target.
+///
+/// A registered shortcut gets `kEventHotKeyPressed` when its key goes down and `kEventHotKeyReleased`
+/// when the key goes up again, on the same hotkey. What the system delivers in between, measured on
+/// macOS 27 by the acceptance tests ("carbon 1" and "carbon 2" in `DestinationPreviewTests.swift`),
+/// which post the key events themselves with a private event source (`hotkey.press`,
+/// `hotkey.release`):
+///
+/// - **A key that stays down delivers one press.** Of one key-down followed by five key-downs flagged
+///   as the keyboard's auto-repeat, only the first reached the handler. A second plain key-down
+///   without a key-up in between was not delivered either. The keyboard's own repeat could not be
+///   produced from here (it is generated for physical keys), so this rests on the repeat flag.
+///   Nothing relies on it, though: ``HoldRules`` ignores a repeated press of the held shortcut.
+/// - **The release is delivered when the modifiers go up first.** After a key-down with the
+///   modifiers, a flags-changed event with no flags and then the key-up without modifiers still gave
+///   `kEventHotKeyReleased` for the hotkey, so a hold ends when the key does, in whatever order the
+///   fingers let go.
+/// - Not measured, and not relied on: whether a release is delivered for a hotkey that was
+///   unregistered while its key was down. A caller that replaces its hotkeys while one is held ends
+///   the hold itself (``ShortcutManager`` does), and ``HotkeyRegistrar`` drops events for hotkey IDs
+///   it no longer knows.
 @MainActor
 public final class CarbonHotkeyBackend: HotkeyBackend {
     public var onPress: (@MainActor (UInt32) -> Void)?
+    public var onRelease: (@MainActor (UInt32) -> Void)?
 
     private var references: [UInt32: EventHotKeyRef] = [:]
     private var handlerReference: EventHandlerRef?
@@ -74,16 +95,26 @@ public final class CarbonHotkeyBackend: HotkeyBackend {
 
         // The callback cannot capture, so it reaches this object through a sink that the event
         // handler carries as its user data. The sink only ever hops to the main thread.
-        let sink = HotkeySink { [weak self] hotkeyID in
-            Self.runOnMainThread { self?.onPress?(hotkeyID) }
+        let sink = HotkeySink { [weak self] hotkeyID, isRelease in
+            Self.runOnMainThread {
+                if isRelease {
+                    self?.onRelease?(hotkeyID)
+                } else {
+                    self?.onPress?(hotkeyID)
+                }
+            }
         }
         let retained = Unmanaged.passRetained(sink)
 
-        var eventType = EventTypeSpec(
-            eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyPressed))
+        var eventTypes = [
+            EventTypeSpec(
+                eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyPressed)),
+            EventTypeSpec(
+                eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyReleased)),
+        ]
         var reference: EventHandlerRef?
         let status = InstallEventHandler(
-            GetApplicationEventTarget(), carbonHotkeyCallback, 1, &eventType,
+            GetApplicationEventTarget(), carbonHotkeyCallback, eventTypes.count, &eventTypes,
             retained.toOpaque(), &reference)
         guard status == noErr, let reference else {
             retained.release()
@@ -110,19 +141,20 @@ public final class CarbonHotkeyBackend: HotkeyBackend {
 /// Marks the hotkeys of this app in the `EventHotKeyID` of an event: 'PCLO'.
 private let hotkeySignature: OSType = 0x5043_4C4F
 
-/// Carries the hotkey ID from the C callback to the backend. Immutable, so it can be used from
-/// whatever thread the system calls back on.
+/// Carries the hotkey ID, and whether it is a release, from the C callback to the backend.
+/// Immutable, so it can be used from whatever thread the system calls back on.
 private final class HotkeySink: Sendable {
-    let deliver: @Sendable (UInt32) -> Void
+    let deliver: @Sendable (_ hotkeyID: UInt32, _ isRelease: Bool) -> Void
 
-    init(deliver: @escaping @Sendable (UInt32) -> Void) {
+    init(deliver: @escaping @Sendable (UInt32, Bool) -> Void) {
         self.deliver = deliver
     }
 }
 
 /// The Carbon event handler. A C function pointer: it captures nothing, and it is not isolated
 /// to the main actor, because the system decides which thread calls it. It reads the hotkey ID
-/// out of the event and passes it on; the hop to the main thread is explicit, in the sink.
+/// and the kind of the event (pressed or released) and passes them on; the hop to the main thread
+/// is explicit, in the sink.
 private let carbonHotkeyCallback: EventHandlerUPP = { _, event, userData in
     guard let event, let userData else { return OSStatus(eventNotHandledErr) }
 
@@ -135,6 +167,7 @@ private let carbonHotkeyCallback: EventHandlerUPP = { _, event, userData in
         return OSStatus(eventNotHandledErr)
     }
 
-    Unmanaged<HotkeySink>.fromOpaque(userData).takeUnretainedValue().deliver(hotKeyID.id)
+    let isRelease = GetEventKind(event) == UInt32(kEventHotKeyReleased)
+    Unmanaged<HotkeySink>.fromOpaque(userData).takeUnretainedValue().deliver(hotKeyID.id, isRelease)
     return noErr
 }
