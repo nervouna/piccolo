@@ -1,6 +1,6 @@
 // Helper for scripts/make-icon.sh and scripts/check-icon-render.sh. It inspects and
 // normalizes the app icon artwork (design/icon.png), and checks the icon that the system
-// renders for a built app.
+// renders for a built app against that artwork.
 //
 // Usage:
 //   icon-tool stats <artwork.png>
@@ -15,11 +15,11 @@
 //   icon-tool render <app> <outdir> <size>...
 //       Writes the icon that NSWorkspace returns for the bundle, drawn at each size, to
 //       <outdir>/icon-<size>.png.
-//   icon-tool panes <artwork.png> <render.png>
-//       Splits the artwork into its panes (the colour regions inside the base), locates the
-//       base in the render, and samples a 9x9 grid inside each pane's rendered counterpart.
-//       A pane is flat when every sample has the pane's colour and the pane has no off-colour
-//       pixels in its inset area. Exits 1 unless all panes are flat.
+//   icon-tool compare <artwork.png> <render.png>
+//       Compares the render with the artwork itself, so the check does not depend on the
+//       artwork's design: no colours, panes or regions are named. Exits 1 when a square of
+//       render pixels differs from the artwork. See "Comparison with the artwork". At 32 px
+//       the comparison is a smoke check, not a detector (see scripts/check-icon-render.sh).
 
 import AppKit
 import CoreGraphics
@@ -78,16 +78,12 @@ func save(_ image: Image, to path: String) {
     guard CGImageDestinationFinalize(destination) else { fail("cannot write \(path)") }
 }
 
-// MARK: - Interior
+// MARK: - Grids
 
-struct Masks {
-    var base: [Bool]      // reached from the centre through alpha >= 128
-    var interior: [Bool]  // base pixels whose 7x7 neighbourhood is all base
-}
-
-func masks(_ image: Image) -> Masks {
+// The base of an icon image: the pixels reached from the centre through alpha >= 128.
+func baseRegion(_ image: Image, _ what: String) -> [Bool] {
     let w = image.width, h = image.height
-    guard image.alpha(w / 2, h / 2) >= 128 else { fail("the centre of the artwork is not opaque") }
+    guard image.alpha(w / 2, h / 2) >= 128 else { fail("the centre of \(what) is not opaque") }
     var base = [Bool](repeating: false, count: w * h)
     let seed = (h / 2) * w + w / 2
     base[seed] = true
@@ -106,23 +102,92 @@ func masks(_ image: Image) -> Masks {
             }
         }
     }
-    // Summed-area table of the base mask, to test each 7x7 neighbourhood in constant time.
+    return base
+}
+
+// Inclusive bounds of the true pixels of a grid, or nil when there are none.
+func bounds(_ mask: [Bool], width w: Int, height h: Int) -> (x0: Int, y0: Int, x1: Int, y1: Int)? {
+    var b = (x0: w, y0: h, x1: -1, y1: -1)
+    for y in 0..<h {
+        for x in 0..<w where mask[y * w + x] {
+            b.x0 = min(b.x0, x); b.x1 = max(b.x1, x)
+            b.y0 = min(b.y0, y); b.y1 = max(b.y1, y)
+        }
+    }
+    return b.x1 < 0 ? nil : b
+}
+
+// True where a pixel and every pixel of the square of the given radius around it are true.
+// Pixels outside the grid count as false.
+func erode(_ mask: [Bool], width w: Int, height h: Int, radius r: Int) -> [Bool] {
+    var out = [Bool](repeating: false, count: w * h)
+    for y in 0..<h {
+        for x in 0..<w where mask[y * w + x] {
+            var all = true
+            for ny in (y - r)...(y + r) where all {
+                for nx in (x - r)...(x + r) where all {
+                    all = nx >= 0 && ny >= 0 && nx < w && ny < h && mask[ny * w + nx]
+                }
+            }
+            out[y * w + x] = all
+        }
+    }
+    return out
+}
+
+// True at the top-left corner of every square of the given side whose pixels are all true.
+func squares(_ mask: [Bool], width w: Int, height h: Int, side s: Int) -> [Bool] {
+    var out = [Bool](repeating: false, count: w * h)
+    guard s <= w, s <= h else { return out }
+    for y in 0...(h - s) {
+        for x in 0...(w - s) {
+            var all = true
+            for dy in 0..<s where all {
+                for dx in 0..<s where all {
+                    all = mask[(y + dy) * w + x + dx]
+                }
+            }
+            out[y * w + x] = all
+        }
+    }
+    return out
+}
+
+// Summed-area table of value over a w x h grid; rectSum reads the sum over any rectangle.
+func summedArea(width w: Int, height h: Int, _ value: (Int) -> Int) -> [Int] {
     var sums = [Int](repeating: 0, count: (w + 1) * (h + 1))
     for y in 0..<h {
         var rowSum = 0
         for x in 0..<w {
-            rowSum += base[y * w + x] ? 1 : 0
+            rowSum += value(y * w + x)
             sums[(y + 1) * (w + 1) + (x + 1)] = sums[y * (w + 1) + (x + 1)] + rowSum
         }
     }
+    return sums
+}
+
+// The sum over the pixels x0 ..< x1 and y0 ..< y1 of a table made by summedArea.
+func rectSum(_ sums: [Int], width w: Int, _ x0: Int, _ y0: Int, _ x1: Int, _ y1: Int) -> Int {
+    sums[y1 * (w + 1) + x1] - sums[y0 * (w + 1) + x1] - sums[y1 * (w + 1) + x0] + sums[y0 * (w + 1) + x0]
+}
+
+// MARK: - Interior
+
+struct Masks {
+    var base: [Bool]      // reached from the centre through alpha >= 128
+    var interior: [Bool]  // base pixels whose 7x7 neighbourhood is all base
+}
+
+func masks(_ image: Image) -> Masks {
+    let w = image.width, h = image.height
+    let base = baseRegion(image, "the artwork")
+    let sums = summedArea(width: w, height: h) { base[$0] ? 1 : 0 }
     let r = 3
     let full = (2 * r + 1) * (2 * r + 1)
     var interior = [Bool](repeating: false, count: w * h)
     for y in r..<(h - r) {
         for x in r..<(w - r) where base[y * w + x] {
-            let x0 = x - r, x1 = x + r + 1, y0 = y - r, y1 = y + r + 1
-            let s = sums[y1 * (w + 1) + x1] - sums[y0 * (w + 1) + x1]
-                - sums[y1 * (w + 1) + x0] + sums[y0 * (w + 1) + x0]
+            let s = rectSum(sums, width: w, x - r, y - r, x + r + 1, y + r + 1)
             if s == full { interior[y * w + x] = true }
         }
     }
@@ -259,215 +324,163 @@ func render(app: String, outDirectory: String, sizes: [Int]) {
     }
 }
 
-// MARK: - Panes
+// MARK: - Comparison with the artwork
 
-struct Box {
-    var x0: Int, y0: Int, x1: Int, y1: Int, area: Int
-}
+// The artwork is scaled into the base box of the render, and the two are compared pixel by
+// pixel. Nothing about the artwork's design is assumed: no colour, pane or region is named.
+//
+// The method, with the constants below:
+// 1. The base of each image is the region reached from its centre through alpha >= 128. The
+//    artwork's base box is mapped onto the render's base box, one cell per render pixel. A cell
+//    is the mean colour of the artwork's base pixels under it, and it is full when all of them
+//    are base pixels.
+// 2. A cell is sound when it is full, no full neighbour differs from it by more than
+//    compareEdgeStep in any channel, and no pixel within the margin of it is unsound. The margin
+//    is the mapping's error plus the blur of the system's resampling: the system clips the base
+//    by its own icon mask (a pixel or two at the sides at 256 px), and it blurs colour edges.
+// 3. A sound cell is compared with the render pixel: a difference is the Euclidean distance of
+//    the colours over R, G and B (0 to 441), or the distance of the alpha from 255, whichever is
+//    larger. A cell differs when the difference exceeds compareDifference.
+// 4. A difference is reported only when it fills a square of reportedSquareSide render pixels,
+//    so that an edge or a single pixel never fails the check.
+//
+// Constants, in render pixels unless stated:
+let compareEdgeStep = 12.0    // colour step between neighbouring cells that counts as an edge (0-255)
+let compareDifference = 48.0  // a difference above this (Euclidean over RGB, or alpha from 255)
 
-// Connected components (4-neighbourhood) of the pixels for which member is true.
-func components(width w: Int, height h: Int, _ member: (Int) -> Bool) -> [Box] {
-    var seen = [Bool](repeating: false, count: w * h)
-    var boxes: [Box] = []
-    for start in 0..<(w * h) where !seen[start] && member(start) {
-        seen[start] = true
-        var queue = [start]
-        var head = 0
-        var box = Box(x0: w, y0: h, x1: -1, y1: -1, area: 0)
-        while head < queue.count {
-            let p = queue[head]
-            head += 1
-            let x = p % w, y = p / w
-            box.area += 1
-            box.x0 = min(box.x0, x); box.x1 = max(box.x1, x)
-            box.y0 = min(box.y0, y); box.y1 = max(box.y1, y)
-            let neighbours = [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)]
-            for (nx, ny) in neighbours where nx >= 0 && nx < w && ny >= 0 && ny < h {
-                let q = ny * w + nx
-                if !seen[q] && member(q) {
-                    seen[q] = true
-                    queue.append(q)
-                }
-            }
-        }
-        boxes.append(box)
-    }
-    return boxes
-}
+// The margin between a compared cell and the base rim or a colour edge: 2 px for a base 206 px
+// wide (256 px icon), 1 px for a base 26 px wide (32 px icon).
+func comparisonMargin(baseWidth w: Int) -> Int { max(1, w / 100) }
+
+// The side of the squares of differing pixels that are reported: 5 px for a base 206 px wide,
+// 2 px for a base 26 px wide.
+func reportedSquareSide(baseWidth w: Int) -> Int { max(2, w / 40) }
 
 typealias Colour = (r: Double, g: Double, b: Double)
 
-func distance(_ a: Colour, _ b: Colour) -> Double {
-    let dr = a.r - b.r, dg = a.g - b.g, db = a.b - b.b
-    return (dr * dr + dg * dg + db * db).squareRoot()
+// The pixels [start, end) of an artwork axis that cell i of n covers, when the base box starts
+// at start and is length pixels long.
+func footprint(_ i: Int, start: Int, length: Int, cells n: Int) -> (Int, Int) {
+    let a = start + i * length / n
+    return (a, max(start + (i + 1) * length / n, a + 1))
 }
 
-// Index of the centre nearest to the colour, or -1 when none is within maxDistance.
-func nearest(_ c: Colour, _ centres: [Colour], maxDistance: Double) -> Int {
-    var best = -1
-    var bestDistance = maxDistance
-    for (i, centre) in centres.enumerated() {
-        let d = distance(c, centre)
-        if d <= bestDistance {
-            best = i
-            bestDistance = d
-        }
-    }
-    return best
-}
-
-func colour(_ image: Image, _ x: Int, _ y: Int) -> Colour {
-    let i = (y * image.width + x) * 4
-    return (Double(image.pixels[i]), Double(image.pixels[i + 1]), Double(image.pixels[i + 2]))
-}
-
-// Finds the three colour regions of the artwork (cream base, brown panes, blue pane) by
-// k-means over the base, seeded with the most common colours. Returns the centres in the
-// order cream, brown, blue.
-func paneColours(_ image: Image, _ base: [Bool]) -> [Colour] {
-    var bins: [Int: Int] = [:]
-    for p in 0..<(image.width * image.height) where base[p] {
-        let i = p * 4
-        let key = ((Int(image.pixels[i]) >> 4) << 8) | ((Int(image.pixels[i + 1]) >> 4) << 4)
-            | (Int(image.pixels[i + 2]) >> 4)
-        bins[key, default: 0] += 1
-    }
-    var seeds: [Colour] = []
-    for (key, _) in bins.sorted(by: { $0.value != $1.value ? $0.value > $1.value : $0.key < $1.key })
-        where seeds.count < 3 {
-        let c: Colour = (Double((key >> 8) & 15) * 16 + 8, Double((key >> 4) & 15) * 16 + 8,
-                         Double(key & 15) * 16 + 8)
-        if seeds.allSatisfy({ distance($0, c) >= 60 }) { seeds.append(c) }
-    }
-    guard seeds.count == 3 else { fail("the artwork does not have three distinct colour regions") }
-
-    var centres = seeds
-    var counts = [Int](repeating: 0, count: 3)
-    for _ in 0..<8 {
-        var sums = [Colour](repeating: (0, 0, 0), count: 3)
-        counts = [0, 0, 0]
-        for p in 0..<(image.width * image.height) where base[p] {
-            let c = colour(image, p % image.width, p / image.width)
-            let k = nearest(c, centres, maxDistance: .infinity)
-            sums[k].r += c.r; sums[k].g += c.g; sums[k].b += c.b
-            counts[k] += 1
-        }
-        for k in 0..<3 where counts[k] > 0 {
-            let n = Double(counts[k])
-            centres[k] = (sums[k].r / n, sums[k].g / n, sums[k].b / n)
-        }
-    }
-    // The largest region is the cream base; of the other two, blue is the one with more blue than red.
-    let order = [0, 1, 2].sorted { counts[$0] > counts[$1] }
-    let cream = centres[order[0]]
-    let others = [centres[order[1]], centres[order[2]]]
-    let blue = others[0].b - others[0].r > others[1].b - others[1].r ? others[0] : others[1]
-    let brown = others[0].b - others[0].r > others[1].b - others[1].r ? others[1] : others[0]
-    return [cream, brown, blue]
-}
-
-func panes(artwork: String, rendered: String) {
+func compare(artwork: String, rendered: String) {
     let art = load(artwork)
     let ren = load(rendered)
-    let m = masks(art)
-    let names = ["cream", "brown", "blue"]
-    let centres = paneColours(art, m.base)
-    print("artwork region colours: " + zip(names, centres).map { name, c in
-        "\(name) (\(Int(c.r)), \(Int(c.g)), \(Int(c.b)))"
-    }.joined(separator: ", "))
-
-    // Label every artwork pixel of the base, and every render pixel that has alpha >= 128.
-    let artLabel: [Int] = (0..<(art.width * art.height)).map { p in
-        m.base[p] ? nearest(colour(art, p % art.width, p / art.width), centres, maxDistance: .infinity) : -1
-    }
-    let renLabel: [Int] = (0..<(ren.width * ren.height)).map { p in
-        ren.pixels[p * 4 + 3] >= 128
-            ? nearest(colour(ren, p % ren.width, p / ren.width), centres, maxDistance: 45) : -1
-    }
-
-    // The base: the largest cream component in each image.
-    func largestCream(_ labels: [Int], _ w: Int, _ h: Int) -> Box? {
-        components(width: w, height: h) { labels[$0] == 0 }.max { $0.area < $1.area }
-    }
-    guard let artBase = largestCream(artLabel, art.width, art.height),
-          let renBase = largestCream(renLabel, ren.width, ren.height)
+    let artBase = baseRegion(art, "the artwork")
+    let renBase = baseRegion(ren, "the render")
+    guard let ab = bounds(artBase, width: art.width, height: art.height),
+          let rb = bounds(renBase, width: ren.width, height: ren.height)
     else { fail("cannot find the base in the artwork or the render") }
-    let sx = Double(renBase.x1 - renBase.x0 + 1) / Double(artBase.x1 - artBase.x0 + 1)
-    let sy = Double(renBase.y1 - renBase.y0 + 1) / Double(artBase.y1 - artBase.y0 + 1)
-    let ox = Double(renBase.x0) - Double(artBase.x0) * sx
-    let oy = Double(renBase.y0) - Double(artBase.y0) * sy
-    print(String(format: "base in artwork x %d-%d y %d-%d, in render x %d-%d y %d-%d, scale %.4f / %.4f",
-                 artBase.x0, artBase.x1, artBase.y0, artBase.y1,
-                 renBase.x0, renBase.x1, renBase.y0, renBase.y1, sx, sy))
-    func renderX(_ x: Double) -> Int { min(max(Int((x * sx + ox).rounded(.down)), 0), ren.width - 1) }
-    func renderY(_ y: Double) -> Int { min(max(Int((y * sy + oy).rounded(.down)), 0), ren.height - 1) }
+    let aw = ab.x1 - ab.x0 + 1, ah = ab.y1 - ab.y0 + 1  // the base box in the artwork
+    let cw = rb.x1 - rb.x0 + 1, ch = rb.y1 - rb.y0 + 1  // the base box in the render
 
-    // Panes: brown and blue components of the artwork that are large enough to be a pane.
-    var found: [(name: String, label: Int, box: Box)] = []
-    for (label, name) in [(1, "brown"), (2, "blue")] {
-        for box in components(width: art.width, height: art.height, { artLabel[$0] == label })
-        where box.area >= (art.width * art.height) / 200 {
-            found.append((name, label, box))
+    // Step 1: the artwork scaled into the render's base box.
+    let aW = art.width, aH = art.height
+    let count = summedArea(width: aW, height: aH) { artBase[$0] ? 1 : 0 }
+    let reds = summedArea(width: aW, height: aH) { artBase[$0] ? Int(art.pixels[$0 * 4]) : 0 }
+    let greens = summedArea(width: aW, height: aH) { artBase[$0] ? Int(art.pixels[$0 * 4 + 1]) : 0 }
+    let blues = summedArea(width: aW, height: aH) { artBase[$0] ? Int(art.pixels[$0 * 4 + 2]) : 0 }
+    var expected = [Colour](repeating: (0, 0, 0), count: cw * ch)
+    var full = [Bool](repeating: false, count: cw * ch)
+    for j in 0..<ch {
+        let (y0, y1) = footprint(j, start: ab.y0, length: ah, cells: ch)
+        for i in 0..<cw {
+            let (x0, x1) = footprint(i, start: ab.x0, length: aw, cells: cw)
+            let n = rectSum(count, width: aW, x0, y0, x1, y1)
+            guard n > 0 else { continue }
+            let k = j * cw + i
+            full[k] = n == (x1 - x0) * (y1 - y0)
+            let d = Double(n)
+            expected[k] = (Double(rectSum(reds, width: aW, x0, y0, x1, y1)) / d,
+                           Double(rectSum(greens, width: aW, x0, y0, x1, y1)) / d,
+                           Double(rectSum(blues, width: aW, x0, y0, x1, y1)) / d)
         }
     }
-    print("panes in artwork: \(found.count)")
 
-    var allFlat = found.count == 3
-    for pane in found {
-        let b = pane.box
-        let insetX = Double(b.x1 - b.x0) * 0.12, insetY = Double(b.y1 - b.y0) * 0.12
-        let ax0 = Double(b.x0) + insetX, ax1 = Double(b.x1) - insetX
-        let ay0 = Double(b.y0) + insetY, ay1 = Double(b.y1) - insetY
-
-        var samples: [Colour] = []
-        var matches = 0
-        for gy in 0..<9 {
-            for gx in 0..<9 {
-                let x = ax0 + (ax1 - ax0) * Double(gx) / 8
-                let y = ay0 + (ay1 - ay0) * Double(gy) / 8
-                let px = renderX(x), py = renderY(y)
-                let c = colour(ren, px, py)
-                samples.append(c)
-                if nearest(c, centres, maxDistance: 45) == pane.label && ren.alpha(px, py) == 255 {
-                    matches += 1
+    // Step 2: the sound cells, and the compared ones (sound, with a margin).
+    var sound = [Bool](repeating: false, count: cw * ch)
+    for j in 0..<ch {
+        for i in 0..<cw where full[j * cw + i] {
+            let a = expected[j * cw + i]
+            var edge = false
+            for dy in -1...1 {
+                for dx in -1...1 where !edge {
+                    let x = i + dx, y = j + dy
+                    guard x >= 0, y >= 0, x < cw, y < ch, full[y * cw + x] else { continue }
+                    let b = expected[y * cw + x]
+                    edge = max(abs(a.r - b.r), abs(a.g - b.g), abs(a.b - b.b)) > compareEdgeStep
                 }
             }
+            sound[j * cw + i] = !edge
         }
-        let median = Colour(
-            r: samples.map { $0.r }.sorted()[samples.count / 2],
-            g: samples.map { $0.g }.sorted()[samples.count / 2],
-            b: samples.map { $0.b }.sorted()[samples.count / 2])
-        var maxDeviation = 0.0
-        for c in samples {
-            maxDeviation = max(maxDeviation, abs(c.r - median.r), abs(c.g - median.g), abs(c.b - median.b))
-        }
+    }
+    let margin = comparisonMargin(baseWidth: cw)
+    let compared = erode(sound, width: cw, height: ch, radius: margin)
 
-        // Every render pixel in the inset area, not only the grid.
-        var inArea = 0, offColour = 0
-        for py in renderY(ay0)...renderY(ay1) {
-            for px in renderX(ax0)...renderX(ax1) {
-                inArea += 1
-                let label = nearest(colour(ren, px, py), centres, maxDistance: 45)
-                if label != pane.label || ren.alpha(px, py) != 255 { offColour += 1 }
+    // Step 3: the differences of the compared cells.
+    var differs = [Bool](repeating: false, count: cw * ch)
+    var deviation = [Double](repeating: 0, count: cw * ch)
+    var comparedCount = 0, differingCount = 0, largest = 0.0
+    for j in 0..<ch {
+        for i in 0..<cw where compared[j * cw + i] {
+            let k = j * cw + i
+            let p = ((rb.y0 + j) * ren.width + rb.x0 + i) * 4
+            let e = expected[k]
+            let dr = Double(ren.pixels[p]) - e.r
+            let dg = Double(ren.pixels[p + 1]) - e.g
+            let db = Double(ren.pixels[p + 2]) - e.b
+            let d = max((dr * dr + dg * dg + db * db).squareRoot(), abs(Double(ren.pixels[p + 3]) - 255))
+            comparedCount += 1
+            deviation[k] = d
+            largest = max(largest, d)
+            if d > compareDifference {
+                differs[k] = true
+                differingCount += 1
             }
         }
-        let offFraction = Double(offColour) / Double(max(inArea, 1))
-        let flat = matches == samples.count && maxDeviation <= 24 && offFraction < 0.005
-        allFlat = allFlat && flat
-        print(String(format: "%@ pane x %d-%d y %d-%d: grid %d/%d match, median (%d, %d, %d), max deviation %d, off-colour pixels %.2f%% of %d -> %@",
-                     pane.name, b.x0, b.x1, b.y0, b.y1, matches, samples.count,
-                     Int(median.r), Int(median.g), Int(median.b), Int(maxDeviation),
-                     offFraction * 100, inArea, flat ? "flat" : "NOT FLAT"))
     }
-    print(allFlat ? "verdict: all panes flat" : "verdict: panes NOT flat")
-    if !allFlat { exit(1) }
+
+    // Step 4: a difference is reported only when it fills a square.
+    let side = reportedSquareSide(baseWidth: cw)
+    let tops = squares(differs, width: cw, height: ch, side: side)
+    let squareCount = tops.reduce(0) { $0 + ($1 ? 1 : 0) }
+    print("render base x \(rb.x0)-\(rb.x1) y \(rb.y0)-\(rb.y1), artwork base x \(ab.x0)-\(ab.x1) y \(ab.y0)-\(ab.y1)")
+    print("compared \(comparedCount) render pixels, margin \(margin) px from the base rim and colour edges")
+    print("largest difference \(String(format: "%.1f", largest)), pixels above \(Int(compareDifference)): \(differingCount), "
+          + "squares of \(side) x \(side) px that differ: \(squareCount)")
+    guard let region = bounds(tops, width: cw, height: ch) else {
+        print("verdict: the render matches the artwork")
+        return
+    }
+
+    // The region of the squares, in render and artwork pixels, and its most different pixel.
+    let i0 = region.x0, i1 = region.x1 + side - 1
+    let j0 = region.y0, j1 = region.y1 + side - 1
+    var worst = (i: i0, j: j0, d: -1.0)
+    for j in j0...j1 {
+        for i in i0...i1 where differs[j * cw + i] && deviation[j * cw + i] > worst.d {
+            worst = (i, j, deviation[j * cw + i])
+        }
+    }
+    let artX0 = footprint(i0, start: ab.x0, length: aw, cells: cw).0
+    let artX1 = footprint(i1, start: ab.x0, length: aw, cells: cw).1 - 1
+    let artY0 = footprint(j0, start: ab.y0, length: ah, cells: ch).0
+    let artY1 = footprint(j1, start: ab.y0, length: ah, cells: ch).1 - 1
+    let p = ((rb.y0 + worst.j) * ren.width + rb.x0 + worst.i) * 4
+    let e = expected[worst.j * cw + worst.i]
+    print("verdict: the render differs from the artwork in \(squareCount) square(s) of \(side) x \(side) render pixels")
+    print("  at render x \(rb.x0 + i0)-\(rb.x0 + i1) y \(rb.y0 + j0)-\(rb.y0 + j1), artwork x \(artX0)-\(artX1) y \(artY0)-\(artY1)")
+    print("  most different pixel, render (\(rb.x0 + worst.i), \(rb.y0 + worst.j)): rendered (\(ren.pixels[p]), \(ren.pixels[p + 1]), \(ren.pixels[p + 2]), alpha \(ren.pixels[p + 3])), artwork (\(Int(e.r.rounded())), \(Int(e.g.rounded())), \(Int(e.b.rounded())))")
+    exit(1)
 }
 
 // MARK: - Command line
 
 let arguments = CommandLine.arguments
 guard arguments.count >= 3 else {
-    fail("usage: icon-tool stats|check <artwork.png> | normalize <in.png> <out.png> [threshold] | render <app> <outdir> <size>... | panes <artwork.png> <render.png>")
+    fail("usage: icon-tool stats|check <artwork.png> | normalize <in.png> <out.png> [threshold] | render <app> <outdir> <size>... | compare <artwork.png> <render.png>")
 }
 switch arguments[1] {
 case "stats":
@@ -483,9 +496,9 @@ case "render":
     let sizes = arguments[4...].map { Int($0) ?? 0 }
     guard sizes.allSatisfy({ $0 > 0 }) else { fail("sizes must be positive integers") }
     render(app: arguments[2], outDirectory: arguments[3], sizes: sizes)
-case "panes":
-    guard arguments.count >= 4 else { fail("usage: icon-tool panes <artwork.png> <render.png>") }
-    panes(artwork: arguments[2], rendered: arguments[3])
+case "compare":
+    guard arguments.count >= 4 else { fail("usage: icon-tool compare <artwork.png> <render.png>") }
+    compare(artwork: arguments[2], rendered: arguments[3])
 default:
     fail("unknown command \(arguments[1])")
 }
