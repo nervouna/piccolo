@@ -46,6 +46,28 @@ final class InMemorySettingsBackend: SettingsBackend {
     /// When set, the issues `current()` reports once the hotkeys are restored.
     var issuesAfterResume: [String]?
 
+    /// Whether there is a config file to copy when bindings are replaced.
+    var hasFile = true
+    /// The copies `backUpAndReplace` made, in order.
+    private(set) var copies: [String] = []
+    /// The file name `backUpAndReplace` gives its copy.
+    static let copyName = "config.backup-test.json"
+
+    func backUpAndReplace(with config: Config) throws -> String? {
+        if let failure {
+            throw SettingsSaveError(failure)
+        }
+        let copy = hasFile ? Self.copyName : nil
+        if let copy {
+            copies.append(copy)
+        }
+        self.config = config
+        saved.append(config)
+        suspendedAtSave.append(isSuspended)
+        currentIssues = issuesAfterSave
+        return copy
+    }
+
     func setShortcutsSuspended(_ suspended: Bool) {
         suspendRequests.append(suspended)
         isSuspended = suspended

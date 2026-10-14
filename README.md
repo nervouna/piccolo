@@ -52,6 +52,7 @@ Settings opens from the menu. It also opens when you launch Piccolo again while 
 ### Shortcuts tab
 
 - **Add and remove.** The + button adds a binding. It places the window in the left half and has no shortcut yet. The − button removes the selected binding.
+- **Restore Default Shortcuts…** replaces every binding with the [default shortcuts](#default-shortcuts) after you confirm. The resize step stays. A copy of the config file is kept next to it first.
 - **Action.** The Action menu offers four kinds: Place Window, Move to Display, Arrange Grid and Move Divider. Choosing a kind resets the binding to that kind's default: Left Half, Next Display, 4 windows in 2 × 2, or Move Divider Left. The parameters of the kind follow. For Place Window and Arrange Grid, a preview of the frame or cells is drawn beside the editor.
 - **Recording a shortcut.** Click the button on the right of a binding. It reads "Record Shortcut" when the binding has none, and shows the shortcut, such as ⌃⌥F13, when it has one. Click it, then press the keys. Press Escape to cancel. Press Delete or Forward Delete on its own to clear the shortcut.
 - **Rules.** A shortcut needs ⌘, ⌥ or ⌃, or it must be a function key (F1 to F20). Shift on its own does not count, so ⇧A is refused. A shortcut that another binding already has is refused too, and the message names the other binding by its action. A refused shortcut shows a message at the bottom of the window and nothing is saved. Recording ends after any key press, so press the keys again to retry.
@@ -122,9 +123,45 @@ Arrange Grid takes the `count` most recently focused windows and places them in 
 - **Cells too small.** If any cell would be less than 100 pt wide or high, nothing is moved, and the reason goes to the log.
 - **Failures.** A window that cannot be moved, for example because it was closed in the meantime, does not stop the others. Arranged windows are moved, not raised or focused.
 
+## Default shortcuts
+
+Piccolo starts with these shortcuts, so the window actions work right after installation. At launch, when there is no config file, Piccolo writes them to `~/Library/Application Support/Piccolo/config.json` and loads them. It never writes over an existing file, also not one with no bindings. Deleting the file brings the defaults back at the next launch. To restore them at any time, choose Restore Default Shortcuts… on the Shortcuts tab of Settings. Restoring replaces every binding and keeps the resize step. When there is a config file, a copy of it is kept next to it first, as `config.backup-<yyyyMMdd-HHmmss>.json`.
+
+| Action | Shortcut |
+|---|---|
+| Left Half | ⌃⌥← |
+| Right Half | ⌃⌥→ |
+| Top Half | ⌃⌥↑ |
+| Bottom Half | ⌃⌥↓ |
+| Top Left | ⌃⌥U |
+| Top Right | ⌃⌥I |
+| Bottom Left | ⌃⌥J |
+| Bottom Right | ⌃⌥K |
+| Left Third | ⌃⌥D |
+| Center Third | ⌃⌥F |
+| Right Third | ⌃⌥G |
+| Left Two Thirds | ⌃⌥E |
+| Right Two Thirds | ⌃⌥T |
+| Maximize | ⌃⌥↩ |
+| Center | ⌃⌥C |
+| Next Display | ⌃⌥⌘→ |
+| Previous Display | ⌃⌥⌘← |
+| Arrange 2 in 1 × 2 | ⌃⌥⇧2 |
+| Arrange 3 in 1 × 3 | ⌃⌥⇧3 |
+| Arrange 4 in 2 × 2 | ⌃⌥⇧4 |
+| Arrange 6 in 2 × 3 | ⌃⌥⇧6 |
+| Move Divider Left | ⌃⌥⇧← |
+| Move Divider Right | ⌃⌥⇧→ |
+| Move Divider Up | ⌃⌥⇧↑ |
+| Move Divider Down | ⌃⌥⇧↓ |
+
+(⌃ is Control, ⌥ is Option, ⇧ is Shift and ⌘ is Command.) The four Move Divider shortcuts do nothing yet, see [Status](#status).
+
+A shortcut that another app already holds, for example another window manager with the same shortcuts, is refused by the system. Piccolo does not register it and reports the refusal in the config problems: the menu counts them, the Settings window lists them and the system log has the details.
+
 ## Config file
 
-The config file is `~/Library/Application Support/Piccolo/config.json`. Piccolo does not create it: a missing file means no bindings. The first save from Settings creates the file and its folder.
+The config file is `~/Library/Application Support/Piccolo/config.json`. At launch, when there is no file, Piccolo writes the [default shortcuts](#default-shortcuts) to it. Otherwise a missing file means no bindings: Reload Config does not write anything, and the first save from Settings creates the file and its folder.
 
 Piccolo reads the file at launch and when you choose Reload Config. It does not watch the file, so after you edit it by hand, choose Reload Config.
 
@@ -199,9 +236,9 @@ The keys can appear in any order. These are the keys of the file:
 
 Piccolo keeps what it can use and reports the rest.
 
-- **No file.** The defaults are used: no bindings. Nothing is written.
-- **Not JSON, or an unusable top level.** This covers a file that is not JSON, an object with no `version` or no `bindings`, and a `version` that is not a whole number of at least 1. The file is moved to `config.corrupt-<yyyyMMdd-HHmmss>.json` in the same folder, with the time it was moved in the name, and the defaults are used. Its content stays in that copy.
-- **A newer version.** A version above 1 is a format this build cannot read. The file is left untouched, the defaults are used, and Settings refuses to save over it.
+- **No file.** At launch, Piccolo writes the [default shortcuts](#default-shortcuts) and loads them. On Reload Config, a missing file means no bindings, and nothing is written.
+- **Not JSON, or an unusable top level.** This covers a file that is not JSON, an object with no `version` or no `bindings`, and a `version` that is not a whole number of at least 1. The file is moved to `config.corrupt-<yyyyMMdd-HHmmss>.json` in the same folder, with the time it was moved in the name, and no bindings are loaded. Its content stays in that copy. The next launch finds no file and writes the default shortcuts.
+- **A newer version.** A version above 1 is a format this build cannot read. The file is left untouched, no bindings are loaded, and Settings refuses to save over it.
 - **A binding that cannot be read or breaks a rule.** This covers a missing or malformed key, an unknown `type`, a value out of range and a duplicate `id`. That binding is skipped as a whole, and the others load. The problem names the binding by its position in the file, counting from 0 and including skipped entries, for example `bindings[2] skipped: ...`. Of two bindings with the same `id`, the first one is kept.
 - **A shortcut without ⌘, ⌥ or ⌃** that is not a function key. The binding loads and appears in Settings, but its shortcut is not registered.
 - **A shortcut that an earlier binding already has.** The first binding keeps it. The later one is not registered.

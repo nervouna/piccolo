@@ -119,6 +119,8 @@ public final class SettingsWindowController: NSObject, NSWindowDelegate {
 
     public func windowWillClose(_ notification: Notification) {
         model.cancelRecording()
+        // A confirmation still showing must not come back with the window the next time it opens.
+        model.cancelRestoreDefaults()
         removeKeyMonitor()
     }
 

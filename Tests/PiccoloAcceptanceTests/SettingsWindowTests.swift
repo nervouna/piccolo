@@ -519,6 +519,39 @@ extension DesktopAcceptanceTests {
             }
         }
 
+        // MARK: 13. Restore the default shortcuts
+
+        @Test("settings 13. settings.restoreDefaults replaces the bindings with the 25 defaults, keeps the resize step and a copy of the file")
+        func restoreDefaults() async throws {
+            let custom = KeyBinding(action: .placeWindow(.preset(.rightHalf)), shortcut: TestShortcut.f14)
+            try await withSettingsSession([custom]) { session in
+                try piccolo.settingsSetResizeStep(0.1)
+                let before = try session.fileBytes()
+
+                // Without the alert: the command is what the Restore button does once confirmed.
+                let restored = try piccolo.settingsRestoreDefaults()
+
+                #expect(restored.state.error == nil, "restoring set the error \(restored.state.error ?? "")")
+                #expect(restored.state.bindings.count == 25, "the state lists \(restored.state.bindings.count) bindings")
+                #expect(restored.state.resizeStep == 0.1, "the resize step became \(restored.state.resizeStep)")
+                #expect(!restored.state.bindings.contains { $0.id == custom.id }, "the custom binding survived the restore")
+
+                // The copy is kept next to the temporary file and holds the file as it was before.
+                let name = try #require(restored.backup, "settings.restoreDefaults kept no copy of the file")
+                let copy = session.url.deletingLastPathComponent().appending(path: name)
+                #expect(try Data(contentsOf: copy) == before, "the copy differs from the file as it was before the restore")
+
+                let inFile = try session.fileConfig()
+                #expect(inFile.bindings.count == 25, "the file holds \(inFile.bindings.count) bindings")
+                #expect(inFile.resizeStep == 0.1, "the file's resize step is \(inFile.resizeStep)")
+
+                let status = try piccolo.configStatus()
+                #expect(status.bindingCount == 25, "config.status counts \(status.bindingCount) bindings")
+                #expect(status.issues.isEmpty, "config.status reports issues: \(status.issues)")
+                #expect(status.registered.count == 25, "config.status lists \(status.registered.count) as registered")
+            }
+        }
+
         // MARK: Helpers
 
         /// Where the fixture windows of these tests start: inside the primary display.

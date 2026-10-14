@@ -42,9 +42,13 @@ final class ConfigController {
         status = ShortcutManager.Status(path: ConfigLocation.defaultURL.path)
     }
 
-    /// Loads the config at the default location. Call once at launch.
+    /// Loads the config at the default location. Call once at launch: when there is no file there,
+    /// the default shortcuts are written first (see `ShortcutManager.loadAtLaunch(from:)`).
     func start() {
-        reload()
+        let wroteDefaults = manager.loadAtLaunch(from: ConfigLocation.defaultURL)
+        status = manager.status
+        log(wroteDefaults ? "wrote the default shortcuts and loaded" : "loaded")
+        onExternalLoad?()
     }
 
     /// Loads the config at the default location again, replacing everything loaded before.
@@ -69,6 +73,15 @@ final class ConfigController {
     func save(_ config: Config) throws {
         status = try manager.save(config)
         log("saved")
+    }
+
+    /// Replaces the config in use with `config`, after copying the file in use next to itself, and
+    /// applies it (see `ShortcutManager.replaceKeepingCopy(with:)`).
+    func replaceKeepingCopy(with config: Config) throws -> ShortcutManager.Replacement {
+        let replacement = try manager.replaceKeepingCopy(with: config)
+        status = replacement.status
+        log("replaced")
+        return replacement
     }
 
     /// Releases every global hotkey (`true`) or registers them again (`false`), for the time a

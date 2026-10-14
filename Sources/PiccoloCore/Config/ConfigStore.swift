@@ -71,7 +71,7 @@ public struct ConfigStore: Sendable {
                 config: .default,
                 issues: [
                     "\(url.lastPathComponent) has version \(version), which this build cannot read; "
-                        + "it was left untouched and the defaults were loaded"
+                        + "it was left untouched and no bindings were loaded"
                 ])
         }
 
@@ -151,6 +151,38 @@ public struct ConfigStore: Sendable {
         try ConfigJSON.data(for: config).write(to: url, options: .atomic)
     }
 
+    /// Writes `config` to the file at `url` only when there is no file there, and answers whether it did.
+    ///
+    /// A file that exists is never written over, whatever it holds, an empty config included. The
+    /// check and the creation are one step: the text is first written to a file of its own next to
+    /// the target, which is then linked to the target name, and a link fails when the name is taken.
+    /// Validation and the folder are as in `save(_:)`.
+    ///
+    /// - Throws: `ConfigStoreError.invalid` for an invalid config, and the I/O error when the file
+    ///   cannot be written. Nothing is written for an invalid config.
+    public func createIfMissing(_ config: Config) throws -> Bool {
+        do {
+            try config.validate()
+        } catch {
+            throw ConfigStoreError.invalid(error)
+        }
+        guard !FileManager.default.fileExists(atPath: url.path) else {
+            return false
+        }
+        let folder = url.deletingLastPathComponent()
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let staged = folder.appending(path: ".\(url.lastPathComponent).\(UUID().uuidString).tmp")
+        try ConfigJSON.data(for: config).write(to: staged)
+        defer { try? FileManager.default.removeItem(at: staged) }
+        if link(staged.path, url.path) == 0 {
+            return true
+        }
+        if errno == EEXIST {
+            return false
+        }
+        throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
+    }
+
     /// Answers whether `save(_:)` would accept `config`, without writing anything.
     ///
     /// Throws the same errors `save(_:)` throws, so that a caller can refuse a save before it
@@ -193,7 +225,7 @@ public struct ConfigStore: Sendable {
             config: .default,
             issues: [
                 "\(url.lastPathComponent) could not be used (\(reason)); "
-                    + "moved it to \(destination.lastPathComponent) and loaded the defaults"
+                    + "moved it to \(destination.lastPathComponent) and loaded no bindings"
             ])
     }
 

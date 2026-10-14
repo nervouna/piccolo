@@ -8,7 +8,9 @@ import os
 /// matches them against the process's registered hotkeys, whichever application is in front
 /// afterwards and however the hotkeys are registered again. (Measured on macOS 27 with the Debug
 /// builds of `main` as well. This has been observed only for the key events `hotkey.simulate`
-/// posts; it has not been verified with real key presses.) Only a new process fires again.
+/// posts: real key presses keep firing after Piccolo has been frontmost. The owner checked this on
+/// an installed build with the Settings window in front, without a restart, and only the events of
+/// `hotkey.simulate` stop.) Only a new process fires `hotkey.simulate`'s events again.
 /// So a test that brings Piccolo forward, as the Settings tests must to type into its window,
 /// ends by restarting it, and a test that wants a hotkey to fire after that restarts it too.
 ///

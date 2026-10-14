@@ -528,4 +528,55 @@ struct ConfigStoreTests {
             #expect(try entryNames(in: directory).isEmpty)
         }
     }
+
+    // MARK: Create if missing
+
+    @Test("createIfMissing writes the config where there is no file, creating the folder, and answers true")
+    func createIfMissingWrites() throws {
+        try withTemporaryDirectory { directory in
+            let url = directory.appending(path: "nested/config.json")
+            let store = ConfigStore(url: url)
+
+            #expect(try store.createIfMissing(Config(bindings: allKindsBindings)))
+
+            let result = try store.load()
+            #expect(result.config.bindings == allKindsBindings)
+            #expect(result.issues.isEmpty)
+            // The staging file is gone: the folder holds the config and nothing else.
+            #expect(try entryNames(in: directory.appending(path: "nested")) == ["config.json"])
+        }
+    }
+
+    @Test(
+        "createIfMissing never writes over an existing file, whatever it holds, and answers false",
+        arguments: [
+            #"{"bindings":[],"version":1}"#,
+            #"{"bindings":[{"id":"not-a-uuid"}],"version":1}"#,
+            #"{"bindings":[],"version":2}"#,
+            "not JSON",
+        ])
+    func createIfMissingLeavesFileAlone(text: String) throws {
+        try withTemporaryDirectory { directory in
+            let url = directory.appending(path: "config.json")
+            let original = Data(text.utf8)
+            try original.write(to: url)
+
+            #expect(try ConfigStore(url: url).createIfMissing(Config.defaultShortcuts) == false)
+
+            #expect(try Data(contentsOf: url) == original)
+            #expect(try entryNames(in: directory) == ["config.json"])
+        }
+    }
+
+    @Test("createIfMissing refuses an invalid config and writes nothing")
+    func createIfMissingRefusesInvalid() throws {
+        try withTemporaryDirectory { directory in
+            let url = directory.appending(path: "config.json")
+            #expect(throws: ConfigStoreError.invalid(.unsupportedVersion(2))) {
+                _ = try ConfigStore(url: url).createIfMissing(Config(version: 2))
+            }
+            let names = try entryNames(in: directory)
+            #expect(names.isEmpty)
+        }
+    }
 }
