@@ -3,8 +3,8 @@
 | File | What it is |
 |---|---|
 | `icon.png` | Source artwork of the app icon, 1024×1024. `scripts/make-icon.sh` turns it into `App/Assets.xcassets/AppIcon.appiconset` (see "App icon" in `CLAUDE.md`). |
-| `menubar-icon.svg` | Menu bar glyph, candidate 1 (filled panes). This is the one the app ships as `MenuBarIcon`. |
-| `menubar-icon-latte.svg` | Menu bar glyph, candidate 1b (latte: candidate 1 with the top pane left empty). Not used by the app. |
+| `menubar-icon.svg` | Menu bar glyph, candidate 1 (filled panes). Not used by the app. |
+| `menubar-icon-latte.svg` | Menu bar glyph, candidate 1b (latte: candidate 1 with the top pane left empty). Chosen by the owner; the app ships it as `MenuBarIcon`. |
 | `menubar-icon-outline.svg` | Menu bar glyph, candidate 2 (outline). Same silhouette and grid, not used by the app. |
 | `menubar-preview.png` | All three candidates at 16, 18 and 22 pt, at 1x and 2x, on a light and a dark menu bar, plus a magnified view of the 1x pixels. |
 | `render-menubar-preview.swift` | Script that renders `menubar-preview.png` from the three SVGs. |
@@ -21,7 +21,7 @@ At 16 pt (the drawing scaled by 8/9) a 1 pt line is 0.89 px wide and falls betwe
 
 ## How `MenuBarIcon` is made
 
-`App/Assets.xcassets/MenuBarIcon.imageset/` holds a copy of `menubar-icon.svg` and a `Contents.json` that asks for the vector data to be preserved and for the template rendering intent:
+`App/Assets.xcassets/MenuBarIcon.imageset/` holds a copy of `menubar-icon-latte.svg` (under the name `menubar-icon.svg`) and a `Contents.json` that asks for the vector data to be preserved and for the template rendering intent:
 
 ```json
 "properties" : {
@@ -32,7 +32,7 @@ At 16 pt (the drawing scaled by 8/9) a 1 pt line is 0.89 px wide and falls betwe
 
 The system tints a template image for light, dark and highlighted menu bars, so the SVG stays black on transparent. `App/PiccoloApp.swift` uses it as `MenuBarExtra("Piccolo", image: "MenuBarIcon")`; the title is the accessibility label.
 
-To change the glyph, edit `design/menubar-icon.svg`, copy it over the file in the image set (keep the file name `menubar-icon.svg`, `Contents.json` refers to it) and render the preview again. To ship the latte or the outline candidate instead, copy `menubar-icon-latte.svg` or `menubar-icon-outline.svg` over the image set's `menubar-icon.svg`. Check the result with `scripts/build.sh release` and:
+To change the glyph, edit `design/menubar-icon-latte.svg`, copy it over the file in the image set (keep the file name `menubar-icon.svg`, `Contents.json` refers to it) and render the preview again. To ship the filled or the outline candidate instead, copy `menubar-icon.svg` or `menubar-icon-outline.svg` over the image set's `menubar-icon.svg`. Check the result with `scripts/build.sh release` and:
 
 ```sh
 xcrun --sdk macosx assetutil --info build/Piccolo.app/Contents/Resources/Assets.car | grep -B10 -A3 '"Template Mode"'
