@@ -60,7 +60,7 @@ Settings opens from the menu. It also opens when you launch Piccolo again while 
 
 ### General tab
 
-<img src="docs/images/settings-general.png" alt="Settings window, General tab: the Launch at login switch, the resize step, the Accessibility status, the Reveal Config in Finder button and the app version." width="640">
+<img src="docs/images/settings-general.png" alt="Settings window, General tab: the language, the Launch at login switch, window animation, the grid fill order, the destination preview switch, the resize step, the Accessibility status, the Reveal Config in Finder button and the app version." width="640">
 
 - **Language** is the language of Piccolo's menu and Settings window: System default or one of the [supported languages](#languages). A change applies after Piccolo restarts, which the Restart Now button under the picker does.
 - **Launch at login** starts Piccolo when you log in. When macOS is waiting for you to allow it, the tab says so and offers a button to open Login Items in System Settings.
