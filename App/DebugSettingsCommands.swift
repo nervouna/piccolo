@@ -28,9 +28,10 @@ extension DebugControlServer {
     private nonisolated static let restartDelay: TimeInterval = 0.3
 
     nonisolated static func registerSettingsCommands(in router: inout ControlRouter) {
-        // Opens the window and activates the app. Since macOS 14 the system may refuse the
-        // activation; the window is then on screen behind other apps, and launching the app
-        // again through LaunchServices brings it forward.
+        // Opens the window and makes Piccolo the active application with the window key, whatever
+        // application was in front (see `SettingsWindowController.show()`). The answer comes at once,
+        // before the system has activated the app, so `isActive` and `isKey` in it can still be false;
+        // `settings.state` shows them a moment later.
         router.register("settings.open") { _ in
             onMainActor {
                 SettingsController.shared.show()
@@ -320,6 +321,8 @@ extension DebugControlServer {
         model.refreshLanguage()
         var state: [String: JSONValue] = [
             "isOpen": .bool(settings.isOpen),
+            "isActive": .bool(NSApp.isActive),
+            "isKey": .bool(settings.isKey),
             "bindings": .array(
                 model.bindings.map { binding in
                     var entry: [String: JSONValue] = [

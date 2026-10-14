@@ -24,7 +24,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     /// The app was launched again while it runs (Finder, `open`, the Dock). A menu bar app has
     /// no window to show, so this opens Settings: the way to reach the app when its menu bar icon
-    /// is hidden, and the one way to bring a window forward without a click on macOS 14 and later.
+    /// is hidden. `show()` brings the window forward and activates the app the same way for every
+    /// caller and never asks LaunchServices to open the app, so this event cannot lead to another.
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         SettingsController.shared.show()
         return false
