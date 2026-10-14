@@ -6,7 +6,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
+            "state" : "translated",
             "value" : "%1$@, %2$@"
           }
         },
@@ -18,25 +18,25 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
+            "state" : "translated",
             "value" : "%1$@, %2$@"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
+            "state" : "translated",
             "value" : "%1$@, %2$@"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@, %2$@"
+            "state" : "translated",
+            "value" : "%1$@、%2$@"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
+            "state" : "translated",
             "value" : "%1$@, %2$@"
           }
         },
@@ -48,8 +48,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@, %2$@"
+            "state" : "translated",
+            "value" : "%1$@，%2$@"
           }
         }
       }
@@ -62,14 +62,14 @@
             "plural" : {
               "one" : {
                 "stringUnit" : {
-                  "state" : "new",
-                  "value" : "%lld config problem"
+                  "state" : "translated",
+                  "value" : "%lld Konfigurationsproblem"
                 }
               },
               "other" : {
                 "stringUnit" : {
-                  "state" : "new",
-                  "value" : "%lld config problems"
+                  "state" : "translated",
+                  "value" : "%lld Konfigurationsprobleme"
                 }
               }
             }
@@ -98,14 +98,14 @@
             "plural" : {
               "one" : {
                 "stringUnit" : {
-                  "state" : "new",
-                  "value" : "%lld config problem"
+                  "state" : "translated",
+                  "value" : "%lld problema de configuración"
                 }
               },
               "other" : {
                 "stringUnit" : {
-                  "state" : "new",
-                  "value" : "%lld config problems"
+                  "state" : "translated",
+                  "value" : "%lld problemas de configuración"
                 }
               }
             }
@@ -116,14 +116,14 @@
             "plural" : {
               "one" : {
                 "stringUnit" : {
-                  "state" : "new",
-                  "value" : "%lld config problem"
+                  "state" : "translated",
+                  "value" : "%lld problème de configuration"
                 }
               },
               "other" : {
                 "stringUnit" : {
-                  "state" : "new",
-                  "value" : "%lld config problems"
+                  "state" : "translated",
+                  "value" : "%lld problèmes de configuration"
                 }
               }
             }
@@ -132,16 +132,10 @@
         "ja" : {
           "variations" : {
             "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "new",
-                  "value" : "%lld config problem"
-                }
-              },
               "other" : {
                 "stringUnit" : {
-                  "state" : "new",
-                  "value" : "%lld config problems"
+                  "state" : "translated",
+                  "value" : "%lld 件の設定ファイルの問題"
                 }
               }
             }
@@ -152,14 +146,14 @@
             "plural" : {
               "one" : {
                 "stringUnit" : {
-                  "state" : "new",
-                  "value" : "%lld config problem"
+                  "state" : "translated",
+                  "value" : "%lld problema de configuração"
                 }
               },
               "other" : {
                 "stringUnit" : {
-                  "state" : "new",
-                  "value" : "%lld config problems"
+                  "state" : "translated",
+                  "value" : "%lld problemas de configuração"
                 }
               }
             }
@@ -180,16 +174,10 @@
         "zh-Hant" : {
           "variations" : {
             "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "new",
-                  "value" : "%lld config problem"
-                }
-              },
               "other" : {
                 "stringUnit" : {
-                  "state" : "new",
-                  "value" : "%lld config problems"
+                  "state" : "translated",
+                  "value" : "%lld 個設定檔問題"
                 }
               }
             }
@@ -205,14 +193,14 @@
             "plural" : {
               "one" : {
                 "stringUnit" : {
-                  "state" : "new",
-                  "value" : "%lld shortcut active"
+                  "state" : "translated",
+                  "value" : "%lld Tastaturkurzbefehl aktiv"
                 }
               },
               "other" : {
                 "stringUnit" : {
-                  "state" : "new",
-                  "value" : "%lld shortcuts active"
+                  "state" : "translated",
+                  "value" : "%lld Tastaturkurzbefehle aktiv"
                 }
               }
             }
@@ -241,14 +229,14 @@
             "plural" : {
               "one" : {
                 "stringUnit" : {
-                  "state" : "new",
-                  "value" : "%lld shortcut active"
+                  "state" : "translated",
+                  "value" : "%lld atajo activo"
                 }
               },
               "other" : {
                 "stringUnit" : {
-                  "state" : "new",
-                  "value" : "%lld shortcuts active"
+                  "state" : "translated",
+                  "value" : "%lld atajos activos"
                 }
               }
             }
@@ -259,14 +247,14 @@
             "plural" : {
               "one" : {
                 "stringUnit" : {
-                  "state" : "new",
-                  "value" : "%lld shortcut active"
+                  "state" : "translated",
+                  "value" : "%lld raccourci actif"
                 }
               },
               "other" : {
                 "stringUnit" : {
-                  "state" : "new",
-                  "value" : "%lld shortcuts active"
+                  "state" : "translated",
+                  "value" : "%lld raccourcis actifs"
                 }
               }
             }
@@ -275,16 +263,10 @@
         "ja" : {
           "variations" : {
             "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "new",
-                  "value" : "%lld shortcut active"
-                }
-              },
               "other" : {
                 "stringUnit" : {
-                  "state" : "new",
-                  "value" : "%lld shortcuts active"
+                  "state" : "translated",
+                  "value" : "%lld 件のショートカットが有効"
                 }
               }
             }
@@ -295,14 +277,14 @@
             "plural" : {
               "one" : {
                 "stringUnit" : {
-                  "state" : "new",
-                  "value" : "%lld shortcut active"
+                  "state" : "translated",
+                  "value" : "%lld atalho ativo"
                 }
               },
               "other" : {
                 "stringUnit" : {
-                  "state" : "new",
-                  "value" : "%lld shortcuts active"
+                  "state" : "translated",
+                  "value" : "%lld atalhos ativos"
                 }
               }
             }
@@ -323,16 +305,10 @@
         "zh-Hant" : {
           "variations" : {
             "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "new",
-                  "value" : "%lld shortcut active"
-                }
-              },
               "other" : {
                 "stringUnit" : {
-                  "state" : "new",
-                  "value" : "%lld shortcuts active"
+                  "state" : "translated",
+                  "value" : "%lld 個快速鍵已啟用"
                 }
               }
             }
@@ -345,8 +321,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Accessibility: Granted"
+            "state" : "translated",
+            "value" : "Bedienungshilfen: Erlaubt"
           }
         },
         "en" : {
@@ -357,26 +333,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Accessibility: Granted"
+            "state" : "translated",
+            "value" : "Accesibilidad: permitida"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Accessibility: Granted"
+            "state" : "translated",
+            "value" : "Accessibilité : autorisée"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Accessibility: Granted"
+            "state" : "translated",
+            "value" : "アクセシビリティ：許可済み"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Accessibility: Granted"
+            "state" : "translated",
+            "value" : "Acessibilidade: permitida"
           }
         },
         "zh-Hans" : {
@@ -387,8 +363,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Accessibility: Granted"
+            "state" : "translated",
+            "value" : "輔助使用：已允許"
           }
         }
       }
@@ -398,8 +374,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Accessibility: Not granted"
+            "state" : "translated",
+            "value" : "Bedienungshilfen: Nicht erlaubt"
           }
         },
         "en" : {
@@ -410,26 +386,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Accessibility: Not granted"
+            "state" : "translated",
+            "value" : "Accesibilidad: no permitida"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Accessibility: Not granted"
+            "state" : "translated",
+            "value" : "Accessibilité : non autorisée"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Accessibility: Not granted"
+            "state" : "translated",
+            "value" : "アクセシビリティ：未許可"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Accessibility: Not granted"
+            "state" : "translated",
+            "value" : "Acessibilidade: não permitida"
           }
         },
         "zh-Hans" : {
@@ -440,8 +416,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Accessibility: Not granted"
+            "state" : "translated",
+            "value" : "輔助使用：未允許"
           }
         }
       }
@@ -451,8 +427,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Open Accessibility Settings…"
+            "state" : "translated",
+            "value" : "Bedienungshilfen-Einstellungen öffnen…"
           }
         },
         "en" : {
@@ -463,26 +439,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Open Accessibility Settings…"
+            "state" : "translated",
+            "value" : "Abrir ajustes de Accesibilidad…"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Open Accessibility Settings…"
+            "state" : "translated",
+            "value" : "Ouvrir les réglages d'Accessibilité…"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Open Accessibility Settings…"
+            "state" : "translated",
+            "value" : "「アクセシビリティ」設定を開く…"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Open Accessibility Settings…"
+            "state" : "translated",
+            "value" : "Abrir ajustes de Acessibilidade…"
           }
         },
         "zh-Hans" : {
@@ -493,8 +469,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Open Accessibility Settings…"
+            "state" : "translated",
+            "value" : "打開「輔助使用」設定…"
           }
         }
       }
@@ -504,8 +480,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Quit Piccolo"
+            "state" : "translated",
+            "value" : "Piccolo beenden"
           }
         },
         "en" : {
@@ -516,26 +492,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Quit Piccolo"
+            "state" : "translated",
+            "value" : "Salir de Piccolo"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Quit Piccolo"
+            "state" : "translated",
+            "value" : "Quitter Piccolo"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Quit Piccolo"
+            "state" : "translated",
+            "value" : "Piccoloを終了"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Quit Piccolo"
+            "state" : "translated",
+            "value" : "Encerrar Piccolo"
           }
         },
         "zh-Hans" : {
@@ -546,8 +522,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Quit Piccolo"
+            "state" : "translated",
+            "value" : "結束 Piccolo"
           }
         }
       }
@@ -557,8 +533,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Reload Config"
+            "state" : "translated",
+            "value" : "Konfiguration neu laden"
           }
         },
         "en" : {
@@ -569,26 +545,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Reload Config"
+            "state" : "translated",
+            "value" : "Recargar configuración"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Reload Config"
+            "state" : "translated",
+            "value" : "Recharger la configuration"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Reload Config"
+            "state" : "translated",
+            "value" : "設定ファイルを再読み込み"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Reload Config"
+            "state" : "translated",
+            "value" : "Recarregar configuração"
           }
         },
         "zh-Hans" : {
@@ -599,8 +575,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Reload Config"
+            "state" : "translated",
+            "value" : "重新載入設定檔"
           }
         }
       }
@@ -610,8 +586,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Reveal Config in Finder"
+            "state" : "translated",
+            "value" : "Konfiguration im Finder anzeigen"
           }
         },
         "en" : {
@@ -622,26 +598,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Reveal Config in Finder"
+            "state" : "translated",
+            "value" : "Mostrar configuración en el Finder"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Reveal Config in Finder"
+            "state" : "translated",
+            "value" : "Afficher la configuration dans le Finder"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Reveal Config in Finder"
+            "state" : "translated",
+            "value" : "設定ファイルをFinderに表示"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Reveal Config in Finder"
+            "state" : "translated",
+            "value" : "Mostrar configuração no Finder"
           }
         },
         "zh-Hans" : {
@@ -652,8 +628,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Reveal Config in Finder"
+            "state" : "translated",
+            "value" : "在Finder中顯示設定檔"
           }
         }
       }
@@ -663,8 +639,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Settings…"
+            "state" : "translated",
+            "value" : "Einstellungen…"
           }
         },
         "en" : {
@@ -675,26 +651,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Settings…"
+            "state" : "translated",
+            "value" : "Ajustes…"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Settings…"
+            "state" : "translated",
+            "value" : "Réglages…"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Settings…"
+            "state" : "translated",
+            "value" : "設定…"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Settings…"
+            "state" : "translated",
+            "value" : "Ajustes…"
           }
         },
         "zh-Hans" : {
@@ -705,8 +681,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Settings…"
+            "state" : "translated",
+            "value" : "設定…"
           }
         }
       }
@@ -716,8 +692,8 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "the config file has format version %lld, which this version of Piccolo cannot write; the file was left untouched"
+            "state" : "translated",
+            "value" : "die Konfigurationsdatei hat die Formatversion %lld, die diese Version von Piccolo nicht schreiben kann; die Datei wurde nicht verändert."
           }
         },
         "en" : {
@@ -728,26 +704,26 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "the config file has format version %lld, which this version of Piccolo cannot write; the file was left untouched"
+            "state" : "translated",
+            "value" : "el archivo de configuración tiene la versión de formato %lld, que esta versión de Piccolo no puede escribir; el archivo no se ha modificado"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "the config file has format version %lld, which this version of Piccolo cannot write; the file was left untouched"
+            "state" : "translated",
+            "value" : "le fichier de configuration a la version de format %lld, que cette version de Piccolo ne peut pas écrire ; le fichier n'a pas été modifié"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "the config file has format version %lld, which this version of Piccolo cannot write; the file was left untouched"
+            "state" : "translated",
+            "value" : "設定ファイルの形式バージョンは %lld で、このバージョンの Piccolo では書き込めません。ファイルは変更されていません。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "the config file has format version %lld, which this version of Piccolo cannot write; the file was left untouched"
+            "state" : "translated",
+            "value" : "o arquivo de configuração tem a versão de formato %lld, que esta versão do Piccolo não pode gravar; o arquivo não foi alterado"
           }
         },
         "zh-Hans" : {
@@ -758,8 +734,8 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "the config file has format version %lld, which this version of Piccolo cannot write; the file was left untouched"
+            "state" : "translated",
+            "value" : "設定檔的格式版本為 %lld，此版本的 Piccolo 無法寫入；該檔案保持不變。"
           }
         }
       }

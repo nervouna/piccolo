@@ -47,9 +47,12 @@ struct StringCatalog {
     struct Localization {
         /// `translated`, `new`, ...
         let states: [String]
-        /// The texts: one, or one per plural category.
+        /// The texts: one, or one per plural category, in the order of `categories`.
         let values: [String]
-        let isPlural: Bool
+        /// The plural categories (`one`, `other`, ...) of a plural; empty for a plain string.
+        let categories: [String]
+
+        var isPlural: Bool { !categories.isEmpty }
     }
 
     let path: String
@@ -71,12 +74,13 @@ struct StringCatalog {
                 if let unit = localization["stringUnit"] as? [String: Any] {
                     localizations[language] = Localization(
                         states: [unit["state"] as? String ?? ""], values: [unit["value"] as? String ?? ""],
-                        isPlural: false)
+                        categories: [])
                 } else if let plural = (localization["variations"] as? [String: Any])?["plural"] as? [String: Any] {
-                    let units = plural.values.compactMap { ($0 as? [String: Any])?["stringUnit"] as? [String: Any] }
+                    let categories = plural.keys.sorted()
+                    let units = categories.compactMap { (plural[$0] as? [String: Any])?["stringUnit"] as? [String: Any] }
                     localizations[language] = Localization(
                         states: units.map { $0["state"] as? String ?? "" },
-                        values: units.map { $0["value"] as? String ?? "" }, isPlural: true)
+                        values: units.map { $0["value"] as? String ?? "" }, categories: categories)
                 }
             }
             entries[key] = Entry(localizations: localizations)

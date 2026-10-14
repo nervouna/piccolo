@@ -12,6 +12,19 @@ struct CatalogTests {
         ("App", { try StringCatalog.app() }),
     ]
 
+    /// The plural categories each language's plural strings hold. French counts 0 and 1 as `one`;
+    /// Japanese and Chinese have no plural forms, so only `other`.
+    private static let expectedPluralCategories: [String: [String]] = [
+        "en": ["one", "other"],
+        "zh-Hans": ["other"],
+        "zh-Hant": ["other"],
+        "ja": ["other"],
+        "fr": ["one", "other"],
+        "es": ["one", "other"],
+        "pt-BR": ["one", "other"],
+        "de": ["one", "other"],
+    ]
+
     @Test("the catalogs are written in English and are not empty", arguments: catalogs.map(\.name))
     func basics(_ name: String) throws {
         let catalog = try Self.catalog(name)
@@ -30,36 +43,21 @@ struct CatalogTests {
         }
     }
 
-    @Test("English and Simplified Chinese are complete: every key has a non-empty, translated value", arguments: catalogs.map(\.name))
-    func englishAndSimplifiedChineseAreComplete(_ name: String) throws {
-        let catalog = try Self.catalog(name)
-        for (key, entry) in catalog.entries.sorted(by: { $0.key < $1.key }) {
-            for language in ["en", "zh-Hans"] {
-                guard let localization = entry.localizations[language] else { continue }
-                #expect(
-                    !localization.values.isEmpty && localization.values.allSatisfy({ !$0.isEmpty }),
-                    "\(catalog.path): \"\(key)\" has an empty \(language) value")
-                #expect(
-                    localization.states.allSatisfy { $0 == "translated" },
-                    "\(catalog.path): the \(language) value of \"\(key)\" is \(localization.states), not translated")
-            }
-        }
-    }
-
-    @Test(
-        "no language has an empty value: the languages that are not translated hold the English text",
-        arguments: catalogs.map(\.name))
-    func noEmptyValues(_ name: String) throws {
+    @Test("every key has a non-empty, translated value in all eight languages", arguments: catalogs.map(\.name))
+    func everyLanguageIsTranslated(_ name: String) throws {
         let catalog = try Self.catalog(name)
         for (key, entry) in catalog.entries.sorted(by: { $0.key < $1.key }) {
             for language in StringCatalog.languages {
-                guard let localization = entry.localizations[language] else { continue }
+                guard let localization = entry.localizations[language] else {
+                    Issue.record("\(catalog.path): \"\(key)\" has no \(language) value")
+                    continue
+                }
                 #expect(
-                    localization.values.allSatisfy { !$0.isEmpty },
+                    !localization.values.isEmpty && localization.values.allSatisfy({ !$0.isEmpty }),
                     "\(catalog.path): \"\(key)\" has an empty \(language) value, which the app would show as a blank")
                 #expect(
-                    localization.states.allSatisfy { ["translated", "new", "needs_review"].contains($0) },
-                    "\(catalog.path): \"\(key)\" has the state \(localization.states) in \(language)")
+                    localization.states.allSatisfy { $0 == "translated" },
+                    "\(catalog.path): the \(language) value of \"\(key)\" is \(localization.states), not translated")
             }
         }
     }
@@ -109,12 +107,23 @@ struct CatalogTests {
         }
     }
 
-    @Test("the plural forms of English are one and other, and Chinese has other", arguments: catalogs.map(\.name))
+    @Test(
+        "a plural string has the plural categories its language uses, and a string that is not plural in English is not plural anywhere",
+        arguments: catalogs.map(\.name))
     func pluralCategories(_ name: String) throws {
         let catalog = try Self.catalog(name)
-        for (key, entry) in catalog.entries where entry.localizations["en"]?.isPlural == true {
-            #expect(entry.localizations["en"]?.values.count == 2, "\(catalog.path): \"\(key)\" in English")
-            #expect(entry.localizations["zh-Hans"]?.values.count == 1, "\(catalog.path): \"\(key)\" in Simplified Chinese")
+        for (key, entry) in catalog.entries.sorted(by: { $0.key < $1.key }) {
+            let isPlural = entry.localizations["en"]?.isPlural ?? false
+            for language in StringCatalog.languages {
+                guard let localization = entry.localizations[language] else { continue }
+                if isPlural {
+                    #expect(
+                        localization.categories == Self.expectedPluralCategories[language],
+                        "\(catalog.path): the \(language) plural of \"\(key)\" has \(localization.categories), expected \(Self.expectedPluralCategories[language] ?? [])")
+                } else {
+                    #expect(!localization.isPlural, "\(catalog.path): the \(language) value of \"\(key)\" is a plural, the English is not")
+                }
+            }
         }
     }
 
