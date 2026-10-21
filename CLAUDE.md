@@ -2,7 +2,7 @@
 
 Piccolo is a macOS menu bar app that moves, resizes and arranges windows with global keyboard shortcuts. MIT licensed.
 
-The repository is private during development and will be made public by the owner. Write every commit, issue and PR as if it were already public: English, no secrets, no personal paths.
+The repository is public. Write every commit, issue and PR in English, with no secrets and no personal paths.
 
 ## Product scope
 
