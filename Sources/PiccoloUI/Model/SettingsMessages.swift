@@ -32,6 +32,8 @@ enum SettingsMessages {
                 return String(localized: "The number of windows cannot be more than rows × columns.", bundle: bundle)
             case ("resizeStep", _):
                 return String(localized: "The resize step must be more than 0% and at most 50%.", bundle: bundle)
+            case ("gap", _):
+                return String(localized: "The window gap must be a whole number from 0 to 64 pt.", bundle: bundle)
             default: return "\(field) \(rule)."
             }
         case .duplicateBindingID, .unsupportedVersion:

@@ -17,7 +17,8 @@ public enum ArrangePlanner {
     ///    `FocusHistory.mostRecent(_:among:)` deciding the order. A window listed twice counts once.
     /// 3. With no chosen window, the result is `nil`.
     /// 4. The layout is `TileLayout.grid` for the number of chosen windows in `fillOrder`, framed in
-    ///    the visible frame of the display.
+    ///    the visible frame of the display with the window gap `gap` (``WindowGap``). The size check
+    ///    below applies to the framed cells, gap included.
     /// 5. The chosen windows take the cells in cell order: the most recently focused window takes
     ///    the top-left cell. With rows first the cells are numbered row by row (the layout is a row
     ///    layout); with columns first they are numbered column by column (a column layout), so that
@@ -31,6 +32,7 @@ public enum ArrangePlanner {
     public static func plan(
         grid: GridSpec,
         fillOrder: GridFillOrder = .rows,
+        gap: Int = 0,
         displayIndex: Int,
         candidates: [WindowCandidate],
         history: FocusHistory,
@@ -58,7 +60,7 @@ public enum ArrangePlanner {
 
         let layout = TileLayout.grid(
             windowCount: chosen.count, rows: grid.rows, columns: grid.columns, fillOrder: fillOrder)
-        let frames = layout.frames(in: displays[displayIndex].visibleFrame)
+        let frames = layout.frames(in: displays[displayIndex].visibleFrame, gap: gap)
         // Written as `>=`, so that a NaN width or height fails the check as well.
         guard frames.allSatisfy({ $0.width >= minimumCellSide && $0.height >= minimumCellSide }) else {
             throw .cellTooSmall

@@ -1,7 +1,7 @@
 import PiccoloCore
 import SwiftUI
 
-/// The "General" tab: the language, launch at login, the window animation, the grid fill order, the
+/// The "General" tab: the language, launch at login, the window animation, the window gap, the grid fill order, the
 /// destination preview, the linked-resize step, the Accessibility status, the config file and the
 /// version.
 struct GeneralTab: View {
@@ -30,6 +30,15 @@ struct GeneralTab: View {
                     }
                 } footer: {
                     Text(localized: "How long a window takes to move to its new place.")
+                }
+
+                Section {
+                    PointField(
+                        title: String(localized: "Window gap", bundle: .module), value: model.gap,
+                        range: WindowGap.range
+                    ) { newValue in
+                        model.setGap(newValue)
+                    }
                 }
 
                 Section {

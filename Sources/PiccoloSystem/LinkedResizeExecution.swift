@@ -96,8 +96,9 @@ extension ActionExecutor {
         let frames = planning.frames
         let layout = planning.layout
 
-        let previousTargets = group.targetFrames(for: group.layout)
-        let targets = group.targetFrames(for: layout)
+        let gap = settings.gap
+        let previousTargets = group.targetFrames(for: group.layout, gap: gap)
+        let targets = group.targetFrames(for: layout, gap: gap)
         var placements = zip(targets, group.windows).map { target, window in
             Placement(target: target, achieved: frames[window] ?? target)
         }
@@ -106,18 +107,19 @@ extension ActionExecutor {
         var changedCells = Set(steps.map(\.cell))
         send(steps, to: handles, within: group.visibleFrame, updating: &placements, animatingWith: settings)
         if !placements.contains(where: { $0.failure != nil }) {
-            group.recordAchieved(requested: layout, achieved: placements.map(\.achieved))
+            group.recordAchieved(requested: layout, achieved: placements.map(\.achieved), gap: gap)
 
             // A window that refused its size moved the divider to where it ended up. The windows
             // whose cell changed with it go there too.
             steps = group.steps(
-                from: targets, to: group.targetFrames(for: group.layout),
+                from: targets, to: group.targetFrames(for: group.layout, gap: gap),
                 current: placements.map(\.achieved))
             if !steps.isEmpty {
                 changedCells.formUnion(steps.map(\.cell))
                 send(steps, to: handles, within: group.visibleFrame, updating: &placements)
                 if !placements.contains(where: { $0.failure != nil }) {
-                    group.recordAchieved(requested: group.layout, achieved: placements.map(\.achieved))
+                    group.recordAchieved(
+                        requested: group.layout, achieved: placements.map(\.achieved), gap: gap)
                 }
             }
         }

@@ -165,6 +165,7 @@ extension ActionExecutor {
             let plan = try ArrangePlanner.plan(
                 grid: grid,
                 fillOrder: settings.gridFillOrder,
+                gap: settings.gap,
                 displayIndex: displayIndex,
                 candidates: windows.map(\.candidate),
                 history: history,

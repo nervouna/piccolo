@@ -34,6 +34,8 @@ struct SettingsState: Decodable, Equatable {
     /// The grid fill order, by its name in the config file: `rows` or `columns`.
     var gridFillOrder: String
     var destinationPreview: Bool
+    /// The window gap in points.
+    var gap: Int
     var issues: [String]
     var error: String?
     var recordingBindingID: UUID?
@@ -155,6 +157,17 @@ extension PiccoloClient {
     /// `settings.setResizeStep` with a value that must be rejected. Returns the message.
     func settingsSetResizeStepExpectingRejection(_ value: Double) throws -> String {
         try settingsExpectingRefusal("settings.setResizeStep", ["value": .double(value)])
+    }
+
+    /// `settings.setGap`: the window gap in points.
+    @discardableResult
+    func settingsSetGap(_ value: Int) throws -> SettingsState {
+        try settingsCommand("settings.setGap", ["value": .int(value)])
+    }
+
+    /// `settings.setGap` with a value that must be rejected. Returns the message.
+    func settingsSetGapExpectingRejection(_ value: Int) throws -> String {
+        try settingsExpectingRefusal("settings.setGap", ["value": .int(value)])
     }
 
     /// `settings.setAnimation` with a name of the config file (`off`, `fast`, `medium` or `slow`).

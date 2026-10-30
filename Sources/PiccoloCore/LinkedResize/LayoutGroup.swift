@@ -63,9 +63,11 @@ public struct LayoutGroup: Equatable, Sendable {
         return nil
     }
 
-    /// The frames `layout` gives its cells in this group's visible frame, in cell order.
-    public func targetFrames(for layout: TileLayout) -> [CGRect] {
-        layout.frames(in: visibleFrame)
+    /// The frames `layout` gives its cells in this group's visible frame, in cell order, with the
+    /// window gap `gap` (``WindowGap``). The gap is not part of the group: a group arranged with one
+    /// gap moves with the one in effect when the key is pressed.
+    public func targetFrames(for layout: TileLayout, gap: Int = 0) -> [CGRect] {
+        layout.frames(in: visibleFrame, gap: gap)
     }
 
     /// A window that is further than this many points from its requested edge has refused its
@@ -101,13 +103,18 @@ public struct LayoutGroup: Equatable, Sendable {
     /// transposed back. Nothing else changes, the tie rule included: the left or upper candidate
     /// wins.
     ///
+    /// With a `gap`, the requested frames carry it, and each divider is read back from the cells it
+    /// separates as it was asked for: the far edge of the left or upper cell plus the smaller half
+    /// of the gap, the near edge of the right or lower cell minus the larger half. Both stand for the
+    /// divider position, so a divider that reached its place is recorded where it was asked for.
+    ///
     /// Example: two windows side by side on a 1000 point frame, with A asked for 550 points and B
     /// for 450. If B needs 500 points, it is shifted back to x = 500, and the divider is recorded at
     /// 0.5. If A stopped at 500 instead, leaving a gap, the divider is recorded at 0.5 as well.
     ///
     /// - Precondition: `requested` has the orientation of `layout` and the same cells per row
     ///   (column), and `achieved` has one frame per window.
-    public mutating func recordAchieved(requested: TileLayout, achieved: [CGRect]) {
+    public mutating func recordAchieved(requested: TileLayout, achieved: [CGRect], gap: Int = 0) {
         precondition(
             requested.orientation == layout.orientation
                 && requested.cellsPerLine == layout.cellsPerLine,
@@ -116,11 +123,12 @@ public struct LayoutGroup: Equatable, Sendable {
 
         switch layout.orientation {
         case .rows:
-            layout = Self.recorded(requested: requested, visibleFrame: visibleFrame, achieved: achieved)
+            layout = Self.recorded(
+                requested: requested, visibleFrame: visibleFrame, achieved: achieved, gap: gap)
         case .columns:
             layout = Self.recorded(
                 requested: requested.transposed, visibleFrame: visibleFrame.transposed,
-                achieved: achieved.map(\.transposed)
+                achieved: achieved.map(\.transposed), gap: gap
             ).transposed
         }
         frames = achieved
@@ -128,9 +136,13 @@ public struct LayoutGroup: Equatable, Sendable {
 
     /// The layout `recordAchieved(requested:achieved:)` records for a row layout.
     private static func recorded(
-        requested: TileLayout, visibleFrame: CGRect, achieved: [CGRect]
+        requested: TileLayout, visibleFrame: CGRect, achieved: [CGRect], gap: Int
     ) -> TileLayout {
-        let asked = requested.frames(in: visibleFrame)
+        let asked = requested.frames(in: visibleFrame, gap: gap)
+        // How far a cell's edge sits from the divider it borders: the far edge of the left or upper
+        // cell is `before` short of it, the near edge of the right or lower cell `after` past it.
+        let before = CGFloat(gap / 2)
+        let after = CGFloat(gap - gap / 2)
         let counts = requested.cellsPerLine
         // The row-major index of the first cell of each row.
         var firstCells: [Int] = []
@@ -151,8 +163,8 @@ public struct LayoutGroup: Equatable, Sendable {
                 positions[k] = recordedPosition(
                     requested: requestedPositions[k],
                     edges: [
-                        (achieved: achieved[left].maxX, requested: asked[left].maxX),
-                        (achieved: achieved[right].minX, requested: asked[right].minX),
+                        (achieved: achieved[left].maxX + before, requested: asked[left].maxX + before),
+                        (achieved: achieved[right].minX - after, requested: asked[right].minX - after),
                     ],
                     origin: visibleFrame.minX,
                     extent: visibleFrame.width)
@@ -170,11 +182,13 @@ public struct LayoutGroup: Equatable, Sendable {
         for divider in heightPositions.indices {
             var edges: [(achieved: CGFloat, requested: CGFloat)] = []
             for cell in firstCells[divider]..<firstCells[divider] + counts[divider] {
-                edges.append((achieved: achieved[cell].maxY, requested: asked[cell].maxY))
+                edges.append(
+                    (achieved: achieved[cell].maxY + before, requested: asked[cell].maxY + before))
             }
             let below = firstCells[divider + 1]
             for cell in below..<below + counts[divider + 1] {
-                edges.append((achieved: achieved[cell].minY, requested: asked[cell].minY))
+                edges.append(
+                    (achieved: achieved[cell].minY - after, requested: asked[cell].minY - after))
             }
             heightPositions[divider] = recordedPosition(
                 requested: requestedHeightPositions[divider],

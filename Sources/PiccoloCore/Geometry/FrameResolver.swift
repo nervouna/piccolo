@@ -7,21 +7,32 @@ public enum FrameResolver {
     /// - Presets with a fraction and custom rects resolve edge by edge against `visibleFrame`.
     /// - `.preset(.center)` keeps the size of `currentFrame`, capped to `visibleFrame` in each
     ///   dimension, and centres the result in `visibleFrame`.
+    /// - With a `gap` (``WindowGap``) the frame is computed as without one and then moved in by the
+    ///   gap rule. `.center` has no edge on the visible frame's edges, so it keeps its size but is
+    ///   capped to the visible frame taken in by `gap` on every side: a window that fills the
+    ///   screen is centred with `gap` to every edge.
     public static func frame(
         for spec: FrameSpec,
         visibleFrame: CGRect,
-        currentFrame: CGRect
+        currentFrame: CGRect,
+        gap: Int = 0
     ) -> CGRect {
         switch spec {
         case .custom(let rect):
-            return fractionalFrame(rect, in: visibleFrame)
+            return fractionalFrame(rect, in: visibleFrame, gap: gap)
         case .preset(let preset):
             // `.center` is the only preset without a fraction.
             guard let rect = preset.fractionalRect else {
-                return centeredFrame(size: currentFrame.size, in: visibleFrame)
+                return centeredFrame(
+                    size: currentFrame.size, in: WindowGap.inset(visibleFrame, by: gap))
             }
-            return fractionalFrame(rect, in: visibleFrame)
+            return fractionalFrame(rect, in: visibleFrame, gap: gap)
         }
+    }
+
+    /// Resolves fractions of `visible` with the edge rounding rule, then applies `gap`.
+    static func fractionalFrame(_ rect: FractionalRect, in visible: CGRect, gap: Int) -> CGRect {
+        WindowGap.inset(fractionalFrame(rect, in: visible), gap: gap, in: visible)
     }
 
     /// Resolves fractions of `visible` with the edge rounding rule.

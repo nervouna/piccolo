@@ -65,7 +65,7 @@ Settings opens from the menu. It also opens when you launch Piccolo again while 
 - **Search.** The field above the list keeps the bindings whose description or shortcut contains what you type, ignoring case and accents, for example `left` or `⌃⌥←`. Sections left empty are hidden, and "No shortcuts match" shows when nothing fits. The selection stays when the selected binding is still shown and moves to the first shown binding otherwise. The search is not saved.
 - **Inactive shortcuts.** A warning sign before the shortcut button means the shortcut is not active, because macOS refused it or Piccolo cannot register it. The problems at the bottom of the window say why. While you record a shortcut every shortcut is off, and no row is marked.
 - **Add and remove.** The + button adds a binding. It places the window in the left half and has no shortcut yet. If the search would hide it, the search is cleared, and the new binding is selected and scrolled into view. The − button removes the selected binding.
-- **Restore Default Shortcuts…** replaces every binding with the [default shortcuts](#default-shortcuts) after you confirm. The resize step, the window animation, the arranging order and the destination preview stay. A copy of the config file is kept next to it first.
+- **Restore Default Shortcuts…** replaces every binding with the [default shortcuts](#default-shortcuts) after you confirm. The resize step, the window animation, the window gap, the arranging order and the destination preview stay. A copy of the config file is kept next to it first.
 - **Action.** The Action menu offers five kinds: Place Window, Restore Window, Move to Display, Arrange Grid and Move Divider. Choosing a kind resets the binding to that kind's default: Left Half, Restore Window, Next Display, 4 windows in 2 × 2, or Move Divider Left. The parameters of the kind follow. For Place Window and Arrange Grid, a preview of the frame or cells is drawn beside the editor.
 - **Recording a shortcut.** Click the button on the right of a binding. It reads "Record Shortcut" when the binding has none, and shows the shortcut, such as ⌃⌥F13, when it has one. Click it, then press the keys. Press Escape to cancel. Press Delete or Forward Delete on its own to clear the shortcut.
 - **Rules.** A shortcut needs ⌘, ⌥ or ⌃, or it must be a function key (F1 to F20). Shift on its own does not count, so ⇧A is refused. A shortcut that another binding already has is refused too, and the message names the other binding by its action. A refused shortcut shows a message at the bottom of the window and nothing is saved. Recording ends after any key press, so press the keys again to retry.
@@ -74,11 +74,12 @@ Settings opens from the menu. It also opens when you launch Piccolo again while 
 
 ### General tab
 
-<img src="docs/images/settings-general.png" alt="Settings window, General tab: the language, the Launch at login switch, window animation, the grid fill order, the destination preview switch, the resize step, the Accessibility status, the Reveal Config in Finder button and the app version." width="640">
+<img src="docs/images/settings-general.png" alt="Settings window, General tab: the language, the Launch at login switch, window animation, the window gap, the grid fill order, the destination preview switch, the resize step, the Accessibility status, the Reveal Config in Finder button and the app version." width="640">
 
 - **Language** is the language of Piccolo's menu and Settings window: System default or one of the [supported languages](#languages). A change applies after Piccolo restarts, which the Restart Now button under the picker does.
 - **Launch at login** starts Piccolo when you log in. When macOS is waiting for you to allow it, the tab says so and offers a button to open Login Items in System Settings.
 - **Window animation** is how long a window takes to move to its new place: Off, Fast (0.15 s, the default), Medium (0.25 s) or Slow (0.4 s). It applies to every action, including Arrange Grid and Move Divider.
+- **Window gap** is the space, in points, that Piccolo leaves between the windows it places side by side and between those windows and the edges of the visible frame. The default is 0, which changes nothing. Whole numbers from 0 to 64 are accepted, typed or with the arrows. See [Window gap](#window-gap).
 - **Arranging windows: Fill order** decides where the windows go when they do not fill the grid. With 3 windows in a 2 × 2 grid, Rows first (the default) puts two windows on top and one across the bottom; Columns first puts two on the left and one down the right side.
 - **Show destination while a shortcut is held** shows where the windows will go while you hold a shortcut. Release it to move them, or press Escape to cancel. The default is on. When it is off, windows move as soon as the shortcut is pressed.
 - **Resize step** is how far each Move Divider key press moves a divider, as a share of the display's visible width or height (see [Move Divider](#move-divider)). The default is 5%. Typed values above 0% up to 50% are accepted. The arrows change it in steps of 1%, between 1% and 50%.
@@ -149,6 +150,18 @@ Presets:
 | `rightTwoThirds` | Right Two Thirds | 1/3, 0, 2/3, 1 |
 | `maximize` | Maximize | 0, 0, 1, 1 |
 | `center` | Center | No fixed fraction: keeps the window's size, capped to the visible frame, and centres it |
+
+#### Window gap
+
+With a window gap above 0 (General tab, or `gap` in the [config file](#config-file)), every frame that Piccolo places a window at leaves that many points between windows and to the screen edges, for presets, custom frames, the steps of pressing a half again, the cells of Arrange Grid and the cells that Move Divider moves. Each frame is worked out without the gap first, then every edge moves inwards: an edge on the edge of the visible frame by the gap, any other edge by half of it. Two windows side by side are therefore a gap apart, and a window is a gap from each screen edge it touches. With a gap of 12, Left Half is 12 pt from the left, top and bottom edges and ends 6 pt before the middle of the visible frame, and Maximize is 12 pt from every edge.
+
+- **Odd gaps.** Frames stay on whole points. With an odd gap the two halves of the space between neighbours differ by one point (a left or top edge moves in by the larger half), so the neighbours are still exactly the gap apart.
+- **Center** keeps the window's size, capped to the visible frame taken in by the gap on every side.
+- **Pressing a half again** compares the window with the gapped steps, so cycling works as without a gap.
+- **Arrange Grid and Move Divider.** The cells are gapped, and a divider move keeps the gap between the windows that follow it. A group uses the gap that is in effect when the key is pressed: windows arranged with one gap and moved after the gap changed are moved with the new gap, and the group is still recognised.
+- **Move to Display** keeps the window's relative frame measured against each display's visible frame taken in by the gap on every side, so a gapped half on one display becomes a gapped half on the other (exactly so when the displays have the same size).
+- **Restore Window** puts the window back at its recorded frame, without a gap.
+- A cell of Arrange Grid that the gap makes less than 100 pt wide or high is refused, like any other cell that small.
 
 #### Pressing a half again
 
@@ -279,6 +292,7 @@ This example has one binding of each action kind except Restore Window, which is
     }
   ],
   "destinationPreview": true,
+  "gap": 0,
   "gridFillOrder": "rows",
   "resizeStep": 0.05,
   "version": 1
@@ -301,6 +315,7 @@ The keys can appear in any order. These are the keys of the file:
 | `animation` | `"off"`, `"fast"`, `"medium"` or `"slow"` | Optional, default `"fast"`. How long a window takes to move: 0, 0.15, 0.25 or 0.4 seconds. |
 | `gridFillOrder` | `"rows"` or `"columns"` | Optional, default `"rows"`. Where the windows go when they do not fill the grid: row by row, or column by column. |
 | `destinationPreview` | `true` or `false` | Optional, default `true`. Whether holding a shortcut shows where its windows will go before they move. |
+| `gap` | integer | Optional, default `0`. The window gap in points, from 0 to 64: the space left between windows Piccolo places and between them and the edges of the screen (see [Window gap](#window-gap)). |
 | `resizeStep` | number | Optional, default `0.05`. How far a linked resize moves a divider, as a fraction of the screen: above 0 and at most 0.5. |
 | `bindings` | array | Required; may be empty. The bindings, in the order of the Settings list. |
 | `id` | UUID string | Required in each binding. Identifies the binding; each binding needs its own. |
@@ -324,7 +339,7 @@ Piccolo keeps what it can use and reports the rest.
 - **A shortcut without ⌘, ⌥ or ⌃** that is not a function key. The binding loads and appears in Settings, but its shortcut is not registered.
 - **A shortcut that an earlier binding already has.** The first binding keeps it. The later one is not registered.
 - **A shortcut that the system refuses**, for example one that another app holds. It is not registered.
-- **A `resizeStep` that is not a number or is out of range.** The default is used.
+- **A `resizeStep` that is not a number or is out of range, or a `gap` that is not a whole number from 0 to 64.** The default is used.
 - **An `animation`, `gridFillOrder` or `destinationPreview` that cannot be read**, for example an unknown name or a value of the wrong type. The default is used. A key that is missing takes its default without a problem being reported.
 
 Problems are reported in three places. The menu shows how many there are. The Settings window lists each one at the bottom of the window, on both tabs. The system log has all of them, which you can read in Console under the subsystem `io.damao.piccolo`. Failed actions are logged there as well.
