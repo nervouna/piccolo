@@ -50,6 +50,8 @@ public struct ConfigStore: Sendable {
     ///   first valid one is kept; invalid bindings never claim an ID. Each kept binding keeps the
     ///   position it had in the file, counting the skipped ones, in `LoadResult.sourceIndices`.
     /// - An invalid `resizeStep` is replaced by the default.
+    /// - A `gap` that is not an integer from 0 to 64 (a fraction, a string, `null`) is replaced by the
+    ///   default, with an issue that names it.
     /// - An `animation`, `gridFillOrder` or `destinationPreview` that cannot be read (an unknown
     ///   name, or a value of the wrong type, `null` included) is replaced by its default, with an
     ///   issue that names the key. A key the file does not hold takes its default without an issue.
@@ -108,6 +110,25 @@ public struct ConfigStore: Sendable {
             }
         }
 
+        var gap = Config.defaultGap
+        if let stored = file.gap {
+            switch stored.result {
+            case .success(let value):
+                do {
+                    try Config.validateGap(value)
+                    gap = value
+                } catch {
+                    issues.append("\(error); using the default \(Config.defaultGap)")
+                    droppedEntries = true
+                }
+            case .failure(let error):
+                issues.append(
+                    "gap could not be read (\(describeFailure(error))); "
+                        + "using the default \(Config.defaultGap)")
+                droppedEntries = true
+            }
+        }
+
         let animation = setting(
             "animation", file.animation, fallback: Config.defaultAnimation,
             issues: &issues, dropped: &droppedEntries)
@@ -153,6 +174,7 @@ public struct ConfigStore: Sendable {
                 animation: animation,
                 gridFillOrder: gridFillOrder,
                 destinationPreview: destinationPreview,
+                gap: gap,
                 bindings: bindings),
             issues: issues,
             sourceIndices: sourceIndices,
@@ -289,10 +311,11 @@ private struct StoredFile: Decodable {
     let animation: Lenient<WindowAnimation>?
     let gridFillOrder: Lenient<GridFillOrder>?
     let destinationPreview: Lenient<Bool>?
+    let gap: Lenient<Int>?
     let bindings: [Lenient<KeyBinding>]
 
     private enum Keys: String, CodingKey {
-        case resizeStep, animation, gridFillOrder, destinationPreview, bindings
+        case resizeStep, animation, gridFillOrder, destinationPreview, gap, bindings
     }
 
     init(from decoder: any Decoder) throws {
@@ -301,6 +324,7 @@ private struct StoredFile: Decodable {
         animation = try Self.present(.animation, in: container)
         gridFillOrder = try Self.present(.gridFillOrder, in: container)
         destinationPreview = try Self.present(.destinationPreview, in: container)
+        gap = try Self.present(.gap, in: container)
         bindings = try container.decode([Lenient<KeyBinding>].self, forKey: .bindings)
     }
 

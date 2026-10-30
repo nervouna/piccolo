@@ -47,14 +47,20 @@ public enum ActionPlanner {
     ///   display's visible frame (``FrameResolver``).
     /// - `moveToDisplay`: from the containing display to its neighbour in the given direction
     ///   (``DisplayLayout/neighbor(of:_:in:)``); the target keeps the window's relative frame
-    ///   (``DisplayLayout/frame(moving:from:to:)``). With a single display, or with no display in a
+    ///   (``DisplayLayout/frame(moving:from:to:gap:)``). With a single display, or with no display in a
     ///   geometric direction (`left`, `right`, `up`, `down`), there is nothing to do.
+    /// - `restoreWindow`: the recorded origin, whatever the gap.
     /// - Anything else is not a single-window action.
+    ///
+    /// `gap` is the window gap in effect (``WindowGap``): presets, custom frames and the cycling
+    /// steps keep it to the edges of the visible frame and half of it to neighbours, and
+    /// `moveToDisplay` keeps the relative frame inside each visible frame taken in by `gap`.
     public static func plan(
         _ action: Action,
         windowFrame: CGRect,
         displays: [Display],
-        record: WindowRecord? = nil
+        record: WindowRecord? = nil,
+        gap: Int = 0
     ) throws(ActionPlanningError) -> ActionPlan {
         switch action {
         case .placeWindow(let spec):
@@ -70,13 +76,13 @@ public enum ActionPlanner {
             guard hasArea(visibleFrame) else { throw .emptyVisibleFrame }
             if case .preset(let preset) = spec, PresetCycle.cycles(preset) {
                 let step = PresetCycle.nextStep(
-                    of: preset, windowFrame: windowFrame, visibleFrame: visibleFrame, record: record)
-                if let target = PresetCycle.frame(of: preset, step: step, in: visibleFrame) {
+                    of: preset, windowFrame: windowFrame, visibleFrame: visibleFrame, record: record, gap: gap)
+                if let target = PresetCycle.frame(of: preset, step: step, in: visibleFrame, gap: gap) {
                     return .place(target: target, visibleFrame: visibleFrame)
                 }
             }
             let target = FrameResolver.frame(
-                for: spec, visibleFrame: visibleFrame, currentFrame: windowFrame)
+                for: spec, visibleFrame: visibleFrame, currentFrame: windowFrame, gap: gap)
             return .place(target: target, visibleFrame: visibleFrame)
 
         case .moveToDisplay(let direction):
@@ -89,7 +95,7 @@ public enum ActionPlanner {
                 throw .emptyVisibleFrame
             }
             let target = DisplayLayout.frame(
-                moving: windowFrame, from: displays[source], to: displays[destination])
+                moving: windowFrame, from: displays[source], to: displays[destination], gap: gap)
             return .place(target: target, visibleFrame: displays[destination].visibleFrame)
 
         case .restoreWindow:

@@ -22,6 +22,7 @@ private let sampleJSON = #"""
       ],
       "animation": "fast",
       "destinationPreview": true,
+      "gap": 0,
       "gridFillOrder": "rows",
       "resizeStep": 0.05,
       "version": 1
@@ -226,6 +227,7 @@ struct ConfigFileFormatTests {
                 }
               ],
               "destinationPreview" : true,
+              "gap" : 0,
               "gridFillOrder" : "rows",
               "resizeStep" : 0.05,
               "version" : 1
@@ -260,6 +262,7 @@ struct ConfigFileFormatTests {
                 }
               ],
               "destinationPreview" : true,
+              "gap" : 0,
               "gridFillOrder" : "rows",
               "resizeStep" : 0.05,
               "version" : 1
@@ -285,6 +288,7 @@ struct ConfigFileFormatTests {
                 }
               ],
               "destinationPreview" : true,
+              "gap" : 0,
               "gridFillOrder" : "rows",
               "resizeStep" : 0.05,
               "version" : 1
@@ -314,6 +318,7 @@ struct ConfigFileFormatTests {
                 }
               ],
               "destinationPreview" : true,
+              "gap" : 0,
               "gridFillOrder" : "rows",
               "resizeStep" : 0.05,
               "version" : 1
@@ -330,6 +335,7 @@ struct ConfigFileFormatTests {
               "animation" : "fast",
               "bindings" : [],
               "destinationPreview" : true,
+              "gap" : 0,
               "gridFillOrder" : "rows",
               "resizeStep" : 0.05,
               "version" : 1
@@ -366,6 +372,7 @@ struct ConfigFileFormatTests {
                 }
               ],
               "destinationPreview" : true,
+              "gap" : 0,
               "gridFillOrder" : "rows",
               "resizeStep" : 0.05,
               "version" : 1
@@ -401,6 +408,7 @@ struct ConfigFileFormatTests {
                 }
               ],
               "destinationPreview" : true,
+              "gap" : 0,
               "gridFillOrder" : "rows",
               "resizeStep" : 0.05,
               "version" : 1

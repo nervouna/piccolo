@@ -25,6 +25,15 @@ extension TileLayout {
         }
     }
 
+    /// The frames of every cell with the window gap `gap` (``WindowGap``) applied: the cells are
+    /// computed as in `frames(in:)`, then moved in by the gap rule. A cell edge on an edge of
+    /// `visibleFrame` is `gap` from it, and an edge shared with a neighbour is `gap` from the
+    /// neighbour's. The boundaries are rounded once, before the gap, so facing edges are exactly
+    /// `gap` apart. With a gap of 0 the frames are those of `frames(in:)`.
+    public func frames(in visibleFrame: CGRect, gap: Int) -> [CGRect] {
+        frames(in: visibleFrame).map { WindowGap.inset($0, gap: gap, in: visibleFrame) }
+    }
+
     /// The frames of a row layout, in row-major order.
     private func rowFrames(in visibleFrame: CGRect) -> [CGRect] {
         let rowEdges = Self.edges(

@@ -9,15 +9,19 @@ public struct ActionSettings: Equatable, Sendable {
     public var animation: WindowAnimation
     /// Where the windows of a grid go when there are fewer windows than cells.
     public var gridFillOrder: GridFillOrder
+    /// The window gap in points (``WindowGap``).
+    public var gap: Int
 
     public init(
         resizeStep: Double = Config.defaultResizeStep,
         animation: WindowAnimation = Config.defaultAnimation,
-        gridFillOrder: GridFillOrder = Config.defaultGridFillOrder
+        gridFillOrder: GridFillOrder = Config.defaultGridFillOrder,
+        gap: Int = Config.defaultGap
     ) {
         self.resizeStep = resizeStep
         self.animation = animation
         self.gridFillOrder = gridFillOrder
+        self.gap = gap
     }
 
     /// The action settings of `config`: the fields an action reads, not the bindings.
@@ -25,7 +29,8 @@ public struct ActionSettings: Equatable, Sendable {
         self.init(
             resizeStep: config.resizeStep,
             animation: config.animation,
-            gridFillOrder: config.gridFillOrder)
+            gridFillOrder: config.gridFillOrder,
+            gap: config.gap)
     }
 
     /// The settings of `Config.default`.

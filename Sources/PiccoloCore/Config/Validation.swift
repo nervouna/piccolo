@@ -90,17 +90,25 @@ extension KeyBinding {
 }
 
 extension Config {
-    /// Checks every rule of the model: the version, the `resizeStep` range, each binding's action
+    /// Checks every rule of the model: the version, the `resizeStep` and `gap` ranges, each binding's action
     /// and shortcut, and unique binding IDs. `ConfigStore.save(_:)` applies the same check.
     public func validate() throws(ValidationError) {
         guard version == Config.currentVersion else { throw .unsupportedVersion(version) }
         try Config.validateResizeStep(resizeStep)
+        try Config.validateGap(gap)
         var seen: Set<UUID> = []
         for binding in bindings {
             try binding.validate()
             guard seen.insert(binding.id).inserted else {
                 throw .duplicateBindingID(binding.id)
             }
+        }
+    }
+
+    /// A window gap is a whole number of points from 0 to 64.
+    public static func validateGap(_ value: Int) throws(ValidationError) {
+        guard WindowGap.range.contains(value) else {
+            throw .outOfRange(field: "gap", rule: "must be a whole number from 0 to 64")
         }
     }
 

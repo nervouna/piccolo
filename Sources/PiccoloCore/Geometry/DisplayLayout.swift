@@ -142,11 +142,19 @@ public enum DisplayLayout {
     /// visible size, the origin is shifted so the frame lies inside the target's visible frame, and
     /// the edges are rounded with `EdgeRounding.round`, as in `FrameResolver`.
     ///
+    /// With a `gap` (``WindowGap``) both visible frames are taken in by `gap` on every side before
+    /// the fractions are measured and applied, so that a gapped half on one display is a gapped half
+    /// on the other.
+    ///
     /// - Precondition: `source.visibleFrame` has a positive width and height.
-    public static func frame(moving window: CGRect, from source: Display, to target: Display) -> CGRect {
-        let from = source.visibleFrame
-        precondition(from.width > 0 && from.height > 0, "the source visible frame must have a positive size")
-        let to = target.visibleFrame
+    public static func frame(
+        moving window: CGRect, from source: Display, to target: Display, gap: Int = 0
+    ) -> CGRect {
+        precondition(
+            source.visibleFrame.width > 0 && source.visibleFrame.height > 0,
+            "the source visible frame must have a positive size")
+        let from = WindowGap.inset(source.visibleFrame, by: gap)
+        let to = WindowGap.inset(target.visibleFrame, by: gap)
 
         let fx = (window.minX - from.minX) / from.width
         let fy = (window.minY - from.minY) / from.height

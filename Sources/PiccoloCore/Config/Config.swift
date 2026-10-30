@@ -1,7 +1,7 @@
 import Foundation
 
 /// The user's configuration: what each shortcut does, the linked-resize step, the window animation,
-/// the grid fill order and whether a held shortcut shows its destination.
+/// the grid fill order, whether a held shortcut shows its destination and the window gap.
 ///
 /// The JSON shape of this type is the on-disk format read by `ConfigStore`.
 /// Key names are part of that contract.
@@ -17,6 +17,8 @@ public struct Config: Codable, Equatable, Sendable {
     public static let defaultGridFillOrder = GridFillOrder.rows
     /// Destination preview when the file does not set one.
     public static let defaultDestinationPreview = true
+    /// Window gap when the file does not set one: none.
+    public static let defaultGap = WindowGap.default
 
     /// Format version of the file.
     public var version: Int
@@ -29,6 +31,9 @@ public struct Config: Codable, Equatable, Sendable {
     /// Whether holding a shortcut shows where the windows will go before they move. File key
     /// `destinationPreview`.
     public var destinationPreview: Bool
+    /// The space, in points, between windows Piccolo places and between them and the edges of the
+    /// screen (``WindowGap``). An integer from 0 to 64. File key `gap`.
+    public var gap: Int
     public var bindings: [KeyBinding]
 
     public init(
@@ -37,6 +42,7 @@ public struct Config: Codable, Equatable, Sendable {
         animation: WindowAnimation = Config.defaultAnimation,
         gridFillOrder: GridFillOrder = Config.defaultGridFillOrder,
         destinationPreview: Bool = Config.defaultDestinationPreview,
+        gap: Int = Config.defaultGap,
         bindings: [KeyBinding] = []
     ) {
         self.version = version
@@ -44,6 +50,7 @@ public struct Config: Codable, Equatable, Sendable {
         self.animation = animation
         self.gridFillOrder = gridFillOrder
         self.destinationPreview = destinationPreview
+        self.gap = gap
         self.bindings = bindings
     }
 

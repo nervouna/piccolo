@@ -134,7 +134,7 @@ public struct ActionExecutor: Sendable {
             break
         }
 
-        let planning = try planSingleWindow(action)
+        let planning = try planSingleWindow(action, gap: settings.gap)
         switch planning.plan {
         case .nothingToDo:
             // A restore with nothing to go back to: the record, if any, is stale.
@@ -153,7 +153,8 @@ public struct ActionExecutor: Sendable {
                 } else {
                     records.recordChange(
                         of: id, from: planning.frame, to: achieved,
-                        cycle: Self.cycleStep(of: action, target: target, visibleFrame: visibleFrame))
+                        cycle: Self.cycleStep(
+                            of: action, target: target, visibleFrame: visibleFrame, gap: settings.gap))
                 }
             }
             return .placed(target: target, achieved: achieved)
@@ -173,21 +174,23 @@ public struct ActionExecutor: Sendable {
     }
 
     /// The preset and step a `placeWindow` of a cycling preset placed the window at.
-    static func cycleStep(of action: Action, target: CGRect, visibleFrame: CGRect) -> CycleStep? {
+    static func cycleStep(
+        of action: Action, target: CGRect, visibleFrame: CGRect, gap: Int = 0
+    ) -> CycleStep? {
         guard case .placeWindow(.preset(let preset)) = action, PresetCycle.cycles(preset),
-            let step = PresetCycle.step(of: preset, matching: target, in: visibleFrame)
+            let step = PresetCycle.step(of: preset, matching: target, in: visibleFrame, gap: gap)
         else { return nil }
         return CycleStep(preset: preset, step: step)
     }
 
-    func planSingleWindow(_ action: Action) throws -> SingleWindowPlanning {
+    func planSingleWindow(_ action: Action, gap: Int = 0) throws -> SingleWindowPlanning {
         let window = try windowProvider()
         let windowFrame = try window.frame()
         let displays = try displaysProvider()
         let windowID = window.windowID
         let record = windowID.flatMap { records.record(for: $0) }
         let plan = try ActionPlanner.plan(
-            action, windowFrame: windowFrame, displays: displays, record: record)
+            action, windowFrame: windowFrame, displays: displays, record: record, gap: gap)
         return SingleWindowPlanning(
             window: window, frame: windowFrame, windowID: windowID, displays: displays, plan: plan)
     }

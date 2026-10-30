@@ -33,23 +33,25 @@ public enum PresetCycle {
         }
     }
 
-    /// The frame of `preset` at `step` in `visibleFrame`, with the edge rounding rule.
-    public static func frame(of preset: Preset, step: Int, in visibleFrame: CGRect) -> CGRect? {
+    /// The frame of `preset` at `step` in `visibleFrame`, with the edge rounding rule and the
+    /// window gap applied.
+    public static func frame(of preset: Preset, step: Int, in visibleFrame: CGRect, gap: Int = 0) -> CGRect? {
         fractionalRect(of: preset, step: step).map {
-            FrameResolver.fractionalFrame($0, in: visibleFrame)
+            FrameResolver.fractionalFrame($0, in: visibleFrame, gap: gap)
         }
     }
 
     /// The step the window is at, or `nil` when it is at none: its frame is within 2 pt on every edge
-    /// of the frame of the step, or of the achieved frame recorded for that step of this preset.
+    /// of the frame of the step (with the gap in effect), or of the achieved frame recorded for that
+    /// step of this preset.
     public static func currentStep(
-        of preset: Preset, windowFrame: CGRect, visibleFrame: CGRect, record: WindowRecord?
+        of preset: Preset, windowFrame: CGRect, visibleFrame: CGRect, record: WindowRecord?, gap: Int = 0
     ) -> Int? {
         if let record, let cycle = record.cycle, cycle.preset == preset, record.isInPlace(at: windowFrame) {
             return cycle.step
         }
         return (0..<stepCount).first { step in
-            frame(of: preset, step: step, in: visibleFrame).map {
+            frame(of: preset, step: step, in: visibleFrame, gap: gap).map {
                 FrameTolerance.matches(windowFrame, $0)
             } ?? false
         }
@@ -58,18 +60,20 @@ public enum PresetCycle {
     /// The step a press of `preset` takes the window to: the one after the step it is at, step 0
     /// after the last, and step 0 for a window that is at none.
     public static func nextStep(
-        of preset: Preset, windowFrame: CGRect, visibleFrame: CGRect, record: WindowRecord?
+        of preset: Preset, windowFrame: CGRect, visibleFrame: CGRect, record: WindowRecord?, gap: Int = 0
     ) -> Int {
         guard
             let current = currentStep(
-                of: preset, windowFrame: windowFrame, visibleFrame: visibleFrame, record: record)
+                of: preset, windowFrame: windowFrame, visibleFrame: visibleFrame, record: record, gap: gap)
         else { return 0 }
         return (current + 1) % stepCount
     }
 
     /// The step of `preset` whose frame in `visibleFrame` is `target`, for recording what a press
     /// placed.
-    public static func step(of preset: Preset, matching target: CGRect, in visibleFrame: CGRect) -> Int? {
-        (0..<stepCount).first { frame(of: preset, step: $0, in: visibleFrame) == target }
+    public static func step(
+        of preset: Preset, matching target: CGRect, in visibleFrame: CGRect, gap: Int = 0
+    ) -> Int? {
+        (0..<stepCount).first { frame(of: preset, step: $0, in: visibleFrame, gap: gap) == target }
     }
 }

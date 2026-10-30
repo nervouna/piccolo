@@ -197,8 +197,8 @@ struct LocalizedTextTests {
 
     @Test("a field without a sentence of its own is named as the model names it")
     func unknownField() {
-        #expect(SettingsMessages.describe(.outOfRange(field: "gap", rule: "must be >= 0"), bundle: chinese) == "gap must be >= 0.")
-        #expect(SettingsMessages.describe(.notFinite(field: "gap"), bundle: english) == "Gap must be a number.")
+        #expect(SettingsMessages.describe(.outOfRange(field: "margin", rule: "must be >= 0"), bundle: chinese) == "margin must be >= 0.")
+        #expect(SettingsMessages.describe(.notFinite(field: "margin"), bundle: english) == "Margin must be a number.")
     }
 
     @Test("the other messages put their arguments where the Chinese sentence needs them")

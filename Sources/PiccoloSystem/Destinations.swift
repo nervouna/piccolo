@@ -51,12 +51,12 @@ extension ActionExecutor {
             case .nothingToDo:
                 return []
             case .move(let planning):
-                let frames = planning.group.targetFrames(for: planning.layout)
+                let frames = planning.group.targetFrames(for: planning.layout, gap: settings.gap)
                 return zip(planning.group.windows, frames).map { Destination(frame: $1, window: $0) }
             }
 
         case .placeWindow, .moveToDisplay, .restoreWindow:
-            switch try planSingleWindow(action).plan {
+            switch try planSingleWindow(action, gap: settings.gap).plan {
             case .nothingToDo:
                 return []
             case .place(let target, _):

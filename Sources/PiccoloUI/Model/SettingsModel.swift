@@ -33,6 +33,8 @@ public final class SettingsModel {
     public private(set) var gridFillOrder: GridFillOrder
     /// Whether holding a shortcut shows where its windows will go before they move, as in the config file.
     public private(set) var destinationPreview: Bool
+    /// The window gap in points (0 to 64).
+    public private(set) var gap: Int
     /// The problems found when the config was applied, one line each.
     public private(set) var issues: [String]
     /// The bindings whose shortcut is not active, as the backend last reported them. Read
@@ -100,6 +102,7 @@ public final class SettingsModel {
         animation = snapshot.config.animation
         gridFillOrder = snapshot.config.gridFillOrder
         destinationPreview = snapshot.config.destinationPreview
+        gap = snapshot.config.gap
         issues = snapshot.issues
         reportedInactiveBindingIDs = snapshot.inactiveBindingIDs
         selectedBindingID = snapshot.config.bindings.first?.id
@@ -117,6 +120,7 @@ public final class SettingsModel {
             animation: animation,
             gridFillOrder: gridFillOrder,
             destinationPreview: destinationPreview,
+            gap: gap,
             bindings: bindings)
     }
 
@@ -266,6 +270,14 @@ public final class SettingsModel {
         return commit(candidate)
     }
 
+    /// Sets the window gap, in points: a whole number from 0 to 64.
+    @discardableResult
+    public func setGap(_ value: Int) -> Bool {
+        var candidate = config
+        candidate.gap = value
+        return commit(candidate)
+    }
+
     /// Forgets the errors, for example when the window closes.
     public func clearError() {
         error = nil
@@ -286,7 +298,7 @@ public final class SettingsModel {
     }
 
     /// Replaces every binding with `Config.defaultShortcuts` and keeps the settings (resize step, window
-    /// animation, grid fill order, destination preview). The config file in use is copied next to itself
+    /// animation, grid fill order, destination preview, window gap). The config file in use is copied next to itself
     /// first, when there is one (see ``SettingsBackend``), so the current shortcuts can be recovered. A
     /// recording ends, since its binding is gone and the hotkeys come back with the new bindings, and the
     /// list selects the first binding.
@@ -454,6 +466,7 @@ public final class SettingsModel {
         animation = snapshot.config.animation
         gridFillOrder = snapshot.config.gridFillOrder
         destinationPreview = snapshot.config.destinationPreview
+        gap = snapshot.config.gap
         issues = snapshot.issues
         reportedInactiveBindingIDs = snapshot.inactiveBindingIDs
         error = nil
@@ -491,6 +504,7 @@ public final class SettingsModel {
         animation = candidate.animation
         gridFillOrder = candidate.gridFillOrder
         destinationPreview = candidate.destinationPreview
+        gap = candidate.gap
         issues = newIssues
         reportedInactiveBindingIDs = backend.current().inactiveBindingIDs
         self.error = nil

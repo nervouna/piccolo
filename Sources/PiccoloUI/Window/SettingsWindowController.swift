@@ -20,11 +20,11 @@ public final class SettingsWindowController: NSObject, NSWindowDelegate {
 
     /// The name the frame is saved under. It changed with the taller default size, so that a frame
     /// saved by an earlier version, too short for the General tab, is not restored.
-    private static let frameAutosaveName = "PiccoloSettings.v3"
-    /// Tall enough for the whole General tab without scrolling (its form is about 790 pt high, and the
+    private static let frameAutosaveName = "PiccoloSettings.v4"
+    /// Tall enough for the whole General tab without scrolling (its form is about 830 pt high, and the
     /// tabs and the padding around it take about 60 pt). The restart note of the language picker, which
     /// is there only after a change, makes the form about 80 pt higher; it scrolls then.
-    static let defaultContentSize = NSSize(width: 640, height: 880)
+    static let defaultContentSize = NSSize(width: 640, height: 920)
     private static let minimumContentSize = NSSize(width: 560, height: 480)
 
     public init(model: SettingsModel, host: SettingsHost) {

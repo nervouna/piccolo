@@ -9,7 +9,7 @@ import PiccoloUI
 /// The Settings window commands of the Debug control channel: `settings.open`, `settings.close`,
 /// `settings.state`, the view state (`settings.select`, `settings.showTab`, `settings.setSearch`), the edits
 /// (`settings.addBinding`, `settings.removeBinding`, `settings.updateAction`,
-/// `settings.setResizeStep`, `settings.setAnimation`, `settings.setGridFillOrder`,
+/// `settings.setResizeStep`, `settings.setGap`, `settings.setAnimation`, `settings.setGridFillOrder`,
 /// `settings.setDestinationPreview`, `settings.setLanguage`, `settings.restoreDefaults`), the restart
 /// that applies a new language (`settings.restartNow`) and recording
 /// (`settings.beginRecording`, `settings.cancelRecording`, `settings.record`), and the login item
@@ -121,6 +121,17 @@ extension DebugControlServer {
             return try onMainActor {
                 let model = SettingsController.shared.model
                 guard model.setResizeStep(value) else { throw rejection(of: model) }
+                return settingsState()
+            }
+        }
+
+        // The window gap in points: a whole number from 0 to 64. A value outside the range is
+        // rejected by the model with its message.
+        router.register("settings.setGap") { params in
+            let value = try params.decode(GapParams.self).value
+            return try onMainActor {
+                let model = SettingsController.shared.model
+                guard model.setGap(value) else { throw rejection(of: model) }
                 return settingsState()
             }
         }
@@ -356,6 +367,7 @@ extension DebugControlServer {
             "animation": .string(model.animation.rawValue),
             "gridFillOrder": .string(model.gridFillOrder.rawValue),
             "destinationPreview": .bool(model.destinationPreview),
+            "gap": .int(model.gap),
             "search": .string(model.search),
             "issues": .array(model.issues.map { .string($0) }),
             "tab": .string(model.tab.rawValue),
@@ -406,6 +418,10 @@ extension DebugControlServer {
 
     private struct ValueParams: Decodable {
         var value: Double
+    }
+
+    private struct GapParams: Decodable {
+        var value: Int
     }
 
     private struct NameParams: Decodable {
