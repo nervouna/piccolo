@@ -50,7 +50,7 @@ struct ShortcutManagerDefaultsTests {
 
     // MARK: Launch
 
-    @Test("at launch with no file, the default shortcuts are written, loaded and all 27 are registered")
+    @Test("at launch with no file, the default shortcuts are written, loaded and all 28 are registered")
     func launchWritesDefaults() throws {
         let fixture = try Fixture()
 
@@ -59,10 +59,10 @@ struct ShortcutManagerDefaultsTests {
         #expect(wrote)
         #expect(FileManager.default.fileExists(atPath: fixture.configURL.path))
         let status = fixture.manager.status
-        #expect(status.bindingCount == 27, "the status counts \(status.bindingCount) bindings")
-        #expect(status.registered.count == 27, "the status lists \(status.registered.count) as registered")
+        #expect(status.bindingCount == 28, "the status counts \(status.bindingCount) bindings")
+        #expect(status.registered.count == 28, "the status lists \(status.registered.count) as registered")
         #expect(status.issues.isEmpty, "the issues are \(status.issues)")
-        #expect(fixture.backend.liveShortcuts.count == 27)
+        #expect(fixture.backend.liveShortcuts.count == 28)
         let written = try ConfigStore(url: fixture.configURL).load().config
         #expect(written.bindings.map(\.action) == Config.defaultShortcuts.bindings.map(\.action))
         #expect(written.bindings.map(\.shortcut) == Config.defaultShortcuts.bindings.map(\.shortcut))
@@ -112,7 +112,7 @@ struct ShortcutManagerDefaultsTests {
         let wrote = fixture.manager.loadAtLaunch(from: fixture.configURL)
 
         #expect(wrote)
-        #expect(fixture.manager.status.registered.count == 27)
+        #expect(fixture.manager.status.registered.count == 28)
     }
 
     @Test("reloading after the file was deleted loads no bindings and writes nothing")
@@ -160,10 +160,10 @@ struct ShortcutManagerDefaultsTests {
         let copy = try #require(replacement.copy)
         #expect(copy.lastPathComponent.wholeMatch(of: #/config\.backup-\d{8}-\d{6}(-\d+)?\.json/#) != nil)
         #expect(try Data(contentsOf: copy) == original)
-        #expect(try ConfigStore(url: fixture.configURL).load().config.bindings.count == 27)
-        #expect(replacement.status.registered.count == 27)
+        #expect(try ConfigStore(url: fixture.configURL).load().config.bindings.count == 28)
+        #expect(replacement.status.registered.count == 28)
         #expect(replacement.status.issues.isEmpty, "the issues are \(replacement.status.issues)")
-        #expect(fixture.backend.liveShortcuts.count == 27)
+        #expect(fixture.backend.liveShortcuts.count == 28)
     }
 
     @Test("replacing with no file keeps no copy and creates the file")
@@ -175,7 +175,7 @@ struct ShortcutManagerDefaultsTests {
         #expect(replacement.copy == nil)
         #expect(try fixture.backupNames().isEmpty)
         #expect(FileManager.default.fileExists(atPath: fixture.configURL.path))
-        #expect(replacement.status.registered.count == 27)
+        #expect(replacement.status.registered.count == 28)
     }
 
     @Test("a refused replacement copies nothing and changes nothing")

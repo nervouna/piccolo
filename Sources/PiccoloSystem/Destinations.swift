@@ -21,8 +21,9 @@ extension ActionExecutor {
     /// no window is changed, no group is recorded, updated or dissolved. This is what the destination
     /// preview shows while a shortcut is held.
     ///
-    /// - `placeWindow` and `moveToDisplay`: the target frame of the focused window; none when there
-    ///   is nothing to do (`moveToDisplay` with one display).
+    /// - `placeWindow`, `moveToDisplay` and `restoreWindow`: the target frame of the focused window
+    ///   (for a cycling preset, the next step); none when there is nothing to do (`moveToDisplay` with
+    ///   one display, `restoreWindow` with nothing to restore). Planning only reads the window records.
     /// - `arrangeGrid`: the cell of every window of the arrangement, in cell order (the most recently
     ///   focused window first), each with its window; none when there is no window to arrange.
     /// - `moveDivider`: the frame of every window of the focused window's group after the move, in cell
@@ -54,7 +55,7 @@ extension ActionExecutor {
                 return zip(planning.group.windows, frames).map { Destination(frame: $1, window: $0) }
             }
 
-        case .placeWindow, .moveToDisplay:
+        case .placeWindow, .moveToDisplay, .restoreWindow:
             switch try planSingleWindow(action).plan {
             case .nothingToDo:
                 return []

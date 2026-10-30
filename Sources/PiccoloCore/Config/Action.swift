@@ -13,6 +13,8 @@ public enum Action: Codable, Equatable, Sendable {
     case arrangeGrid(GridSpec)
     /// Moves the divider of a linked group by one `resizeStep`.
     case moveDivider(Direction)
+    /// Puts the focused window back where it was before Piccolo moved it. No parameters.
+    case restoreWindow
 
     private enum CodingKeys: String, CodingKey {
         case type
@@ -39,6 +41,8 @@ public enum Action: Codable, Equatable, Sendable {
                     columns: try container.decode(Int.self, forKey: .columns)))
         case "moveDivider":
             self = .moveDivider(try container.decode(Direction.self, forKey: .direction))
+        case "restoreWindow":
+            self = .restoreWindow
         default:
             throw DecodingError.dataCorruptedError(
                 forKey: .type, in: container,
@@ -63,6 +67,8 @@ public enum Action: Codable, Equatable, Sendable {
         case .moveDivider(let direction):
             try container.encode("moveDivider", forKey: .type)
             try container.encode(direction, forKey: .direction)
+        case .restoreWindow:
+            try container.encode("restoreWindow", forKey: .type)
         }
     }
 }

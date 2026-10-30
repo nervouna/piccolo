@@ -10,7 +10,7 @@ public struct BindingSection: Equatable, Sendable {
 }
 
 public enum BindingSections {
-    /// Groups `bindings` by action kind, in the order Place Window, Move to Display, Arrange Grid,
+    /// Groups `bindings` by action kind, in the order Place Window, Restore Window, Move to Display, Arrange Grid,
     /// Move Divider, keeping the file order inside a section, and keeps the bindings that match `query`.
     /// A section left without a binding is not in the answer.
     ///

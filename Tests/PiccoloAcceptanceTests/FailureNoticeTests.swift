@@ -101,21 +101,21 @@ extension DesktopAcceptanceTests {
         func placeShowsNothing() async throws {
             let screens = try Layout.screens()
             let start = Layout.frame(in: screens[0], offset: CGPoint(x: 120, y: 80), size: CGSize(width: 640, height: 420))
-            let leftHalf = KeyBinding(action: .placeWindow(.preset(.leftHalf)), shortcut: TestShortcut.f13)
+            let maximize = KeyBinding(action: .placeWindow(.preset(.maximize)), shortcut: TestShortcut.f13)
             let expected = FrameResolver.frame(
-                for: .preset(.leftHalf), visibleFrame: screens[0].visibleFrame, currentFrame: start)
+                for: .preset(.maximize), visibleFrame: screens[0].visibleFrame, currentFrame: start)
 
             try await withConfigDirectory { config in
-                try piccolo.loadConfig(at: try config.write(Config(destinationPreview: false, bindings: [leftHalf])))
+                try piccolo.loadConfig(at: try config.write(Config(destinationPreview: false, bindings: [maximize])))
                 try await withFixture { fixture in
                     let window = try fixture.open(id: "notice-place", frame: start)
                     _ = try await Measure.waitForFrame(ofWindow: window.windowNumber, matching: start)
                     try await Focus.bring(window, of: fixture)
 
                     let before = try piccolo.noticeState().last
-                    try piccolo.simulateHotkey(leftHalf.id)
+                    try piccolo.simulateHotkey(maximize.id)
                     _ = try await Measure.waitForFrame(ofWindow: window.windowNumber, matching: expected)
-                    try piccolo.simulateHotkey(leftHalf.id)
+                    try piccolo.simulateHotkey(maximize.id)
 
                     // A negative result has to be watched for a while.
                     let clock = ContinuousClock()

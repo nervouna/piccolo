@@ -23,7 +23,7 @@ public enum ActionPreview {
         case .arrangeGrid(let grid):
             guard grid.count >= 1, grid.rows >= 1, grid.columns >= 1 else { return nil }
             return cells(of: TileLayout.grid(windowCount: grid.count, rows: grid.rows, columns: grid.columns))
-        case .moveToDisplay, .moveDivider:
+        case .moveToDisplay, .moveDivider, .restoreWindow:
             return nil
         }
     }

@@ -27,6 +27,8 @@ public enum FailureNotice: String, CaseIterable, Equatable, Sendable {
     case dissolved
     /// `moveDivider` where the divider cannot move further.
     case cannotMove
+    /// `restoreWindow` on a window Piccolo did not move, or that has been moved since.
+    case nothingToRestore
 
     /// The notice for a grid that cannot be planned. Every ``ArrangePlannerError`` means that the
     /// arrangement does not fit.

@@ -100,7 +100,7 @@ struct LocalizedTextTests {
             #expect(!zh.isEmpty)
             #expect(zh != kind.title(bundle: english), "\(kind)")
         }
-        #expect(ActionKind.allCases.map { $0.title(bundle: chinese) } == ["放置窗口", "移到显示器", "网格排列", "移动分隔线"])
+        #expect(ActionKind.allCases.map { $0.title(bundle: chinese) } == ["放置窗口", "恢复窗口", "移到显示器", "网格排列", "移动分隔线"])
     }
 
     @Test("the percentages are written the same in every language")

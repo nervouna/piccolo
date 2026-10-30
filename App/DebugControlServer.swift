@@ -90,6 +90,8 @@ final class DebugControlServer {
 
         // action.run and focus.history, in DebugArrangeCommands.swift.
         registerArrangeCommands(in: &router, executor: executor)
+        // history.list, in DebugHistoryCommands.swift.
+        registerHistoryCommands(in: &router, executor: executor)
         return router
     }
 }

@@ -103,6 +103,7 @@ extension ActionExecutor {
         }
 
         var steps = group.steps(from: previousTargets, to: targets, current: placements.map(\.achieved))
+        var changedCells = Set(steps.map(\.cell))
         send(steps, to: handles, within: group.visibleFrame, updating: &placements, animatingWith: settings)
         if !placements.contains(where: { $0.failure != nil }) {
             group.recordAchieved(requested: layout, achieved: placements.map(\.achieved))
@@ -113,6 +114,7 @@ extension ActionExecutor {
                 from: targets, to: group.targetFrames(for: group.layout),
                 current: placements.map(\.achieved))
             if !steps.isEmpty {
+                changedCells.formUnion(steps.map(\.cell))
                 send(steps, to: handles, within: group.visibleFrame, updating: &placements)
                 if !placements.contains(where: { $0.failure != nil }) {
                     group.recordAchieved(requested: group.layout, achieved: placements.map(\.achieved))
@@ -124,6 +126,13 @@ extension ActionExecutor {
             groups.dissolve(display: entry.display)
         } else {
             groups.update(group, onDisplay: entry.display)
+        }
+        // Only the windows whose cell changed, and that were changed, are noted.
+        for cell in changedCells.sorted() where placements[cell].failure == nil {
+            let window = group.windows[cell]
+            if let before = frames[window] {
+                records.recordChange(of: window, from: before, to: placements[cell].achieved)
+            }
         }
         let windows = zip(group.windows, placements).map { window, placement in
             ArrangedWindow(

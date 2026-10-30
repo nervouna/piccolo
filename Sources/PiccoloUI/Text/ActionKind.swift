@@ -1,10 +1,11 @@
 import Foundation
 import PiccoloCore
 
-/// The four kinds of action, as the editor offers them: the first choice for a binding, before
+/// The kinds of action, as the editor offers them: the first choice for a binding, before
 /// the parameters of the kind.
 public enum ActionKind: CaseIterable, Hashable, Sendable {
     case placeWindow
+    case restoreWindow
     case moveToDisplay
     case arrangeGrid
     case moveDivider
@@ -12,6 +13,7 @@ public enum ActionKind: CaseIterable, Hashable, Sendable {
     public init(_ action: Action) {
         switch action {
         case .placeWindow: self = .placeWindow
+        case .restoreWindow: self = .restoreWindow
         case .moveToDisplay: self = .moveToDisplay
         case .arrangeGrid: self = .arrangeGrid
         case .moveDivider: self = .moveDivider
@@ -23,6 +25,7 @@ public enum ActionKind: CaseIterable, Hashable, Sendable {
     public var configName: String {
         switch self {
         case .placeWindow: "placeWindow"
+        case .restoreWindow: "restoreWindow"
         case .moveToDisplay: "moveToDisplay"
         case .arrangeGrid: "arrangeGrid"
         case .moveDivider: "moveDivider"
@@ -38,6 +41,7 @@ public enum ActionKind: CaseIterable, Hashable, Sendable {
     public func title(bundle: Bundle) -> String {
         switch self {
         case .placeWindow: String(localized: "Place Window", bundle: bundle)
+        case .restoreWindow: String(localized: "Restore Window", bundle: bundle)
         case .moveToDisplay: String(localized: "Move to Display", bundle: bundle)
         case .arrangeGrid: String(localized: "Arrange Grid", bundle: bundle)
         case .moveDivider: String(localized: "Move Divider", bundle: bundle)
@@ -48,6 +52,7 @@ public enum ActionKind: CaseIterable, Hashable, Sendable {
     public var defaultAction: Action {
         switch self {
         case .placeWindow: .placeWindow(.preset(.leftHalf))
+        case .restoreWindow: .restoreWindow
         case .moveToDisplay: .moveToDisplay(.next)
         case .arrangeGrid: .arrangeGrid(GridSpec(count: 4, rows: 2, columns: 2))
         case .moveDivider: .moveDivider(.left)

@@ -47,6 +47,7 @@ public struct ActionExecutor: Sendable {
     let displaysProvider: DisplaysProvider
     let arrangement: ArrangementSource
     let groups: LayoutGroupStore
+    let records: WindowRecordStore
     /// Moves the windows in small steps before they are placed (see ``WindowAnimator``). Without one
     /// nothing is animated, whatever `ActionSettings.animation` says.
     var animator: WindowAnimator?
@@ -56,6 +57,9 @@ public struct ActionExecutor: Sendable {
     ///     windows of a group. The default has none, so that `arrangeGrid` has nothing to do.
     ///   - groups: Where `arrangeGrid` records the groups it makes and `moveDivider` finds them. A
     ///     copy of the executor shares it.
+    ///   - records: Where single-window actions, arrangements and divider moves note the windows they
+    ///     changed, and `restoreWindow` and the cycling presets read them. A copy of the executor
+    ///     shares it.
     ///   - animator: What animates the windows when the settings ask for it. The default has none, so
     ///     that an executor built without one places every window at once, like ``live`` does with
     ///     `ActionSettings.animation` set to `off`.
@@ -64,12 +68,14 @@ public struct ActionExecutor: Sendable {
         displays: @escaping DisplaysProvider,
         arrangement: ArrangementSource = .none,
         groups: LayoutGroupStore = LayoutGroupStore(),
+        records: WindowRecordStore = WindowRecordStore(),
         animator: WindowAnimator? = nil
     ) {
         self.windowProvider = window
         self.displaysProvider = displays
         self.arrangement = arrangement
         self.groups = groups
+        self.records = records
         self.animator = animator
     }
 
@@ -87,6 +93,11 @@ public struct ActionExecutor: Sendable {
     /// The windows focused so far, most recent first. Empty until the tracker has seen a window.
     public var focusHistory: [WindowID] {
         arrangement.history().order
+    }
+
+    /// What Piccolo remembers of the windows it moved, ordered by window number.
+    public var windowRecords: [(window: WindowID, record: WindowRecord)] {
+        records.entries
     }
 
     /// The groups of windows that were arranged and are still tracked, in display order.
@@ -119,19 +130,32 @@ public struct ActionExecutor: Sendable {
             return try arrange(grid, onlyPid: onlyPid, settings: settings)
         case .moveDivider(let direction):
             return try moveDivider(direction, onlyPid: onlyPid, settings: settings)
-        case .placeWindow, .moveToDisplay:
+        case .placeWindow, .moveToDisplay, .restoreWindow:
             break
         }
 
         let planning = try planSingleWindow(action)
         switch planning.plan {
         case .nothingToDo:
+            // A restore with nothing to go back to: the record, if any, is stale.
+            if case .restoreWindow = action, let id = planning.windowID {
+                records.clear(id)
+            }
             return .nothingToDo
         case .place(let target, let visibleFrame):
             glide(
                 [AnimatedWindow(window: planning.window, start: planning.frame, target: target)],
                 settings: settings, displays: planning.displays)
             let achieved = try FrameSetter.apply(target, to: planning.window, within: visibleFrame)
+            if let id = planning.windowID {
+                if case .restoreWindow = action {
+                    records.clear(id)
+                } else {
+                    records.recordChange(
+                        of: id, from: planning.frame, to: achieved,
+                        cycle: Self.cycleStep(of: action, target: target, visibleFrame: visibleFrame))
+                }
+            }
             return .placed(target: target, achieved: achieved)
         }
     }
@@ -142,15 +166,29 @@ public struct ActionExecutor: Sendable {
     struct SingleWindowPlanning {
         var window: any WindowFrameAccess
         var frame: CGRect
+        /// The window's number, when it has one.
+        var windowID: WindowID?
         var displays: [Display]
         var plan: ActionPlan
+    }
+
+    /// The preset and step a `placeWindow` of a cycling preset placed the window at.
+    static func cycleStep(of action: Action, target: CGRect, visibleFrame: CGRect) -> CycleStep? {
+        guard case .placeWindow(.preset(let preset)) = action, PresetCycle.cycles(preset),
+            let step = PresetCycle.step(of: preset, matching: target, in: visibleFrame)
+        else { return nil }
+        return CycleStep(preset: preset, step: step)
     }
 
     func planSingleWindow(_ action: Action) throws -> SingleWindowPlanning {
         let window = try windowProvider()
         let windowFrame = try window.frame()
         let displays = try displaysProvider()
-        let plan = try ActionPlanner.plan(action, windowFrame: windowFrame, displays: displays)
-        return SingleWindowPlanning(window: window, frame: windowFrame, displays: displays, plan: plan)
+        let windowID = window.windowID
+        let record = windowID.flatMap { records.record(for: $0) }
+        let plan = try ActionPlanner.plan(
+            action, windowFrame: windowFrame, displays: displays, record: record)
+        return SingleWindowPlanning(
+            window: window, frame: windowFrame, windowID: windowID, displays: displays, plan: plan)
     }
 }

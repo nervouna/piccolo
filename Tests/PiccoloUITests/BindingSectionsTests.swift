@@ -93,6 +93,6 @@ struct BindingSectionsTests {
 
     @Test("the kinds have the names the config file writes")
     func configNames() {
-        #expect(ActionKind.allCases.map(\.configName) == ["placeWindow", "moveToDisplay", "arrangeGrid", "moveDivider"])
+        #expect(ActionKind.allCases.map(\.configName) == ["placeWindow", "restoreWindow", "moveToDisplay", "arrangeGrid", "moveDivider"])
     }
 }

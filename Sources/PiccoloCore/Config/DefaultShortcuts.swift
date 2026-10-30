@@ -2,7 +2,7 @@ import Foundation
 
 extension Config {
     /// The config a new install starts with: version 1, the default settings (resize step, window
-    /// animation, grid fill order, destination preview) and the 27 bindings below, in this order.
+    /// animation, grid fill order, destination preview) and the 28 bindings below, in this order.
     /// Each call makes new binding IDs, so two calls never share one.
     ///
     /// At launch, Piccolo writes this config to the default location when there is no file there
@@ -45,6 +45,8 @@ extension Config {
             binding(.placeWindow(.preset(.rightTwoThirds)), DefaultKey.t, controlOption),
             binding(.placeWindow(.preset(.maximize)), DefaultKey.returnKey, controlOption),
             binding(.placeWindow(.preset(.center)), DefaultKey.c, controlOption),
+            // Back to where Piccolo found the window.
+            binding(.restoreWindow, DefaultKey.delete, controlOption),
             // Displays.
             binding(.moveToDisplay(.left), DefaultKey.leftArrow, controlOptionCommand),
             binding(.moveToDisplay(.right), DefaultKey.rightArrow, controlOptionCommand),
@@ -71,6 +73,7 @@ private enum DefaultKey {
     static let downArrow = 125
     static let upArrow = 126
     static let returnKey = 36
+    static let delete = 51
     static let u = 32
     static let i = 34
     static let j = 38

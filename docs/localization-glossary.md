@@ -25,6 +25,8 @@ keyboard symbols (⌃ ⌥ ⇧ ⌘) and the name "Piccolo" as they are in every l
 | Shortcut | Shortcut | 快捷键 | 快速鍵 | ショートカット | Raccourci | Atajo | Atalho | Tastaturkurzbefehl | Accessibility (Shortcut); KeyboardSettings (Keyboard shortcut, de) | A global keyboard shortcut. In de, bare "Kurzbefehl" is the name of the Shortcuts app. |
 | Default | Default | 默认 | 預設 | デフォルト | par défaut | Por omisión | padrão | Standard | AppKit FontManager (Default); KeyboardSettings (Default) | "System default" in the language picker means the language of the system. |
 | Restore | Restore | 恢复 | 回復 | 復元 | Restaurer | Restaurar | Restaurar | Wiederherstellen | AppKit Revisions (Restore) | The button of the confirmation. |
+| Restore Window | Restore Window | 恢复窗口 | 回復視窗 | ウインドウを復元 | Restaurer la fenêtre | Restaurar ventana | Restaurar janela | Fenster wiederherstellen | Piccolo (Restore + Window rows) | The action that puts a window back where Piccolo found it. |
+| Nothing to restore | Nothing to restore | 没有可恢复的内容 | 沒有可回復的內容 | 復元するものがありません | Rien à restaurer | Nada que restaurar | Nada para restaurar | Nichts wiederherzustellen | Piccolo (Restore row) | The notice of Restore Window when there is no earlier position. |
 | Grid | Grid | 网格 | 網格 | グリッド | grille | cuadrícula | grade | Raster | Piccolo | The layout of rows and columns. Apple's "grid" is the gridlines. |
 | Rows | Rows | 行数 | 列數 | 行数 | lignes | filas | linhas | Zeilen | Piccolo | Also "Rows first" (fill order). |
 | Columns | Columns | 列数 | 欄數 | 列数 | colonnes | columnas | colunas | Spalten | Piccolo | Also "Columns first". Grid columns, as in a table: Taiwan writes rows 列 and columns 欄, Japanese rows 行 and columns 列. Finder's 直欄 and カラム name its column view, not a count. |

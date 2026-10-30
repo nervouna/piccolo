@@ -14,7 +14,7 @@ public enum ActionPlan: Equatable, Sendable {
 
 /// Why an action cannot be planned.
 public enum ActionPlanningError: Error, Equatable, Sendable, LocalizedError {
-    /// The action is not `placeWindow` or `moveToDisplay`.
+    /// The action is not `placeWindow`, `moveToDisplay` or `restoreWindow`.
     case notSingleWindowAction
     /// There is no display to plan against.
     case noDisplays
@@ -53,7 +53,8 @@ public enum ActionPlanner {
     public static func plan(
         _ action: Action,
         windowFrame: CGRect,
-        displays: [Display]
+        displays: [Display],
+        record: WindowRecord? = nil
     ) throws(ActionPlanningError) -> ActionPlan {
         switch action {
         case .placeWindow(let spec):
@@ -67,6 +68,13 @@ public enum ActionPlanner {
             }
             let visibleFrame = displays[index].visibleFrame
             guard hasArea(visibleFrame) else { throw .emptyVisibleFrame }
+            if case .preset(let preset) = spec, PresetCycle.cycles(preset) {
+                let step = PresetCycle.nextStep(
+                    of: preset, windowFrame: windowFrame, visibleFrame: visibleFrame, record: record)
+                if let target = PresetCycle.frame(of: preset, step: step, in: visibleFrame) {
+                    return .place(target: target, visibleFrame: visibleFrame)
+                }
+            }
             let target = FrameResolver.frame(
                 for: spec, visibleFrame: visibleFrame, currentFrame: windowFrame)
             return .place(target: target, visibleFrame: visibleFrame)
@@ -84,9 +92,37 @@ public enum ActionPlanner {
                 moving: windowFrame, from: displays[source], to: displays[destination])
             return .place(target: target, visibleFrame: displays[destination].visibleFrame)
 
+        case .restoreWindow:
+            guard let record, record.isInPlace(at: windowFrame) else { return .nothingToDo }
+            return try restore(record, windowFrame: windowFrame, displays: displays)
+
         case .arrangeGrid, .moveDivider:
             throw .notSingleWindowAction
         }
+    }
+
+    /// The target of a restore: the origin frame on the display that holds most of it, or, when the
+    /// origin lies on no current display, the same size centred on the window's current display.
+    private static func restore(
+        _ record: WindowRecord, windowFrame: CGRect, displays: [Display]
+    ) throws(ActionPlanningError) -> ActionPlan {
+        let origin = record.origin
+        guard let originIndex = DisplayLayout.index(containing: origin, in: displays) else {
+            throw .noDisplays
+        }
+        let overlapsDisplay = displays.contains { !origin.intersection($0.frame).isNull && !origin.intersection($0.frame).isEmpty }
+        if overlapsDisplay {
+            let visibleFrame = displays[originIndex].visibleFrame
+            guard hasArea(visibleFrame) else { throw .emptyVisibleFrame }
+            return .place(target: origin, visibleFrame: visibleFrame)
+        }
+        guard let currentIndex = DisplayLayout.index(containing: windowFrame, in: displays) else {
+            throw .noDisplays
+        }
+        let visibleFrame = displays[currentIndex].visibleFrame
+        guard hasArea(visibleFrame) else { throw .emptyVisibleFrame }
+        let target = FrameResolver.frame(for: .preset(.center), visibleFrame: visibleFrame, currentFrame: origin)
+        return .place(target: target, visibleFrame: visibleFrame)
     }
 
     private static func hasArea(_ rect: CGRect) -> Bool {

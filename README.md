@@ -61,12 +61,12 @@ Settings opens from the menu. It also opens when you launch Piccolo again while 
 
 ### Shortcuts tab
 
-- **Sections.** The list has one section per kind of action, in the order Place Window, Move to Display, Arrange Grid and Move Divider. Inside a section the bindings keep the order of the config file. A kind with no binding has no section. The list takes the height the window leaves after the editor.
+- **Sections.** The list has one section per kind of action, in the order Place Window, Restore Window, Move to Display, Arrange Grid and Move Divider. Inside a section the bindings keep the order of the config file. A kind with no binding has no section. The list takes the height the window leaves after the editor.
 - **Search.** The field above the list keeps the bindings whose description or shortcut contains what you type, ignoring case and accents, for example `left` or `⌃⌥←`. Sections left empty are hidden, and "No shortcuts match" shows when nothing fits. The selection stays when the selected binding is still shown and moves to the first shown binding otherwise. The search is not saved.
 - **Inactive shortcuts.** A warning sign before the shortcut button means the shortcut is not active, because macOS refused it or Piccolo cannot register it. The problems at the bottom of the window say why. While you record a shortcut every shortcut is off, and no row is marked.
 - **Add and remove.** The + button adds a binding. It places the window in the left half and has no shortcut yet. If the search would hide it, the search is cleared, and the new binding is selected and scrolled into view. The − button removes the selected binding.
 - **Restore Default Shortcuts…** replaces every binding with the [default shortcuts](#default-shortcuts) after you confirm. The resize step, the window animation, the arranging order and the destination preview stay. A copy of the config file is kept next to it first.
-- **Action.** The Action menu offers four kinds: Place Window, Move to Display, Arrange Grid and Move Divider. Choosing a kind resets the binding to that kind's default: Left Half, Next Display, 4 windows in 2 × 2, or Move Divider Left. The parameters of the kind follow. For Place Window and Arrange Grid, a preview of the frame or cells is drawn beside the editor.
+- **Action.** The Action menu offers five kinds: Place Window, Restore Window, Move to Display, Arrange Grid and Move Divider. Choosing a kind resets the binding to that kind's default: Left Half, Restore Window, Next Display, 4 windows in 2 × 2, or Move Divider Left. The parameters of the kind follow. For Place Window and Arrange Grid, a preview of the frame or cells is drawn beside the editor.
 - **Recording a shortcut.** Click the button on the right of a binding. It reads "Record Shortcut" when the binding has none, and shows the shortcut, such as ⌃⌥F13, when it has one. Click it, then press the keys. Press Escape to cancel. Press Delete or Forward Delete on its own to clear the shortcut.
 - **Rules.** A shortcut needs ⌘, ⌥ or ⌃, or it must be a function key (F1 to F20). Shift on its own does not count, so ⇧A is refused. A shortcut that another binding already has is refused too, and the message names the other binding by its action. A refused shortcut shows a message at the bottom of the window and nothing is saved. Recording ends after any key press, so press the keys again to retry.
 - **Saving.** Every accepted change is written to the config file straight away. There is no save button.
@@ -100,7 +100,7 @@ To turn the preview off, switch off **Show destination while a shortcut is held*
 
 ### Failure notice
 
-When a shortcut fires and nothing can happen, Piccolo says why: a short notice in the middle of the display that holds the focused window (or the display with the mouse when no window has the focus), for about a second. It appears when Accessibility is not granted, when no window is there to act on or Piccolo's own window is in front, when the window cannot be moved or resized, when there is no display in that direction, when there are no windows to arrange or the grid does not fit the display, and when a divider cannot move: the window is not in an arrangement made by Piccolo, the arrangement was changed since (arrange again), or the divider cannot go further. A placement that changes nothing, and a run that worked, show nothing.
+When a shortcut fires and nothing can happen, Piccolo says why: a short notice in the middle of the display that holds the focused window (or the display with the mouse when no window has the focus), for about a second. It appears when Accessibility is not granted, when no window is there to act on or Piccolo's own window is in front, when the window cannot be moved or resized, when there is no display in that direction, when Restore Window has nothing to restore, when there are no windows to arrange or the grid does not fit the display, and when a divider cannot move: the window is not in an arrangement made by Piccolo, the arrangement was changed since (arrange again), or the divider cannot go further. A placement that changes nothing, a press that cycles a half, and a run that worked, show nothing.
 
 The notice never takes the focus away from the window you are working in, and it also shows over full-screen apps. It is in the language of the interface. There is no setting to turn it off.
 
@@ -119,6 +119,7 @@ Each binding runs one action. The windows glide to their new frames over the tim
 | Action | Parameters | What it does |
 |---|---|---|
 | Place Window (`placeWindow`) | `frame`: a preset, or a custom frame | Sets the frame of the focused window. |
+| Restore Window (`restoreWindow`) | none | Puts the focused window back where it was before Piccolo moved it. See [Restore Window](#restore-window). |
 | Move to Display (`moveToDisplay`) | `direction`: `next`, `previous`, `left`, `right`, `up` or `down` | Moves the focused window to the neighbouring display and keeps its relative frame. |
 | Arrange Grid (`arrangeGrid`) | `count`, `rows`, `columns` | Arranges the `count` most recently focused windows in a grid of `rows` by `columns` cells. |
 | Move Divider (`moveDivider`) | `direction`: `left`, `right`, `up` or `down` | Moves a divider between windows that Arrange Grid placed by one resize step, and the neighbouring windows follow. Does nothing for a window that is in no such group. |
@@ -148,6 +149,20 @@ Presets:
 | `rightTwoThirds` | Right Two Thirds | 1/3, 0, 2/3, 1 |
 | `maximize` | Maximize | 0, 0, 1, 1 |
 | `center` | Center | No fixed fraction: keeps the window's size, capped to the visible frame, and centres it |
+
+#### Pressing a half again
+
+Left Half, Right Half, Top Half and Bottom Half cycle. The first press places the window at half of the visible frame, the same shortcut pressed again makes it 2/3 and then 1/3 of the width (the height for Top Half and Bottom Half), anchored to the same edge, and one more press goes back to 1/2. A press counts as the next step when the window is still at the step the previous press placed it at, within 2 pt on every edge, or at the frame it ended at when it refused the exact size. In any other case the press places the window at 1/2. The other presets and custom frames do not cycle. The destination preview shows the next step, and `action.run` cycles too.
+
+### Restore Window
+
+Restore Window puts the focused window back where it was before Piccolo moved it, with the animation of the other actions. Piccolo remembers, for every window it changed, the frame the window had before (its origin) and the frame it ended at. This covers Place Window, Move to Display, every window of an arrangement and every window a divider move changed.
+
+- **One level.** Only the frame before Piccolo's first change since you last moved the window yourself is kept. A restore forgets the window, so a second press has nothing to restore.
+- **After you moved it.** When you move or resize a window by hand after Piccolo placed it, the record is replaced: Restore Window then has nothing to restore, and the next Piccolo action takes the frame you left as the new origin.
+- **A display that is gone.** When the origin is on no display any more, the window is centred, at its size, on the display it is on now.
+- **Nothing to restore.** Piccolo shows the notice "Nothing to restore" and the window stays.
+- **Memory.** The records are kept in memory only and are gone when Piccolo quits. A window without a window number is not remembered.
 
 ### Move to Display
 
@@ -201,6 +216,7 @@ Piccolo starts with these shortcuts, so the window actions work right after inst
 | Right Two Thirds | ⌃⌥T |
 | Maximize | ⌃⌥↩ |
 | Center | ⌃⌥C |
+| Restore Window | ⌃⌥⌫ |
 | Display to the Left | ⌃⌥⌘← |
 | Display to the Right | ⌃⌥⌘→ |
 | Display Above | ⌃⌥⌘↑ |
@@ -224,7 +240,7 @@ The config file is `~/Library/Application Support/Piccolo/config.json`. At launc
 
 Piccolo reads the file at launch and when you choose Reload Config. It does not watch the file, so after you edit it by hand, choose Reload Config.
 
-This example has one binding of each action kind:
+This example has one binding of each action kind except Restore Window, which is written `{ "type": "restoreWindow" }` and has no parameters:
 
 ```json
 {

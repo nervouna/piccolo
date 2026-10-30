@@ -124,6 +124,11 @@ extension ActionExecutor {
             }
             return ArrangedWindow(window: assignment.window, target: assignment.frame, result: result)
         }
+        for (assignment, window) in zip(plan.assignments, arranged) {
+            if case .placed(let achieved) = window.result, let before = starts[assignment.window] {
+                records.recordChange(of: assignment.window, from: before, to: achieved)
+            }
+        }
         recordGroup(of: plan, visibleFrame: visibleFrame, arranged: arranged)
         return .arranged(ArrangeOutcome(displayIndex: plan.displayIndex, windows: arranged))
     }

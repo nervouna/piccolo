@@ -8,6 +8,13 @@ public protocol WindowFrameAccess {
     func frame() throws -> CGRect
     func setSize(_ size: CGSize) throws
     func setPosition(_ origin: CGPoint) throws
+    /// The window's number, which keys Piccolo's record of it, or `nil` when the window has none (it
+    /// is then neither recorded nor restorable).
+    var windowID: WindowID? { get }
+}
+
+extension WindowFrameAccess {
+    public var windowID: WindowID? { nil }
 }
 
 public enum FrameSetter {
