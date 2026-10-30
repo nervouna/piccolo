@@ -392,7 +392,92 @@ extension DesktopAcceptanceTests {
             }
         }
 
+        // MARK: 9. moveToDisplay in a direction
+
+        @Test("actions 9. moveToDisplay in a direction goes to that display and back, and does nothing where there is none")
+        func moveToDisplayInADirection() async throws {
+            let (_, displays) = try await loadScreens()
+            guard displays.count >= 2 else {
+                try Test.cancel("needs two or more displays; this machine has \(displays.count)")
+            }
+            let sourceIndex = 0
+            let source = displays[sourceIndex]
+            // The first direction in which a display lies, read off the displays' frames.
+            guard
+                let direction = [DisplayDirection.left, .right, .up, .down].first(where: {
+                    DisplayLayout.neighbor(of: sourceIndex, $0, in: displays) != sourceIndex
+                })
+            else {
+                try Test.cancel("no display lies left, right, above or below the first display: \(displays.map { describe($0.frame) })")
+            }
+            let targetIndex = DisplayLayout.neighbor(of: sourceIndex, direction, in: displays)
+            let target = displays[targetIndex]
+            let original = try roundTripFrame(on: source, via: target)
+
+            try await withFixture { fixture in
+                let window = try await openFocused(fixture, id: "direction", frame: original)
+
+                // The display in that direction: the frame DisplayLayout predicts there.
+                let predicted = DisplayLayout.frame(moving: original, from: source, to: target)
+                let there = try piccolo.runAction(.moveToDisplay(direction))
+                let thereFrames = try placedFrames(there, "moveToDisplay \(direction.rawValue)")
+                #expect(
+                    framesMatch(thereFrames.target, predicted),
+                    "moveToDisplay \(direction.rawValue) answered the target \(describe(thereFrames.target)), DisplayLayout predicts \(describe(predicted))"
+                )
+                let moved = try await Measure.waitForFrame(ofWindow: window.windowNumber, matching: predicted)
+                #expect(
+                    DisplayLayout.index(containing: moved, in: displays) == targetIndex,
+                    "the window is measured at \(describe(moved)), not on display \(targetIndex) (\(describe(target.frame)))"
+                )
+                #expect(
+                    inside(moved, target.visibleFrame),
+                    "the window is measured at \(describe(moved)), outside the display's visible frame \(describe(target.visibleFrame))"
+                )
+
+                // The opposite direction from there: back where it started.
+                let back = opposite(of: direction)
+                let backIndex = DisplayLayout.neighbor(of: targetIndex, back, in: displays)
+                #expect(backIndex == sourceIndex, "from display \(targetIndex), \(back.rawValue) leads to display \(backIndex), not back to \(sourceIndex)")
+                let returned = try piccolo.runAction(.moveToDisplay(back))
+                _ = try placedFrames(returned, "moveToDisplay \(back.rawValue)")
+                let measuredBack = try await Measure.waitForFrame(ofWindow: window.windowNumber, matching: original)
+                #expect(
+                    DisplayLayout.index(containing: measuredBack, in: displays) == sourceIndex,
+                    "the window is measured at \(describe(measuredBack)), not back on display \(sourceIndex)")
+
+                // A direction with no display: nothing to do, and the window does not move.
+                guard
+                    let blocked = [DisplayDirection.left, .right, .up, .down].first(where: {
+                        DisplayLayout.neighbor(of: sourceIndex, $0, in: displays) == sourceIndex
+                    })
+                else {
+                    return
+                }
+                let nothing = try piccolo.runAction(.moveToDisplay(blocked))
+                #expect(
+                    nothing == .nothingToDo,
+                    "moveToDisplay \(blocked.rawValue) with no display that way answered \(nothing), expected nothingToDo")
+                let stayed = Measure.frame(ofWindow: window.windowNumber)
+                #expect(
+                    stayed.map { framesMatch($0, original) } == true,
+                    "after moveToDisplay \(blocked.rawValue) with no display that way the window is measured at \(stayed.map { describe($0) } ?? "nowhere"), it should still be at \(describe(original))"
+                )
+            }
+        }
+
         // MARK: Helpers
+
+        private func opposite(of direction: DisplayDirection) -> DisplayDirection {
+            switch direction {
+            case .left: .right
+            case .right: .left
+            case .up: .down
+            case .down: .up
+            case .next: .previous
+            case .previous: .next
+            }
+        }
 
         private func loadScreens() async throws -> (screens: [ScreenInfo], displays: [Display]) {
             let screens = try await MainActor.run { try Layout.screens() }

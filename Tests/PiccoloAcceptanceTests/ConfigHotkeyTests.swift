@@ -257,18 +257,18 @@ extension DesktopAcceptanceTests {
         // Every default is a real global hotkey while this test runs, so the test is short and
         // withConfigDirectory ends it with config.reload. A default that the system refuses on this
         // machine shows up as an issue here, and as a missing registration.
-        @Test("config 8. all 25 default shortcuts are registered with no issues on this machine")
+        @Test("config 8. all 27 default shortcuts are registered with no issues on this machine")
         func defaultShortcutsRegister() async throws {
             let defaults = Config.defaultShortcuts.bindings
 
             try await withConfigDirectory { config in
                 let loaded = try piccolo.loadConfig(at: try config.write(defaults))
 
-                #expect(loaded.bindingCount == 25, "the defaults load \(loaded.bindingCount) bindings, expected 25")
+                #expect(loaded.bindingCount == 27, "the defaults load \(loaded.bindingCount) bindings, expected 27")
                 #expect(loaded.issues.isEmpty, "the default shortcuts reported issues: \(loaded.issues)")
                 #expect(
                     loaded.registered == defaults.map { registered($0) },
-                    "config.load lists \(loaded.registered.count) of the 25 defaults as registered: \(loaded.registered)")
+                    "config.load lists \(loaded.registered.count) of the 27 defaults as registered: \(loaded.registered)")
                 #expect(try piccolo.configStatus() == loaded, "config.status differs from what config.load answered")
             }
         }

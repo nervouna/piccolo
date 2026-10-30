@@ -58,6 +58,10 @@ struct LocalizedTextTests {
     func displays() {
         #expect(ActionSummary.text(for: .moveToDisplay(.next), bundle: chinese) == "下一个显示器")
         #expect(ActionSummary.text(for: .moveToDisplay(.previous), bundle: chinese) == "上一个显示器")
+        #expect(ActionSummary.text(for: .moveToDisplay(.left), bundle: chinese) == "左侧显示器")
+        #expect(ActionSummary.text(for: .moveToDisplay(.right), bundle: chinese) == "右侧显示器")
+        #expect(ActionSummary.text(for: .moveToDisplay(.up), bundle: chinese) == "上方显示器")
+        #expect(ActionSummary.text(for: .moveToDisplay(.down), bundle: chinese) == "下方显示器")
         for direction in DisplayDirection.allCases {
             let action = Action.moveToDisplay(direction)
             #expect(ActionSummary.text(for: action, bundle: chinese) != ActionSummary.text(for: action, bundle: english))

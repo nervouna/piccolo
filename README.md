@@ -18,7 +18,7 @@ Piccolo is a personal project, shared for anyone who wants keyboard window manag
 What works:
 
 - Placing the focused window at a preset or a custom frame.
-- Moving the focused window to the next or previous display.
+- Moving the focused window to the next or previous display, or to the display on its left, right, above or below.
 - Arranging the most recently focused windows in a grid.
 - Linked resize: after Arrange Grid, Move Divider moves a divider and the neighbouring windows follow, with no gap and no overlap (see [Move Divider](#move-divider)).
 - A preview while you hold a shortcut: a highlight shows where the windows will go (see [Destination preview](#destination-preview)).
@@ -110,7 +110,7 @@ Each binding runs one action. The windows glide to their new frames over the tim
 | Action | Parameters | What it does |
 |---|---|---|
 | Place Window (`placeWindow`) | `frame`: a preset, or a custom frame | Sets the frame of the focused window. |
-| Move to Display (`moveToDisplay`) | `direction`: `next` or `previous` | Moves the focused window to the neighbouring display and keeps its relative frame. |
+| Move to Display (`moveToDisplay`) | `direction`: `next`, `previous`, `left`, `right`, `up` or `down` | Moves the focused window to the neighbouring display and keeps its relative frame. |
 | Arrange Grid (`arrangeGrid`) | `count`, `rows`, `columns` | Arranges the `count` most recently focused windows in a grid of `rows` by `columns` cells. |
 | Move Divider (`moveDivider`) | `direction`: `left`, `right`, `up` or `down` | Moves a divider between windows that Arrange Grid placed by one resize step, and the neighbouring windows follow. Does nothing for a window that is in no such group. |
 
@@ -143,6 +143,8 @@ Presets:
 ### Move to Display
 
 Displays are ordered from left to right by the left edge of their frame. Displays with the same left edge are ordered from top to bottom. `next` moves the window to the display after its current one in this order, and `previous` to the one before. Both wrap around, so with two displays both directions lead to the other display.
+
+`left`, `right`, `up` and `down` pick a display by its place on the screen instead. For `left`, the candidates are the displays that lie entirely to the left of the current one. Among them, a display whose height overlaps the current one's wins, the largest overlap first; when none overlaps, the nearest one wins. `right`, `up` and `down` work the same way. These directions do not wrap around: when no display lies that way, nothing happens.
 
 The window keeps its position and its size as fractions of the visible frame of its display. A window larger than the visible frame of the target display is capped to it, and the window is moved back inside that visible frame. With one display, nothing happens.
 
@@ -190,8 +192,10 @@ Piccolo starts with these shortcuts, so the window actions work right after inst
 | Right Two Thirds | ⌃⌥T |
 | Maximize | ⌃⌥↩ |
 | Center | ⌃⌥C |
-| Next Display | ⌃⌥⌘→ |
-| Previous Display | ⌃⌥⌘← |
+| Display to the Left | ⌃⌥⌘← |
+| Display to the Right | ⌃⌥⌘→ |
+| Display Above | ⌃⌥⌘↑ |
+| Display Below | ⌃⌥⌘↓ |
 | Arrange 2 in 1 × 2 | ⌃⌥⇧2 |
 | Arrange 3 in 1 × 3 | ⌃⌥⇧3 |
 | Arrange 4 in 2 × 2 | ⌃⌥⇧4 |
@@ -278,7 +282,7 @@ The keys can appear in any order. These are the keys of the file:
 | `action` | object | Required in each binding. Its `type` selects the kind, and the other keys depend on the kind. |
 | `type` | `"placeWindow"`, `"moveToDisplay"`, `"arrangeGrid"` or `"moveDivider"` | The kind of action. Any other value is rejected. |
 | `frame` | object | For `placeWindow`. Exactly one of `preset`, a preset name from the table under Place Window, or `custom`, an object with `x`, `y`, `width` and `height` as described under Place Window. |
-| `direction` | `"next"` or `"previous"` for `moveToDisplay`; `"left"`, `"right"`, `"up"` or `"down"` for `moveDivider` | Where the window or the divider goes. |
+| `direction` | `"next"`, `"previous"`, `"left"`, `"right"`, `"up"` or `"down"` for `moveToDisplay`; `"left"`, `"right"`, `"up"` or `"down"` for `moveDivider` | Where the window or the divider goes. |
 | `count`, `rows`, `columns` | integers | For `arrangeGrid`. Each is at least 1, and `count` is at most `rows` × `columns`. |
 | `shortcut` | object | Optional. The key press that runs the binding. Leave the key out for a binding without a shortcut. |
 | `keyCode` | integer | Required in `shortcut`. The macOS virtual key code, the `kVK_` value in Carbon's `Events.h`, at least 0. For example `123` is the left arrow, `8` is C and `105` is F13. Settings records the code for you. |

@@ -2,7 +2,7 @@ import Foundation
 
 extension Config {
     /// The config a new install starts with: version 1, the default settings (resize step, window
-    /// animation, grid fill order, destination preview) and the 25 bindings below, in this order.
+    /// animation, grid fill order, destination preview) and the 27 bindings below, in this order.
     /// Each call makes new binding IDs, so two calls never share one.
     ///
     /// At launch, Piccolo writes this config to the default location when there is no file there
@@ -46,8 +46,10 @@ extension Config {
             binding(.placeWindow(.preset(.maximize)), DefaultKey.returnKey, controlOption),
             binding(.placeWindow(.preset(.center)), DefaultKey.c, controlOption),
             // Displays.
-            binding(.moveToDisplay(.next), DefaultKey.rightArrow, controlOptionCommand),
-            binding(.moveToDisplay(.previous), DefaultKey.leftArrow, controlOptionCommand),
+            binding(.moveToDisplay(.left), DefaultKey.leftArrow, controlOptionCommand),
+            binding(.moveToDisplay(.right), DefaultKey.rightArrow, controlOptionCommand),
+            binding(.moveToDisplay(.up), DefaultKey.upArrow, controlOptionCommand),
+            binding(.moveToDisplay(.down), DefaultKey.downArrow, controlOptionCommand),
             // Grids of the most recently focused windows.
             binding(.arrangeGrid(GridSpec(count: 2, rows: 1, columns: 2)), DefaultKey.two, controlOptionShift),
             binding(.arrangeGrid(GridSpec(count: 3, rows: 1, columns: 3)), DefaultKey.three, controlOptionShift),

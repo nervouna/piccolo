@@ -664,7 +664,7 @@ struct SettingsModelTests {
 
     // MARK: Restoring the default shortcuts
 
-    @Test("restoring keeps a copy of the file, replaces the bindings with the 25 defaults and keeps the resize step")
+    @Test("restoring keeps a copy of the file, replaces the bindings with the 27 defaults and keeps the resize step")
     func restoreDefaults() {
         let (model, backend) = make(Config(resizeStep: 0.2, bindings: UIFixture.twoBindings().bindings))
 
@@ -672,12 +672,12 @@ struct SettingsModelTests {
 
         #expect(backend.copies == [InMemorySettingsBackend.copyName])
         #expect(model.backupName == InMemorySettingsBackend.copyName)
-        #expect(model.bindings.count == 25)
+        #expect(model.bindings.count == 27)
         #expect(model.bindings.map(\.action) == Config.defaultShortcuts.bindings.map(\.action))
         #expect(model.bindings.map(\.shortcut) == Config.defaultShortcuts.bindings.map(\.shortcut))
         #expect(model.resizeStep == 0.2)
         #expect(backend.config.resizeStep == 0.2)
-        #expect(backend.config.bindings.count == 25)
+        #expect(backend.config.bindings.count == 27)
         #expect(model.error == nil)
         #expect(model.selectedBindingID == model.bindings.first?.id)
     }
@@ -738,8 +738,8 @@ struct SettingsModelTests {
 
         #expect(backend.copies.isEmpty)
         #expect(model.backupName == nil)
-        #expect(model.bindings.count == 25)
-        #expect(backend.config.bindings.count == 25)
+        #expect(model.bindings.count == 27)
+        #expect(backend.config.bindings.count == 27)
     }
 
     @Test("a restore the backend cannot carry out changes nothing, and the error says why")
@@ -836,12 +836,12 @@ struct SettingsModelTests {
 
         #expect(model.restoreDefaultShortcuts())
 
-        #expect(model.bindings.count == 25)
+        #expect(model.bindings.count == 27)
         #expect(model.resizeStep == 0.2)
         #expect(model.animation == .slow)
         #expect(model.gridFillOrder == .columns)
         #expect(model.destinationPreview == false)
-        #expect(backend.config.bindings.count == 25)
+        #expect(backend.config.bindings.count == 27)
         #expect(backend.config.resizeStep == 0.2)
         #expect(backend.config.animation == .slow)
         #expect(backend.config.gridFillOrder == .columns)

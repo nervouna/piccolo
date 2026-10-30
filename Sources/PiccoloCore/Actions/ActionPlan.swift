@@ -47,7 +47,8 @@ public enum ActionPlanner {
     ///   display's visible frame (``FrameResolver``).
     /// - `moveToDisplay`: from the containing display to its neighbour in the given direction
     ///   (``DisplayLayout/neighbor(of:_:in:)``); the target keeps the window's relative frame
-    ///   (``DisplayLayout/frame(moving:from:to:)``). With a single display there is nothing to do.
+    ///   (``DisplayLayout/frame(moving:from:to:)``). With a single display, or with no display in a
+    ///   geometric direction (`left`, `right`, `up`, `down`), there is nothing to do.
     /// - Anything else is not a single-window action.
     public static func plan(
         _ action: Action,
