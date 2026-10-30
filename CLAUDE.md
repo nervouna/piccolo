@@ -9,7 +9,7 @@ The repository is public. Write every commit, issue and PR in English, with no s
 1. Menu bar app, no Dock icon, launches at login.
 2. Every action can be bound to a global shortcut recorded in Settings: a key together with at least one of command, option or control, or a function key on its own. Shift alone does not make a shortcut, so a hand-edited config can never take over a plain key.
 3. Place the focused window at a target frame: built-in presets (halves, thirds, quarters, center, maximize, ...) and user-defined rectangles expressed as fractions of the screen's visible frame.
-4. Move the focused window to the next or previous display, keeping its relative frame.
+4. Move the focused window to the next or previous display, or to the display to its left, right, above or below, keeping its relative frame.
 5. Arrange the N most recently focused windows in a grid. Each shortcut is bound to one fixed combination (e.g. "last 4 in 2×2"). Candidates are windows on the current display and current Space; minimized and full-screen windows are excluded.
 6. Linked resize: after Piccolo arranged windows side by side, stacked or in a grid, a shortcut moves a divider by a fixed step and the neighbouring windows follow, leaving no gaps or overlaps. Only groups created by Piccolo are linked. Groups are validated lazily: when a linked-resize shortcut fires and any member is no longer at its expected frame, the group is dissolved.
 
