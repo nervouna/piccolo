@@ -10,8 +10,8 @@ import Testing
 /// Every test passes the fixture's pid as `onlyPid` (`ArrangeRun` does, and cannot be told not to), so
 /// that the windows of the machine's owner are never candidates, and focuses its windows one by one
 /// with `Focus.bring` before arranging. Expected frames come from `TileLayout` on the display's visible
-/// frame, with the one point tolerance of every frame measurement (see "Desktop acceptance" in
-/// `CLAUDE.md`): neighbouring cells must share an edge within a point.
+/// frame, with the one point tolerance of every frame measurement (see
+/// `docs/acceptance.md`): neighbouring cells must share an edge within a point.
 ///
 /// This is a nested suite: it inherits `.serialized` and the `PICCOLO_ACCEPTANCE` switch from the suite
 /// it extends, so that it never runs at the same time as another acceptance test.

@@ -30,7 +30,7 @@ let package = Package(
             name: "PiccoloUI",
             dependencies: ["PiccoloCore"],
             resources: [
-                // The texts of the window, in all eight languages (see CLAUDE.md, "Localization").
+                // The texts of the window, in all eight languages (see docs/localization.md).
                 .process("Resources/Localizable.xcstrings"),
             ]
         ),

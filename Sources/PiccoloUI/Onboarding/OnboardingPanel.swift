@@ -7,7 +7,7 @@ import SwiftUI
 /// The panel follows the panel rules of the destination preview's highlight and the failure notice
 /// (`HighlightPanels`, `NoticePanel`): it must never activate Piccolo, because the shortcuts the guide
 /// asks for act on the focused window of the application the user works in, and an application that
-/// has been the active application stops firing simulated hotkeys (see `CLAUDE.md`). It is therefore a
+/// has been the active application stops firing simulated hotkeys (see `docs/acceptance.md`). It is therefore a
 /// non-activating panel that cannot become key or main (no control needs typing), so a click on one
 /// of its buttons works while the other application stays frontmost. It does not hide when Piccolo is
 /// not the active application, is ordered front with `orderFrontRegardless()` and never with

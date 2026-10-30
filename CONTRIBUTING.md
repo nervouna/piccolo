@@ -14,7 +14,7 @@ Most of the code is written by Claude agents: the owner files issues and makes p
 
 - Keep logic in `PiccoloCore`, and write the tests for the specified behaviour before the implementation.
 - `swift test` passes, and so does `scripts/build.sh release`.
-- Changes that move real windows or touch the app are checked with `scripts/accept.sh`, the desktop acceptance tests. They take over the desktop and need a signing identity (see [README › Signing](README.md#signing)); if you cannot run them, say so in the pull request.
+- Changes that move real windows or touch the app are checked with `scripts/accept.sh`, the desktop acceptance tests. They take over the desktop and need a signing identity (see [docs/releasing.md › Signing](docs/releasing.md#signing)); if you cannot run them, say so in the pull request.
 - No third-party dependencies or new tools unless the issue says so.
 - Never commit signing identities, key locations or machine-specific paths.
 - Comments and docs in English. Commit messages follow Conventional Commits (`feat: …`, `fix: …`, `docs: …`).
