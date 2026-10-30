@@ -191,15 +191,32 @@ final class ConfigController {
         let settings = ActionSettings(config)
         let logger = logger
         actionQueue.async {
+            var notice: FailureNotice?
             do {
                 let outcome = try executor.run(action, settings: settings)
                 logger.debug(
                     "binding \(bindingID.uuidString, privacy: .public): \(String(describing: outcome), privacy: .public)"
                 )
+                notice = FailureNotice(outcome: outcome, for: action)
             } catch {
                 logger.error(
                     "binding \(bindingID.uuidString, privacy: .public) failed: \(error.localizedDescription, privacy: .public)"
                 )
+                notice = FailureNotice(error: error)
+            }
+            if let notice {
+                Self.showNotice(notice)
+            }
+        }
+    }
+
+    /// Shows a failure notice on the display of the focused window (read here, on the action queue,
+    /// where an Accessibility call may take its time), or of the mouse when there is none.
+    private nonisolated static func showNotice(_ notice: FailureNotice) {
+        let windowFrame = try? FocusedWindow.current().frame()
+        DispatchQueue.main.async {
+            MainActor.assumeIsolated {
+                NoticeController.shared.show(notice, windowFrame: windowFrame)
             }
         }
     }
