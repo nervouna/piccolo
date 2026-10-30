@@ -626,8 +626,10 @@ extension DesktopAcceptanceTests {
                 #expect(inactive.isEmpty, "bindings with a registered shortcut report active: false: \(inactive)")
 
                 // The Left Half binding alone is visible and selected.
+                // (The restored bindings have IDs of their own, so it is found by its action.)
                 let left = try #require(
-                    defaults.first { $0.action == .placeWindow(.preset(.leftHalf)) }, "no Left Half in the defaults")
+                    restored.bindings.first { $0.action == .placeWindow(.preset(.leftHalf)) },
+                    "no Left Half in the restored bindings")
                 let searched = try piccolo.settingsSetSearch(texts.summary(of: left.action))
                 #expect(searched.search == texts.summary(of: left.action))
                 let shown = searched.bindings.filter(\.visible).map(\.id)
