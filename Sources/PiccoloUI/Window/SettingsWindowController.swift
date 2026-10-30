@@ -24,7 +24,7 @@ public final class SettingsWindowController: NSObject, NSWindowDelegate {
     /// Tall enough for the whole General tab without scrolling (its form is about 830 pt high, and the
     /// tabs and the padding around it take about 60 pt). The restart note of the language picker, which
     /// is there only after a change, makes the form about 80 pt higher; it scrolls then.
-    static let defaultContentSize = NSSize(width: 640, height: 920)
+    static let defaultContentSize = NSSize(width: 640, height: 940)
     private static let minimumContentSize = NSSize(width: 560, height: 480)
 
     public init(model: SettingsModel, host: SettingsHost) {

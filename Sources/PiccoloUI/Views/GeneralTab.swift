@@ -28,14 +28,17 @@ struct GeneralTab: View {
                     } label: {
                         Text(localized: "Window animation")
                     }
+                } footer: {
+                    Text(localized: "How long a window takes to move to its new place.")
+                }
+
+                Section {
                     PointField(
                         title: String(localized: "Window gap", bundle: .module), value: model.gap,
                         range: WindowGap.range
                     ) { newValue in
                         model.setGap(newValue)
                     }
-                } footer: {
-                    Text(localized: "How long a window takes to move to its new place.")
                 }
 
                 Section {
