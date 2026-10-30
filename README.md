@@ -95,6 +95,12 @@ While you hold a shortcut, Piccolo also takes Escape with the same modifiers, so
 
 To turn the preview off, switch off **Show destination while a shortcut is held** in the General tab, or set `"destinationPreview": false` in the [config file](#config-file). Windows then move as soon as you press the shortcut, with no highlight.
 
+### Failure notice
+
+When a shortcut fires and nothing can happen, Piccolo says why: a short notice in the middle of the display that holds the focused window (or the display with the mouse when no window has the focus), for about a second. It appears when Accessibility is not granted, when no window is there to act on or Piccolo's own window is in front, when the window cannot be moved or resized, when there is no display in that direction, when there are no windows to arrange or the grid does not fit the display, and when a divider cannot move: the window is not in an arrangement made by Piccolo, the arrangement was changed since (arrange again), or the divider cannot go further. A placement that changes nothing, and a run that worked, show nothing.
+
+The notice never takes the focus away from the window you are working in, and it also shows over full-screen apps. It is in the language of the interface. There is no setting to turn it off.
+
 ### Languages
 
 Piccolo's menu and Settings window are available in English, Simplified Chinese (简体中文), Traditional Chinese (繁體中文), Japanese (日本語), French (Français), Spanish (Español), Brazilian Portuguese (Português (Brasil)) and German (Deutsch). All eight are translated.
