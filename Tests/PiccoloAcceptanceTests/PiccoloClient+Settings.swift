@@ -11,7 +11,16 @@ struct SettingsState: Decodable, Equatable {
         var summary: String
         var shortcut: Shortcut?
         var shortcutText: String?
+        /// The kind's name in the config file: `placeWindow`, `moveToDisplay`, `arrangeGrid`, `moveDivider`.
+        var section: String
+        /// Whether the list shows the binding under the current search.
+        var visible: Bool
+        /// False only for a shortcut that is not registered.
+        var active: Bool
     }
+
+    /// The text in the search field.
+    var search: String
 
     var isOpen: Bool
     /// Whether Piccolo is the active application (`NSApp.isActive`).
@@ -92,6 +101,11 @@ extension PiccoloClient {
     /// `settings.select` with an ID that must be refused. Returns the message.
     func settingsSelectExpectingRefusal(_ id: UUID) throws -> String {
         try settingsExpectingRefusal("settings.select", ["id": .string(id.uuidString)])
+    }
+
+    @discardableResult
+    func settingsSetSearch(_ text: String) throws -> SettingsState {
+        try settingsCommand("settings.setSearch", ["text": .string(text)])
     }
 
     @discardableResult

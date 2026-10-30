@@ -9,6 +9,8 @@ final class InMemorySettingsBackend: SettingsBackend {
     var config: Config
     /// The issues `current()` reports.
     var currentIssues: [String]
+    /// The bindings `current()` reports as inactive.
+    var inactive: Set<UUID> = []
     /// What the next `save` answers with.
     var issuesAfterSave: [String] = []
     /// When set, `save` throws this and changes nothing.
@@ -29,7 +31,7 @@ final class InMemorySettingsBackend: SettingsBackend {
     }
 
     func current() -> SettingsSnapshot {
-        SettingsSnapshot(config: config, issues: currentIssues)
+        SettingsSnapshot(config: config, issues: currentIssues, inactiveBindingIDs: inactive)
     }
 
     func save(_ config: Config) throws -> [String] {

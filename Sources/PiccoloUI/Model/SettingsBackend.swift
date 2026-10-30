@@ -7,10 +7,14 @@ public struct SettingsSnapshot: Equatable, Sendable {
     /// One line per problem: bindings skipped while loading, shortcuts that may not be
     /// registered, shortcuts the system refused. Empty when everything is in order.
     public var issues: [String]
+    /// The bindings that have a shortcut which is not registered as a global hotkey: refused by the
+    /// system, or not registrable. A binding without a shortcut is not in it.
+    public var inactiveBindingIDs: Set<UUID>
 
-    public init(config: Config, issues: [String] = []) {
+    public init(config: Config, issues: [String] = [], inactiveBindingIDs: Set<UUID> = []) {
         self.config = config
         self.issues = issues
+        self.inactiveBindingIDs = inactiveBindingIDs
     }
 }
 

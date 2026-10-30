@@ -596,6 +596,62 @@ extension DesktopAcceptanceTests {
             }
         }
 
+        // MARK: 15. Sections, search and inactive shortcuts
+
+        @Test("settings 15. the default shortcuts come in four sections, a search filters and selects, and registered shortcuts are active")
+        func sectionsAndSearch() async throws {
+            try await withSettingsSession { session in
+                let texts = try InterfaceTexts.current(piccolo)
+                let restored = try piccolo.settingsRestoreDefaults().state
+                let defaults = Config.defaultShortcuts.bindings
+
+                // Four sections whose counts are those of the defaults grouped by kind.
+                var expected: [String: Int] = [:]
+                for binding in defaults {
+                    expected[Self.sectionName(of: binding.action), default: 0] += 1
+                }
+                var counts: [String: Int] = [:]
+                for binding in restored.bindings {
+                    counts[binding.section, default: 0] += 1
+                }
+                #expect(counts.count == 4, "settings.state reports sections \(counts.keys.sorted())")
+                #expect(counts == expected, "section counts are \(counts), the defaults give \(expected)")
+                #expect(restored.search == "", "the search is \"\(restored.search)\" after restoring")
+                #expect(restored.bindings.allSatisfy { $0.visible }, "some binding is not visible without a search")
+
+                // Every binding with a registered shortcut is active.
+                let registered = Set(try session.registeredIDs())
+                let inactive = restored.bindings.filter { $0.shortcut != nil && !$0.active }.map(\.summary)
+                #expect(registered.count == defaults.count, "config.status registered \(registered.count) shortcuts")
+                #expect(inactive.isEmpty, "bindings with a registered shortcut report active: false: \(inactive)")
+
+                // The Left Half binding alone is visible and selected.
+                // (The restored bindings have IDs of their own, so it is found by its action.)
+                let left = try #require(
+                    restored.bindings.first { $0.action == .placeWindow(.preset(.leftHalf)) },
+                    "no Left Half in the restored bindings")
+                let searched = try piccolo.settingsSetSearch(texts.summary(of: left.action))
+                #expect(searched.search == texts.summary(of: left.action))
+                let shown = searched.bindings.filter(\.visible).map(\.id)
+                #expect(shown == [left.id], "the search left \(searched.bindings.filter(\.visible).map(\.summary)) visible")
+                #expect(searched.selectedBindingID == left.id, "the selection is \(String(describing: searched.selectedBindingID))")
+
+                // An empty query shows everything again.
+                let cleared = try piccolo.settingsSetSearch("")
+                #expect(cleared.bindings.allSatisfy { $0.visible }, "some binding is hidden after clearing the search")
+                #expect(cleared.selectedBindingID == left.id, "clearing the search moved the selection")
+            }
+        }
+
+        private static func sectionName(of action: Action) -> String {
+            switch action {
+            case .placeWindow: "placeWindow"
+            case .moveToDisplay: "moveToDisplay"
+            case .arrangeGrid: "arrangeGrid"
+            case .moveDivider: "moveDivider"
+            }
+        }
+
         // MARK: Helpers
 
         /// Where the fixture windows of these tests start: inside the primary display.

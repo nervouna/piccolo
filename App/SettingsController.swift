@@ -74,7 +74,14 @@ final class ConfigSettingsBackend: SettingsBackend {
     }
 
     func current() -> SettingsSnapshot {
-        SettingsSnapshot(config: controller.config, issues: controller.status.issues)
+        let config = controller.config
+        let status = controller.status
+        // A binding with a shortcut that is not among the registered ones: refused by the system, or
+        // not registrable. While the hotkeys are suspended for recording that is every one of them;
+        // the model marks none then.
+        let registered = Set(status.registered.map(\.id))
+        let inactive = Set(config.bindings.filter { $0.shortcut != nil && !registered.contains($0.id) }.map(\.id))
+        return SettingsSnapshot(config: config, issues: status.issues, inactiveBindingIDs: inactive)
     }
 
     func save(_ config: Config) throws -> [String] {
