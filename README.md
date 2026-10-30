@@ -1,6 +1,6 @@
 # Piccolo
 
-[![Release](https://img.shields.io/github/v/release/nervouna/piccolo?include_prereleases)](https://github.com/nervouna/piccolo/releases/latest)
+[![Release](https://img.shields.io/github/v/release/nervouna/piccolo?include_prereleases)](https://github.com/nervouna/piccolo/releases)
 ![macOS 14+](https://img.shields.io/badge/macOS-14%2B-lightgrey)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
@@ -8,7 +8,6 @@
 
 Piccolo is a macOS menu bar app that moves, resizes and arranges windows with global keyboard shortcuts. You bind each shortcut to one action in the Settings window, such as placing the focused window at a preset or custom frame, moving it to another display, or arranging your most recently focused windows in a grid; the bindings live in a JSON file you can also edit by hand.
 
-<!-- screenshots -->
 
 <img src="docs/images/settings-shortcuts.png" alt="Settings window, Shortcuts tab: five bindings, with the Arrange Grid binding selected. Its editor shows 3 windows in 2 rows and 2 columns, and a preview of the three cells." width="640">
 
