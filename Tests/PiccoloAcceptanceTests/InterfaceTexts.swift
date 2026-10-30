@@ -46,4 +46,9 @@ struct InterfaceTexts {
     func message(for error: ValidationError) -> String {
         SettingsMessages.describe(error, bundle: bundle)
     }
+
+    /// The text of a failure notice.
+    func notice(_ notice: FailureNotice) -> String {
+        FailureNoticeText.text(for: notice, bundle: bundle)
+    }
 }
