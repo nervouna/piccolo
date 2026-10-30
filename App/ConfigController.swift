@@ -26,6 +26,9 @@ final class ConfigController {
     /// Not called for ``save(_:)``. The Settings window follows it.
     @ObservationIgnored var onExternalLoad: (@MainActor () -> Void)?
 
+    /// Called after any load or save has replaced the config in effect. The onboarding guide follows it.
+    @ObservationIgnored var onLoad: (@MainActor () -> Void)?
+
     #if DEBUG
     /// How many times each binding's hotkey fired (was pressed) since launch. The debug channel uses
     /// it to tell that a simulated key press reached the hotkey registry.
@@ -68,11 +71,16 @@ final class ConfigController {
 
     /// Loads the config at the default location. Call once at launch: when there is no file there,
     /// the default shortcuts are written first (see `ShortcutManager.loadAtLaunch(from:)`).
-    func start() {
+    ///
+    /// - Returns: Whether the default shortcuts were written, which is what a first launch is.
+    @discardableResult
+    func start() -> Bool {
         let wroteDefaults = manager.loadAtLaunch(from: ConfigLocation.defaultURL)
         status = manager.status
         log(wroteDefaults ? "wrote the default shortcuts and loaded" : "loaded")
         onExternalLoad?()
+        onLoad?()
+        return wroteDefaults
     }
 
     /// Loads the config at the default location again, replacing everything loaded before.
@@ -97,6 +105,7 @@ final class ConfigController {
     func save(_ config: Config) throws {
         status = try manager.save(config)
         log("saved")
+        onLoad?()
     }
 
     /// Replaces the bindings in use with `bindings`, keeping the other settings, after copying the file
@@ -136,6 +145,7 @@ final class ConfigController {
         status = manager.load(from: url)
         log("loaded")
         onExternalLoad?()
+        onLoad?()
     }
 
     private func log(_ what: String) {
@@ -194,6 +204,7 @@ final class ConfigController {
             var notice: FailureNotice?
             do {
                 let outcome = try executor.run(action, settings: settings)
+                Self.reportToOnboarding(outcome, bindingID: bindingID)
                 logger.debug(
                     "binding \(bindingID.uuidString, privacy: .public): \(String(describing: outcome), privacy: .public)"
                 )
@@ -206,6 +217,15 @@ final class ConfigController {
             }
             if let notice {
                 Self.showNotice(notice)
+            }
+        }
+    }
+
+    /// Tells the onboarding guide, on the main thread, that a hotkey ran its action without failing.
+    private nonisolated static func reportToOnboarding(_ outcome: ActionOutcome, bindingID: UUID) {
+        DispatchQueue.main.async {
+            MainActor.assumeIsolated {
+                OnboardingController.shared.hotkeyRan(bindingID: bindingID, outcome: outcome)
             }
         }
     }

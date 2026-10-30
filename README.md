@@ -40,9 +40,9 @@ Most of the code is written by Claude Code agents. The owner files issues and ma
 From a release archive (download it from the repository's [releases](https://github.com/nervouna/piccolo/releases)):
 
 1. Unzip the archive and move `Piccolo.app` to `/Applications`.
-2. Open Piccolo. It has no Dock icon and opens no window at launch. Its icon appears in the menu bar.
+2. Open Piccolo. It has no Dock icon and no Settings window at launch. Its icon appears in the menu bar.
 3. Grant the Accessibility permission when asked (see [Requirements](#requirements)).
-4. On the first launch Piccolo writes the [default shortcuts](#default-shortcuts) to its config file. Open Settings from the menu to change them.
+4. On the first launch Piccolo writes the [default shortcuts](#default-shortcuts) to its config file and shows a short guide: grant Accessibility, move a window with a shortcut, arrange two windows. Every step can be skipped, and the guide can be opened again from the menu with Getting Started…. Open Settings from the menu to change the shortcuts.
 
 From source, `scripts/install.sh` builds the release configuration, replaces `/Applications/Piccolo.app` and opens it. It needs a signing identity. Without one, run `scripts/build.sh` and open `build/Piccolo.app`, then grant it the Accessibility permission. The details are under [Building and testing](#building-and-testing).
 
@@ -54,10 +54,13 @@ Piccolo shows a menu bar icon and no Dock icon. Its menu shows, from top to bott
 - a summary of the shortcuts, such as "3 shortcuts active", followed by the number of config problems when there are any;
 - Reload Config, which reads the config file again;
 - Reveal Config in Finder;
+- Getting Started…, which opens the guide for the first minute with Piccolo;
 - Settings… (⌘,);
 - Quit Piccolo (⌘Q).
 
 Settings opens from the menu. It also opens when you launch Piccolo again while it is running, for example from Finder or with `open /Applications/Piccolo.app`. It does not open at launch.
+
+The guide is a small floating panel in the top-right corner of the display with the mouse. It does not take the focus, so the shortcuts it asks you to press act on the window you were working in. Closing it, Skip Guide and Finish all count as seen, and it is shown at launch only on a first launch that was never finished or skipped.
 
 ### Shortcuts tab
 

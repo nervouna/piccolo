@@ -13,10 +13,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // Settles the language the app runs in before anything is looked up in another one.
         _ = SystemLanguageBackend.launchLanguage
         accessibility.start()
-        config.start()
+        let firstLaunch = config.start()
         // Records which windows are focused from now on, so that the first "arrange" has a history.
         // The first use of `ActionExecutor.live` starts it too, which only matters if this line goes.
         FocusTracker.shared.start()
+        // A first launch, when the guide was never finished or skipped, opens it.
+        OnboardingController.shared.start(wroteDefaults: firstLaunch)
         #if DEBUG
         debugControl.start()
         #endif

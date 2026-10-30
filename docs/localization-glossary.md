@@ -60,6 +60,11 @@ keyboard symbols (⌃ ⌥ ⇧ ⌘) and the name "Piccolo" as they are in every l
 | Language | Language | 语言 | 語言 | 言語 | Langue | Idioma | Idioma | Sprache | AccessibilitySettingsExtension (Language); InternationalSettingsExtension (Language & Region) | The language picker in General. |
 | Search | Search | 搜索 | 搜尋 | 検索 | Rechercher | Buscar | Buscar | Suchen | AppKit Common (Search) | The search field's prompt on the Shortcuts tab. |
 | Reveal in Finder | Reveal in Finder | 在访达中显示 | 在Finder中顯示 | Finderに表示 | Afficher dans le Finder | Mostrar en el Finder | Mostrar no Finder | im Finder anzeigen | AppKit Menus (Show “%@” in Finder) | The menu item for the config file. |
+| Continue | Continue | 继续 | 繼續 | 続ける | Continuer | Continuar | Continuar | Fortfahren | a system Localizable.loctable (CONTINUE) and GameCenter settings (CONTINUE_BUTTON) | The button of the guide. |
+| Skip | Skip | 跳过 | 略過 | スキップ | Ignorer | Omitir | Pular | Überspringen | a system Localizable.loctable (Skip) | The button that moves the guide on without doing the step. Apple's pt-BR for the same key in another table is Ignorar; Pular is the one of the key named Skip. |
+| Skip Guide | Skip Guide | 跳过引导 | 略過導覽 | ガイドをスキップ | Ignorer le guide | Omitir guía | Pular guia | Anleitung überspringen | Piccolo (Skip + guide) | Closes the guide. |
+| Finish | Finish | 完成 | 完成 | 完了 | Terminer | Finalizar | Concluir | Fertig | Piccolo (no table has Finish; Apple's Done is 完成, 完了, Terminé, Aceptar, OK, Fertig) | The last button of the guide. |
+| Getting Started | Getting Started | 开始使用 | 開始使用 | はじめに | Premiers pas | Primeros pasos | Primeiros passos | Erste Schritte | Piccolo (Apple's button "Get Started" is 开始使用, 開始使用, はじめよう, Démarrer, Empezar, Começar, Los geht’s) | The guide: the menu item "Getting Started…" and the panel's title. |
 
 ## Source tables
 
