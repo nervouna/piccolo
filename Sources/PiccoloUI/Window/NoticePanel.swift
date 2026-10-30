@@ -7,7 +7,7 @@ import PiccoloCore
 /// The panel follows the rules of the destination preview's highlight (`HighlightPanels`): it must
 /// never take the focus or activate Piccolo, because a window that comes to the front in the middle of
 /// a shortcut would be the one the next action finds focused, and an app that has been the active
-/// application stops firing simulated hotkeys (see `CLAUDE.md`). It is therefore a non-activating
+/// application stops firing simulated hotkeys (see `docs/acceptance.md`). It is therefore a non-activating
 /// panel that cannot become key or main, is shown with `orderFrontRegardless()` and never with
 /// `makeKeyAndOrderFront(_:)`, ignores the mouse and does not hide when Piccolo is not the active
 /// application. Level ``level`` (`.statusBar`), collection behaviour ``collectionBehavior``.

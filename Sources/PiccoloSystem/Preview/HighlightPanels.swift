@@ -6,7 +6,7 @@ import PiccoloCore
 ///
 /// The panels must never take the focus or activate Piccolo: a window that comes to the front in
 /// the middle of a shortcut would be the one the action then finds focused, and an app that has been
-/// the active application stops firing simulated hotkeys (see `CLAUDE.md`). They are therefore
+/// the active application stops firing simulated hotkeys (see `docs/acceptance.md`). They are therefore
 /// non-activating panels that cannot become key or main, are shown with `orderFrontRegardless()` and
 /// never with `makeKeyAndOrderFront(_:)`, ignore the mouse, and do not hide when Piccolo is not
 /// the active application (which a panel does by default, and Piccolo never is).

@@ -2,13 +2,17 @@
 
 | File | What it is |
 |---|---|
-| `icon.png` | Source artwork of the app icon, 1024×1024. `scripts/make-icon.sh` turns it into `App/Assets.xcassets/AppIcon.appiconset` (see "App icon" in `CLAUDE.md`). |
+| `icon.png` | Source artwork of the app icon, 1024×1024. `scripts/make-icon.sh` turns it into `App/Assets.xcassets/AppIcon.appiconset` (see "Replacing the app icon" below). |
 | `menubar-icon-latte.svg` | Menu bar glyph, latte: 17 × 16 pt on the 16 pt grid. Chosen by the owner; the app ships it as `MenuBarIcon`. |
 | `menubar-icon-latte-18pt.svg` | The latte on the previous 19 × 18 pt grid. Superseded and not used by the app; kept only so the preview can compare the two sizes. |
 | `menubar-icon.svg` | Menu bar glyph, candidate 1 (filled panes): 19 × 18 pt on the 18 pt grid. Not used by the app. |
 | `menubar-icon-outline.svg` | Menu bar glyph, candidate 2 (outline): 19 × 18 pt on the 18 pt grid. Not used by the app. |
 | `menubar-preview.png` | Candidate 1, the 16 pt latte, the 18 pt latte and candidate 2, each at 16, 18 and 22 pt, at 1x and 2x, on a light and a dark menu bar, plus a magnified view of the 1x pixels. |
 | `render-menubar-preview.swift` | Script that renders `menubar-preview.png` from the SVGs in its `candidates` array. |
+
+## Replacing the app icon
+
+`design/icon.png` is the source artwork (1024×1024 PNG, interior fully opaque). To replace it, overwrite that file, run `scripts/make-icon.sh --normalize` (makes the interior opaque, regenerates `App/Assets.xcassets/AppIcon.appiconset`), then `scripts/check-icon-render.sh` after a Release build to check the icon the system draws.
 
 ## The menu bar glyph
 

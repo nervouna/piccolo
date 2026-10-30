@@ -50,8 +50,8 @@ func withLinkedResize<Result>(
 ///
 /// Expected frames come from `TileLayout` on the visible frame of the display the app reports. A
 /// measured frame is compared with the expected one within two points: each of the width and the
-/// height is the difference of two edges, and each edge is accurate to one point (see "Desktop
-/// acceptance" in `CLAUDE.md`). Neighbouring windows are compared edge to edge within one point, the
+/// height is the difference of two edges, and each edge is accurate to one point (see
+/// `docs/acceptance.md`). Neighbouring windows are compared edge to edge within one point, the
 /// tolerance of `expectTiled`.
 struct LinkedRun {
     static let defaultStep = 0.05
