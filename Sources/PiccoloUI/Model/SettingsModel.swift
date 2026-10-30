@@ -35,6 +35,12 @@ public final class SettingsModel {
     public private(set) var destinationPreview: Bool
     /// The problems found when the config was applied, one line each.
     public private(set) var issues: [String]
+    /// The bindings whose shortcut is not active, as the backend last reported them. Read
+    /// ``inactiveBindingIDs`` instead: it is empty while a shortcut is being recorded.
+    private var reportedInactiveBindingIDs: Set<UUID>
+    /// What the search field holds. Only the Shortcuts tab uses it; it is saved nowhere. Change it with
+    /// ``setSearch(_:)``.
+    public private(set) var search = ""
     /// The binding the editor shows. The list binds to it.
     public var selectedBindingID: UUID?
     /// The tab the window shows. The tab control binds to it, so that whatever sets it (a click, the
@@ -95,6 +101,7 @@ public final class SettingsModel {
         gridFillOrder = snapshot.config.gridFillOrder
         destinationPreview = snapshot.config.destinationPreview
         issues = snapshot.issues
+        reportedInactiveBindingIDs = snapshot.inactiveBindingIDs
         selectedBindingID = snapshot.config.bindings.first?.id
         backend.onExternalChange = { [weak self] in
             self?.reload()
@@ -127,6 +134,35 @@ public final class SettingsModel {
         ShortcutText.string(for: shortcut, character: characterForKeyCode)
     }
 
+    /// The sections of the list under the current search, in the language of the running app.
+    public var sections: [BindingSection] {
+        BindingSections.make(bindings: bindings, query: search, characterForKeyCode: characterForKeyCode)
+    }
+
+    /// Whether the list shows the binding under the current search.
+    public func isVisible(_ id: UUID) -> Bool {
+        sections.contains { section in section.bindings.contains { $0.id == id } }
+    }
+
+    /// The bindings with a shortcut that is not active. While a shortcut is being recorded every global
+    /// hotkey is suspended, which is no fault of the bindings, so none is marked then.
+    public var inactiveBindingIDs: Set<UUID> {
+        recordingBindingID == nil ? reportedInactiveBindingIDs : []
+    }
+
+    // MARK: Searching
+
+    /// Sets the search query. The selection stays when the selected binding is still shown;
+    /// otherwise it moves to the first shown binding, or to none when nothing is shown.
+    public func setSearch(_ text: String) {
+        search = text
+        let shown = sections.flatMap(\.bindings)
+        if let selected = selectedBindingID, shown.contains(where: { $0.id == selected }) {
+            return
+        }
+        selectedBindingID = shown.first?.id
+    }
+
     // MARK: Editing
 
     /// Adds a binding that places the window in the left half and has no shortcut, and selects it.
@@ -137,6 +173,10 @@ public final class SettingsModel {
         var candidate = config
         candidate.bindings.append(binding)
         guard commit(candidate) else { return nil }
+        // A search that would hide the new binding is cleared.
+        if !isVisible(binding.id) {
+            search = ""
+        }
         selectedBindingID = binding.id
         return binding.id
     }
@@ -375,7 +415,9 @@ public final class SettingsModel {
         // Registering the shortcuts again can turn up problems the system reports only then
         // (a shortcut it refuses), and they were not part of the answer to a save made while
         // the hotkeys were suspended.
-        issues = backend.current().issues
+        let snapshot = backend.current()
+        issues = snapshot.issues
+        reportedInactiveBindingIDs = snapshot.inactiveBindingIDs
     }
 
     /// Offers a key press to the binding that is recording. Does nothing and answers `false`
@@ -413,6 +455,7 @@ public final class SettingsModel {
         gridFillOrder = snapshot.config.gridFillOrder
         destinationPreview = snapshot.config.destinationPreview
         issues = snapshot.issues
+        reportedInactiveBindingIDs = snapshot.inactiveBindingIDs
         error = nil
         if let recording = recordingBindingID, binding(recording) == nil {
             cancelRecording()
@@ -449,6 +492,7 @@ public final class SettingsModel {
         gridFillOrder = candidate.gridFillOrder
         destinationPreview = candidate.destinationPreview
         issues = newIssues
+        reportedInactiveBindingIDs = backend.current().inactiveBindingIDs
         self.error = nil
         return true
     }

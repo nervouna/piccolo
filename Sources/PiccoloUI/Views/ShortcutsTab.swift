@@ -8,11 +8,15 @@ struct ShortcutsTab: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            searchField
             bindingList
             listToolbar
             Divider()
+            // The editor and the messages keep their natural height; the list takes the rest.
             editor
+                .fixedSize(horizontal: false, vertical: true)
             StatusMessages(model: model)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .alert(
             Text(localized: "Restore the default shortcuts?"), isPresented: $model.isConfirmingRestore
@@ -37,22 +41,62 @@ struct ShortcutsTab: View {
 
     // MARK: List
 
+    private var searchField: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "magnifyingglass")
+                .foregroundStyle(.secondary)
+                .accessibilityHidden(true)
+            TextField(
+                String(localized: "Search", bundle: .module),
+                text: Binding(get: { model.search }, set: { model.setSearch($0) })
+            )
+            .textFieldStyle(.plain)
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 5)
+        .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 6))
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+    }
+
     private var bindingList: some View {
-        List(selection: $model.selectedBindingID) {
-            ForEach(model.bindings, id: \.id) { binding in
-                HStack {
-                    Text(model.summary(of: binding))
-                    Spacer()
-                    ShortcutRecorderButton(model: model, bindingID: binding.id)
+        ScrollViewReader { proxy in
+            List(selection: $model.selectedBindingID) {
+                ForEach(model.sections, id: \.kind) { section in
+                    Section {
+                        ForEach(section.bindings, id: \.id) { binding in
+                            HStack {
+                                Text(model.summary(of: binding))
+                                Spacer()
+                                if model.inactiveBindingIDs.contains(binding.id) {
+                                    Image(systemName: "exclamationmark.triangle.fill")
+                                        .foregroundStyle(.yellow)
+                                        .help(Text(localized: "This shortcut is not active. See the problems below."))
+                                        .accessibilityLabel(
+                                            Text(localized: "This shortcut is not active. See the problems below."))
+                                }
+                                ShortcutRecorderButton(model: model, bindingID: binding.id)
+                            }
+                            .tag(binding.id)
+                            .id(binding.id)
+                        }
+                    } header: {
+                        Text(section.kind.title)
+                    }
                 }
-                .tag(binding.id)
+            }
+            .listStyle(.inset(alternatesRowBackgrounds: true))
+            .onChange(of: model.selectedBindingID) { _, id in
+                if let id { proxy.scrollTo(id) }
             }
         }
-        .listStyle(.inset(alternatesRowBackgrounds: true))
-        .frame(minHeight: 96, idealHeight: 132, maxHeight: 180)
+        .frame(minHeight: 96, maxHeight: .infinity)
         .overlay {
             if model.bindings.isEmpty {
                 Text(localized: "No shortcuts yet. Click + to add one.")
+                    .foregroundStyle(.secondary)
+            } else if model.sections.isEmpty {
+                Text(localized: "No shortcuts match")
                     .foregroundStyle(.secondary)
             }
         }
@@ -111,7 +155,7 @@ struct ShortcutsTab: View {
                 }
             }
             .foregroundStyle(.secondary)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .frame(maxWidth: .infinity, minHeight: 60)
         }
     }
 }

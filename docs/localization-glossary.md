@@ -53,6 +53,7 @@ keyboard symbols (⌃ ⌥ ⇧ ⌘) and the name "Piccolo" as they are in every l
 | Clear | Clear | Clear | Clear | Clear | Effacer | Borrar | Limpar | Löschen | Terminal (Numeric Keypad Clear) | Key name, the keypad key. |
 | Keypad | Keypad | Keypad | 數字鍵盤 | テンキー | pavé numérique | teclado numérico | Teclado Numérico | numerische Tastatur | Terminal (Numeric Keypad) | Keys of the numeric keypad. |
 | Language | Language | 语言 | 語言 | 言語 | Langue | Idioma | Idioma | Sprache | AccessibilitySettingsExtension (Language); InternationalSettingsExtension (Language & Region) | The language picker in General. |
+| Search | Search | 搜索 | 搜尋 | 検索 | Rechercher | Buscar | Buscar | Suchen | AppKit Common (Search) | The search field's prompt on the Shortcuts tab. |
 | Reveal in Finder | Reveal in Finder | 在访达中显示 | 在Finder中顯示 | Finderに表示 | Afficher dans le Finder | Mostrar en el Finder | Mostrar no Finder | im Finder anzeigen | AppKit Menus (Show “%@” in Finder) | The menu item for the config file. |
 
 ## Source tables

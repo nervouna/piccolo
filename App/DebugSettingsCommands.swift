@@ -7,7 +7,7 @@ import PiccoloCore
 import PiccoloUI
 
 /// The Settings window commands of the Debug control channel: `settings.open`, `settings.close`,
-/// `settings.state`, the view state (`settings.select`, `settings.showTab`), the edits
+/// `settings.state`, the view state (`settings.select`, `settings.showTab`, `settings.setSearch`), the edits
 /// (`settings.addBinding`, `settings.removeBinding`, `settings.updateAction`,
 /// `settings.setResizeStep`, `settings.setAnimation`, `settings.setGridFillOrder`,
 /// `settings.setDestinationPreview`, `settings.setLanguage`, `settings.restoreDefaults`), the restart
@@ -74,6 +74,16 @@ extension DebugControlServer {
             }
             return onMainActor {
                 SettingsController.shared.model.tab = tab
+                return settingsState()
+            }
+        }
+
+        // Sets the search query, as typing in the search field does: the list filters, and the selection
+        // stays or moves to the first shown binding.
+        router.register("settings.setSearch") { params in
+            let text = try params.decode(TextParams.self).text
+            return onMainActor {
+                SettingsController.shared.model.setSearch(text)
                 return settingsState()
             }
         }
@@ -329,6 +339,9 @@ extension DebugControlServer {
                         "id": .string(binding.id.uuidString),
                         "action": (try? JSONValue(encoding: binding.action)) ?? .null,
                         "summary": .string(model.summary(of: binding)),
+                        "section": .string(ActionKind(binding.action).configName),
+                        "visible": .bool(model.isVisible(binding.id)),
+                        "active": .bool(!model.inactiveBindingIDs.contains(binding.id)),
                     ]
                     if let shortcut = binding.shortcut {
                         entry["shortcut"] = .object([
@@ -343,6 +356,7 @@ extension DebugControlServer {
             "animation": .string(model.animation.rawValue),
             "gridFillOrder": .string(model.gridFillOrder.rawValue),
             "destinationPreview": .bool(model.destinationPreview),
+            "search": .string(model.search),
             "issues": .array(model.issues.map { .string($0) }),
             "tab": .string(model.tab.rawValue),
             "loginItem": .string(model.loginItemStatus.rawValue),
@@ -400,6 +414,10 @@ extension DebugControlServer {
 
     private struct EnabledParams: Decodable {
         var enabled: Bool
+    }
+
+    private struct TextParams: Decodable {
+        var text: String
     }
 
     private struct LanguageParams: Decodable {

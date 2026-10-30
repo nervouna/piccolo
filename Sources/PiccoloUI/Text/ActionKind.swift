@@ -18,6 +18,17 @@ public enum ActionKind: CaseIterable, Hashable, Sendable {
         }
     }
 
+    /// The name of the kind in the config file's `type` key (`placeWindow`, `moveToDisplay`,
+    /// `arrangeGrid`, `moveDivider`).
+    public var configName: String {
+        switch self {
+        case .placeWindow: "placeWindow"
+        case .moveToDisplay: "moveToDisplay"
+        case .arrangeGrid: "arrangeGrid"
+        case .moveDivider: "moveDivider"
+        }
+    }
+
     /// The name of the kind, in the language of the running app.
     public var title: String {
         title(bundle: .module)
