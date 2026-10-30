@@ -38,6 +38,7 @@ struct DefaultShortcutsTests {
         Row(action: .placeWindow(.preset(.rightTwoThirds)), keyCode: 17, modifiers: controlOption),  // ⌃⌥T
         Row(action: .placeWindow(.preset(.maximize)), keyCode: 36, modifiers: controlOption),  // ⌃⌥↩
         Row(action: .placeWindow(.preset(.center)), keyCode: 8, modifiers: controlOption),  // ⌃⌥C
+        Row(action: .restoreWindow, keyCode: 51, modifiers: controlOption),  // ⌃⌥⌫
         Row(action: .moveToDisplay(.left), keyCode: 123, modifiers: controlOptionCommand),  // ⌃⌥⌘←
         Row(action: .moveToDisplay(.right), keyCode: 124, modifiers: controlOptionCommand),  // ⌃⌥⌘→
         Row(action: .moveToDisplay(.up), keyCode: 126, modifiers: controlOptionCommand),  // ⌃⌥⌘↑
@@ -83,11 +84,11 @@ struct DefaultShortcutsTests {
         #expect(Config.defaultShortcuts.destinationPreview == true)
     }
 
-    @Test("the defaults are exactly the 27 bindings of the table, in order, each with a shortcut")
+    @Test("the defaults are exactly the 28 bindings of the table, in order, each with a shortcut")
     func exactTable() {
         let config = Config.defaultShortcuts
-        #expect(config.bindings.count == 27)
-        #expect(Self.table.count == 27)
+        #expect(config.bindings.count == 28)
+        #expect(Self.table.count == 28)
         #expect(rows(config) == Self.table, "the defaults are \(rows(config))")
     }
 
@@ -107,11 +108,11 @@ struct DefaultShortcutsTests {
     func distinct() {
         let config = Config.defaultShortcuts
         let shortcuts = config.bindings.compactMap(\.shortcut)
-        #expect(Set(shortcuts.map { "\($0.keyCode) \($0.modifiers.map(\.rawValue).sorted())" }).count == 27)
-        #expect(Set(config.bindings.map(\.id)).count == 27)
+        #expect(Set(shortcuts.map { "\($0.keyCode) \($0.modifiers.map(\.rawValue).sorted())" }).count == 28)
+        #expect(Set(config.bindings.map(\.id)).count == 28)
     }
 
-    @Test("all 27 defaults are accepted by the shortcut plan, with no issues")
+    @Test("all 28 defaults are accepted by the shortcut plan, with no issues")
     func planAcceptsAll() {
         let config = Config.defaultShortcuts
         let plan = ShortcutPlan.resolve(config.bindings)

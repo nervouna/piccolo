@@ -1,5 +1,7 @@
 import CoreGraphics
 
+import PiccoloCore
+
 @testable import PiccoloSystem
 
 /// A window on a set of displays. Like a real window it cannot grow beyond the display its
@@ -21,6 +23,8 @@ final class FakeWindow: WindowFrameAccess, @unchecked Sendable {
     /// Makes the window ignore `setPosition` silently, from this call on (1 is the first call).
     var ignorePositionFromCall: Int?
     var failFrameWith: WindowError?
+    /// The number that keys Piccolo's record of the window; `nil` for a window without one.
+    var windowID: WindowID?
     /// The operations that changed or tried to change the window, in order: "size", "position".
     var calls: [String] = []
 

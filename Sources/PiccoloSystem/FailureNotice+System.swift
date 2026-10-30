@@ -35,6 +35,7 @@ extension FailureNotice {
             switch action {
             case .moveToDisplay: self = .noOtherDisplay
             case .arrangeGrid: self = .nothingToArrange
+            case .restoreWindow: self = .nothingToRestore
             case .placeWindow, .moveDivider: return nil
             }
         case .arranged(let arranged):

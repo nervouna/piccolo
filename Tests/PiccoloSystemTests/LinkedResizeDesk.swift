@@ -36,6 +36,8 @@ final class DeskWindow: WindowFrameAccess, @unchecked Sendable {
     var isClosed = false
     private let desk: Desk
 
+    var windowID: WindowID? { DeskRig.id(number) }
+
     fileprivate init(number: UInt32, pid: pid_t, fake: FakeWindow, desk: Desk) {
         self.number = number
         self.pid = pid
@@ -82,6 +84,7 @@ final class Desk: @unchecked Sendable {
     private var lastChanged: UInt32?
 
     let store = LayoutGroupStore()
+    let records = WindowRecordStore()
 
     init(displays: [Display] = [DeskRig.primary]) {
         self.displays = displays
@@ -165,7 +168,7 @@ final class Desk: @unchecked Sendable {
                 return history
             },
             focusedWindowID: { [self] in focused.map(DeskRig.id) }),
-        groups: store)
+        groups: store, records: records)
 
     /// Arranges the most recently focused windows.
     @discardableResult

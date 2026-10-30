@@ -62,6 +62,8 @@ struct FailureNoticeMappingTests {
         #expect(FailureNotice(outcome: .nothingToDo, for: Self.grid) == .nothingToArrange)
         #expect(FailureNotice(outcome: .nothingToDo, for: Self.leftHalf) == nil)
         #expect(FailureNotice(outcome: .nothingToDo, for: Self.divider) == nil)
+        #expect(FailureNotice(outcome: .nothingToDo, for: .restoreWindow) == .nothingToRestore)
+        #expect(FailureNotice(outcome: .placed(target: .zero, achieved: .zero), for: .restoreWindow) == nil)
     }
 
     @Test("an arrangement: a notice only when a window failed")
@@ -98,7 +100,7 @@ struct FailureNoticeMappingTests {
     @Test("the notices have stable names")
     func names() {
         #expect(FailureNotice.noGroup.rawValue == "noGroup")
-        #expect(FailureNotice.allCases.count == 10)
-        #expect(Set(FailureNotice.allCases.map(\.rawValue)).count == 10)
+        #expect(FailureNotice.allCases.count == 11)
+        #expect(Set(FailureNotice.allCases.map(\.rawValue)).count == 11)
     }
 }

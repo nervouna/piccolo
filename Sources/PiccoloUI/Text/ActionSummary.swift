@@ -23,6 +23,8 @@ public enum ActionSummary {
             return name(of: direction, bundle: bundle)
         case .arrangeGrid(let grid):
             return String(localized: "Arrange \(grid.count) in \(grid.rows) × \(grid.columns)", bundle: bundle)
+        case .restoreWindow:
+            return String(localized: "Restore Window", bundle: bundle)
         case .moveDivider(let direction):
             switch direction {
             case .left: return String(localized: "Move Divider Left", bundle: bundle)

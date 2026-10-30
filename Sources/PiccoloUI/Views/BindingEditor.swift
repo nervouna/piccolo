@@ -57,6 +57,8 @@ struct BindingEditor: View {
         switch binding.action {
         case .placeWindow(let frame):
             placeWindowParameters(frame)
+        case .restoreWindow:
+            EmptyView()
         case .moveToDisplay(let direction):
             Picker(selection: displayDirection(direction)) {
                 ForEach(DisplayDirection.allCases, id: \.self) { direction in

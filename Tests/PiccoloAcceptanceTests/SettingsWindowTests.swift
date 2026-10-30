@@ -533,7 +533,7 @@ extension DesktopAcceptanceTests {
 
         // MARK: 13. Restore the default shortcuts
 
-        @Test("settings 13. settings.restoreDefaults replaces the bindings with the 27 defaults, keeps the resize step and a copy of the file")
+        @Test("settings 13. settings.restoreDefaults replaces the bindings with the 28 defaults, keeps the resize step and a copy of the file")
         func restoreDefaults() async throws {
             let custom = KeyBinding(action: .placeWindow(.preset(.rightHalf)), shortcut: TestShortcut.f14)
             try await withSettingsSession([custom]) { session in
@@ -544,7 +544,7 @@ extension DesktopAcceptanceTests {
                 let restored = try piccolo.settingsRestoreDefaults()
 
                 #expect(restored.state.error == nil, "restoring set the error \(restored.state.error ?? "")")
-                #expect(restored.state.bindings.count == 27, "the state lists \(restored.state.bindings.count) bindings")
+                #expect(restored.state.bindings.count == 28, "the state lists \(restored.state.bindings.count) bindings")
                 #expect(restored.state.resizeStep == 0.1, "the resize step became \(restored.state.resizeStep)")
                 #expect(!restored.state.bindings.contains { $0.id == custom.id }, "the custom binding survived the restore")
 
@@ -554,13 +554,13 @@ extension DesktopAcceptanceTests {
                 #expect(try Data(contentsOf: copy) == before, "the copy differs from the file as it was before the restore")
 
                 let inFile = try session.fileConfig()
-                #expect(inFile.bindings.count == 27, "the file holds \(inFile.bindings.count) bindings")
+                #expect(inFile.bindings.count == 28, "the file holds \(inFile.bindings.count) bindings")
                 #expect(inFile.resizeStep == 0.1, "the file's resize step is \(inFile.resizeStep)")
 
                 let status = try piccolo.configStatus()
-                #expect(status.bindingCount == 27, "config.status counts \(status.bindingCount) bindings")
+                #expect(status.bindingCount == 28, "config.status counts \(status.bindingCount) bindings")
                 #expect(status.issues.isEmpty, "config.status reports issues: \(status.issues)")
-                #expect(status.registered.count == 27, "config.status lists \(status.registered.count) as registered")
+                #expect(status.registered.count == 28, "config.status lists \(status.registered.count) as registered")
             }
         }
 
@@ -598,14 +598,14 @@ extension DesktopAcceptanceTests {
 
         // MARK: 15. Sections, search and inactive shortcuts
 
-        @Test("settings 15. the default shortcuts come in four sections, a search filters and selects, and registered shortcuts are active")
+        @Test("settings 15. the default shortcuts come in five sections, a search filters and selects, and registered shortcuts are active")
         func sectionsAndSearch() async throws {
             try await withSettingsSession { session in
                 let texts = try InterfaceTexts.current(piccolo)
                 let restored = try piccolo.settingsRestoreDefaults().state
                 let defaults = Config.defaultShortcuts.bindings
 
-                // Four sections whose counts are those of the defaults grouped by kind.
+                // Five sections whose counts are those of the defaults grouped by kind.
                 var expected: [String: Int] = [:]
                 for binding in defaults {
                     expected[Self.sectionName(of: binding.action), default: 0] += 1
@@ -614,7 +614,7 @@ extension DesktopAcceptanceTests {
                 for binding in restored.bindings {
                     counts[binding.section, default: 0] += 1
                 }
-                #expect(counts.count == 4, "settings.state reports sections \(counts.keys.sorted())")
+                #expect(counts.count == 5, "settings.state reports sections \(counts.keys.sorted())")
                 #expect(counts == expected, "section counts are \(counts), the defaults give \(expected)")
                 #expect(restored.search == "", "the search is \"\(restored.search)\" after restoring")
                 #expect(restored.bindings.allSatisfy { $0.visible }, "some binding is not visible without a search")
@@ -646,6 +646,7 @@ extension DesktopAcceptanceTests {
         private static func sectionName(of action: Action) -> String {
             switch action {
             case .placeWindow: "placeWindow"
+            case .restoreWindow: "restoreWindow"
             case .moveToDisplay: "moveToDisplay"
             case .arrangeGrid: "arrangeGrid"
             case .moveDivider: "moveDivider"

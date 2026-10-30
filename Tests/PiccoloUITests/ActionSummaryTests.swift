@@ -101,12 +101,22 @@ struct ActionSummaryTests {
 
     @Test("every action kind has a title and a default action of its own kind")
     func kinds() {
-        #expect(ActionKind.allCases.count == 4)
-        #expect(Set(ActionKind.allCases.map(\.title)).count == 4)
+        #expect(ActionKind.allCases.count == 5)
+        #expect(Set(ActionKind.allCases.map(\.title)).count == 5)
         for kind in ActionKind.allCases {
             #expect(ActionKind(kind.defaultAction) == kind)
         }
         #expect(Action.newBindingDefault == .placeWindow(.preset(.leftHalf)))
         #expect(ActionKind.arrangeGrid.defaultAction == .arrangeGrid(GridSpec(count: 4, rows: 2, columns: 2)))
+    }
+
+    @Test("Restore Window is a kind of its own, with the same text as its summary and no parameters")
+    func restoreWindow() throws {
+        #expect(ActionKind(.restoreWindow) == .restoreWindow)
+        #expect(ActionKind.restoreWindow.defaultAction == .restoreWindow)
+        #expect(ActionKind.restoreWindow.configName == "restoreWindow")
+        #expect(ActionSummary.text(for: .restoreWindow, bundle: AppLanguage.en.textBundle!) == "Restore Window")
+        #expect(ActionKind.restoreWindow.title(bundle: AppLanguage.en.textBundle!) == "Restore Window")
+        #expect(ActionPreview.rects(for: .restoreWindow) == nil)
     }
 }
