@@ -1,12 +1,20 @@
 # Piccolo
 
-Piccolo is a macOS menu bar app that moves, resizes and arranges windows with global keyboard shortcuts. You bind each shortcut to one action in the Settings window: place the focused window at a preset or custom frame, move it to the next or previous display, or arrange your most recently focused windows in a grid. The bindings are stored in a JSON file, which you can also edit by hand.
+[![Release](https://img.shields.io/github/v/release/nervouna/piccolo?include_prereleases)](https://github.com/nervouna/piccolo/releases/latest)
+![macOS 14+](https://img.shields.io/badge/macOS-14%2B-lightgrey)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+<!-- banner -->
+
+Piccolo is a macOS menu bar app that moves, resizes and arranges windows with global keyboard shortcuts. You bind each shortcut to one action in the Settings window, such as placing the focused window at a preset or custom frame, moving it to another display, or arranging your most recently focused windows in a grid; the bindings live in a JSON file you can also edit by hand.
+
+<!-- screenshots -->
 
 <img src="docs/images/settings-shortcuts.png" alt="Settings window, Shortcuts tab: five bindings, with the Arrange Grid binding selected. Its editor shows 3 windows in 2 rows and 2 columns, and a preview of the three cells." width="640">
 
 ## Status
 
-Piccolo is pre-release (version 0.1.0). Pre-release builds, notarized by Apple, are attached to the repository's [releases](https://github.com/nervouna/piccolo/releases).
+Piccolo is a personal project, shared for anyone who wants keyboard window management on macOS. It is an alpha: version 0.1.0 is not final, and settings or shortcuts may still change between builds. It needs macOS 14 or later and the Accessibility permission, and nothing else: no account, no network. Alpha builds, signed with a Developer ID and notarized by Apple, are attached to the repository's [releases](https://github.com/nervouna/piccolo/releases) as pre-releases.
 
 What works:
 
@@ -17,6 +25,10 @@ What works:
 - A preview while you hold a shortcut: a highlight shows where the windows will go (see [Destination preview](#destination-preview)).
 - The Settings window, for editing bindings and recording shortcuts.
 - Launching at login.
+
+## How it is built
+
+Most of the code is written by Claude Code agents. The owner files issues and makes product decisions; Claude writes each issue as a spec, subagents implement it as a pull request, and Claude reviews, runs the acceptance tests, merges and releases. [CLAUDE.md](CLAUDE.md) holds the product scope, the architecture and the rules the agents follow. See [CONTRIBUTING.md](CONTRIBUTING.md) to report a bug or send a fix, and [SECURITY.md](SECURITY.md) for security problems.
 
 ## Requirements
 
@@ -86,7 +98,7 @@ To turn the preview off, switch off **Show destination while a shortcut is held*
 
 ### Languages
 
-Piccolo's menu and Settings window are available in English, Simplified Chinese (简体中文), Traditional Chinese (繁體中文), Japanese (日本語), French (Français), Spanish (Español), Brazilian Portuguese (Português (Brasil)) and German (Deutsch). English and Simplified Chinese are translated. The other six show the English text until their translations are added.
+Piccolo's menu and Settings window are available in English, Simplified Chinese (简体中文), Traditional Chinese (繁體中文), Japanese (日本語), French (Français), Spanish (Español), Brazilian Portuguese (Português (Brasil)) and German (Deutsch). All eight are translated.
 
 By default Piccolo follows the language list of macOS (System Settings, General, Language & Region): the first language of the list that Piccolo is available in. To use another language, open Settings, go to the General tab and choose it under Language. The choice applies after Piccolo restarts: a line under the picker says so, and Restart Now quits Piccolo and starts it again. System default goes back to following macOS.
 
@@ -298,6 +310,17 @@ Settings writes the whole file on every save. Keys that Piccolo does not know ar
 - **Scope.** Piccolo does not drag windows to snap them, does not tile new windows automatically and does not move windows to another Space. Arrange Grid uses only the windows on screen in the current Space.
 - **Focus.** The actions work on the focused window. When the Settings window has the focus, the shortcuts do nothing, because Piccolo never moves its own windows. Arrange Grid knows the focus order only since Piccolo started.
 - **Shortcuts.** A shortcut that another app or the system already holds may be refused. Piccolo reports the refusal and does not register that shortcut.
+
+## Privacy
+
+Piccolo makes no network requests. It reads and changes the position and size of other apps' windows through the Accessibility API, and keeps the order in which windows were focused in memory only, for Arrange Grid. It writes its config file (`~/Library/Application Support/Piccolo/config.json`) and the backup copies described under [Config file](#config-file), and stores the language choice in its own defaults domain.
+
+## Uninstall
+
+1. Quit Piccolo from its menu, and switch off **Launch at login** first if you turned it on.
+2. Delete `/Applications/Piccolo.app`.
+3. Delete `~/Library/Application Support/Piccolo` to remove the config file and its copies.
+4. Remove Piccolo from System Settings, Privacy & Security, Accessibility.
 
 ## Building and testing
 
