@@ -13,6 +13,8 @@ extension PiccoloClient {
         var moveBindingID: UUID?
         var arrangeBindingID: UUID?
         var seen: Bool
+        /// Whether `OnboardingSeen` is stored at all.
+        var seenStored: Bool
         /// The panel's frame in canonical coordinates, while it is on screen.
         var frame: CGRect?
     }
@@ -42,15 +44,17 @@ extension PiccoloClient {
     }
 
     @discardableResult
-    func onboardingSetSeen(_ seen: Bool) throws -> OnboardingState {
-        try onboardingCommand("onboarding.setSeen", ["seen": .bool(seen)])
+    /// Stores the flag as `seen`, or removes it when `seen` is nil.
+    func onboardingSetSeen(_ seen: Bool?) throws -> OnboardingState {
+        try onboardingCommand("onboarding.setSeen", ["seen": seen.map { .bool($0) } ?? .null])
     }
 
     private func onboardingCommand(_ command: String, _ params: [String: JSONValue] = [:]) throws -> OnboardingState {
         let result = try send(command, params)
         guard let visible = result["visible"]?.boolValue, let step = result["step"]?.stringValue,
             let done = result["done"]?.arrayValue?.compactMap({ $0.stringValue }),
-            let seen = result["seen"]?.boolValue
+            let seen = result["seen"]?.boolValue,
+            let seenStored = result["seenStored"]?.boolValue
         else {
             throw AcceptanceFailure("\(command) answered something that is not an onboarding state: \(result)")
         }
@@ -58,6 +62,6 @@ extension PiccoloClient {
             visible: visible, step: step, done: done,
             moveBindingID: result["moveBindingID"]?.stringValue.flatMap { UUID(uuidString: $0) },
             arrangeBindingID: result["arrangeBindingID"]?.stringValue.flatMap { UUID(uuidString: $0) },
-            seen: seen, frame: result["frame"]?.rectValue)
+            seen: seen, seenStored: seenStored, frame: result["frame"]?.rectValue)
     }
 }

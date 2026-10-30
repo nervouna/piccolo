@@ -13,8 +13,16 @@ final class DefaultsOnboardingStore: OnboardingStore {
         defaults.isSeen
     }
 
+    var isSeenStored: Bool {
+        defaults.isSeenStored
+    }
+
     func setSeen(_ seen: Bool) {
         defaults.setSeen(seen)
+    }
+
+    func clearSeen() {
+        defaults.clearSeen()
     }
 }
 

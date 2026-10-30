@@ -7,7 +7,11 @@ import PiccoloCore
 @MainActor
 public protocol OnboardingStore: AnyObject {
     var isSeen: Bool { get }
+    /// Whether the flag is stored at all, as opposed to missing (``clearSeen()``, or never written).
+    var isSeenStored: Bool { get }
     func setSeen(_ seen: Bool)
+    /// Removes the stored flag, so that it reads as never written.
+    func clearSeen()
 }
 
 /// The flag as macOS stores it: a boolean `OnboardingSeen` in the app's own defaults domain
@@ -26,9 +30,18 @@ public struct OnboardingDefaults {
         defaults.bool(forKey: Self.key)
     }
 
+    public var isSeenStored: Bool {
+        defaults.object(forKey: Self.key) != nil
+    }
+
     public func setSeen(_ seen: Bool) {
         defaults.set(seen, forKey: Self.key)
         // The app may be quit right after.
+        defaults.synchronize()
+    }
+
+    public func clearSeen() {
+        defaults.removeObject(forKey: Self.key)
         defaults.synchronize()
     }
 }
@@ -75,9 +88,19 @@ public final class OnboardingModel {
         store.isSeen
     }
 
-    /// Stores the flag as it is, for the debug channel.
-    public func setSeen(_ seen: Bool) {
-        store.setSeen(seen)
+    /// Whether the flag is stored at all (a missing flag reads as not seen).
+    public var seenStored: Bool {
+        store.isSeenStored
+    }
+
+    /// Stores the flag as it is, for the debug channel; `nil` removes it, so that it reads as never
+    /// written.
+    public func setSeen(_ seen: Bool?) {
+        if let seen {
+            store.setSeen(seen)
+        } else {
+            store.clearSeen()
+        }
     }
 
     /// Whether the guide opens at launch (see ``OnboardingFlow/shouldOpenAtLaunch(wroteDefaultShortcuts:seen:)``).

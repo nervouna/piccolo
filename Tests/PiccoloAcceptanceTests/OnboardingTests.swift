@@ -168,9 +168,10 @@ extension DesktopAcceptanceTests {
         }
 
         /// Runs `body`, then puts the stored `OnboardingSeen` flag back as it was before, also when
-        /// `body` failed. A failure to put it back is recorded as an issue of its own.
+        /// `body` failed: removed when it was not stored, written with its old value otherwise. A failure
+        /// to put it back is recorded as an issue of its own.
         private func withOnboardingSeenRestored(_ body: () async throws -> Void) async throws {
-            let original = try piccolo.onboardingState().seen
+            let original = try piccolo.onboardingState()
             do {
                 try await body()
             } catch {
@@ -180,16 +181,17 @@ extension DesktopAcceptanceTests {
             restore(original)
         }
 
-        private func restore(_ original: Bool) {
+        private func restore(_ original: PiccoloClient.OnboardingState) {
+            let value: Bool? = original.seenStored ? original.seen : nil
             do {
-                let state = try piccolo.onboardingSetSeen(original)
+                let state = try piccolo.onboardingSetSeen(value)
                 // A guide left open by a failed test is closed without touching the flag again.
                 if state.visible {
                     try piccolo.onboardingClose()
-                    try piccolo.onboardingSetSeen(original)
+                    try piccolo.onboardingSetSeen(value)
                 }
             } catch {
-                Issue.record("could not put OnboardingSeen back to \(original): \(error)")
+                Issue.record("could not put OnboardingSeen back to \(value.map { String($0) } ?? "absent"): \(error)")
             }
         }
     }

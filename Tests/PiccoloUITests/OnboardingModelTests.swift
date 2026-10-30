@@ -8,15 +8,25 @@ import Testing
 @MainActor
 final class FakeOnboardingStore: OnboardingStore {
     var isSeen: Bool
+    private(set) var isSeenStored: Bool
     private(set) var writes: [Bool] = []
+    private(set) var clears = 0
 
     init(seen: Bool = false) {
         isSeen = seen
+        isSeenStored = seen
     }
 
     func setSeen(_ seen: Bool) {
         writes.append(seen)
         isSeen = seen
+        isSeenStored = true
+    }
+
+    func clearSeen() {
+        clears += 1
+        isSeen = false
+        isSeenStored = false
     }
 }
 
@@ -153,5 +163,34 @@ struct OnboardingModelTests {
         #expect(defaults.object(forKey: "OnboardingSeen") as? Bool == true)
         stored.setSeen(false)
         #expect(!stored.isSeen)
+    }
+
+    @Test("the defaults store removes OnboardingSeen when cleared, so that it reads as never written")
+    func defaultsStoreClear() throws {
+        let suite = "io.damao.piccolo.tests.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let stored = OnboardingDefaults(defaults: defaults)
+        #expect(!stored.isSeenStored)
+        stored.setSeen(false)
+        #expect(stored.isSeenStored)
+        stored.clearSeen()
+        #expect(!stored.isSeenStored)
+        #expect(!stored.isSeen)
+        #expect(defaults.object(forKey: "OnboardingSeen") == nil)
+    }
+
+    @Test("setSeen(nil) on the model removes the stored flag, and a Bool writes it")
+    func modelSetSeenNilRemoves() {
+        let store = FakeOnboardingStore()
+        let model = OnboardingModel(store: store)
+        #expect(!model.seenStored)
+        model.setSeen(false)
+        #expect(model.seenStored)
+        #expect(store.writes == [false])
+        model.setSeen(nil)
+        #expect(!model.seenStored)
+        #expect(store.clears == 1)
+        #expect(!model.seen)
     }
 }

@@ -11,24 +11,26 @@ import PiccoloUI
 /// They drive the same model and panel as the menu's "Getting Started…" and the buttons of the guide.
 /// None of them activates Piccolo.
 extension DebugControlServer {
+    /// `seen` as `onboarding.setSeen` takes it: `null` or missing removes the stored flag.
     private struct SeenParams: Decodable {
-        var seen: Bool
+        var seen: Bool?
     }
 
     /// Registers the commands. Every one answers the state, `{visible, step, done: [step],
-    /// moveBindingID?, arrangeBindingID?, seen, frame?}`:
+    /// moveBindingID?, arrangeBindingID?, seen, seenStored, frame?}`:
     ///
     /// - `visible`: whether the guide is open and its panel on screen.
     /// - `step`: `accessibility`, `moveWindow`, `arrange` or `done`; `done`: the steps that are done.
     /// - `moveBindingID`, `arrangeBindingID`: the bindings steps 2 and 3 ask the user to press.
-    /// - `seen`: the stored `OnboardingSeen` flag.
+    /// - `seen`: the stored `OnboardingSeen` flag (`false` when it is not stored).
+    /// - `seenStored`: whether the flag is stored at all.
     /// - `frame`: the panel's frame in canonical coordinates, while it is on screen.
     ///
     /// `onboarding.open` opens it as the menu item does (at step 1, or brings it forward when open).
     /// `onboarding.close` closes it as Skip Guide does, which stores `seen`. `onboarding.continue` presses
     /// Continue, which is Finish on the last step, and `onboarding.skip` presses Skip; both answer
     /// `ok: false` when the button is not there or not enabled. `onboarding.setSeen {seen}` sets the stored
-    /// flag, so that a test can put back what it found.
+    /// flag, so that a test can put back what it found; `seen: null` (or no `seen`) removes the flag.
     nonisolated static func registerOnboardingCommands(in router: inout ControlRouter) {
         router.register("onboarding.open") { _ in
             onMainActor {
@@ -89,6 +91,7 @@ extension DebugControlServer {
             "done": .array(
                 OnboardingStep.allCases.filter { flow.completed.contains($0) }.map { .string($0.rawValue) }),
             "seen": .bool(controller.model.seen),
+            "seenStored": .bool(controller.model.seenStored),
         ]
         if let move = flow.move {
             state["moveBindingID"] = .string(move.id.uuidString)
