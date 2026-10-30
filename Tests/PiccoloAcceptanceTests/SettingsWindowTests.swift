@@ -533,7 +533,7 @@ extension DesktopAcceptanceTests {
 
         // MARK: 13. Restore the default shortcuts
 
-        @Test("settings 13. settings.restoreDefaults replaces the bindings with the 25 defaults, keeps the resize step and a copy of the file")
+        @Test("settings 13. settings.restoreDefaults replaces the bindings with the 27 defaults, keeps the resize step and a copy of the file")
         func restoreDefaults() async throws {
             let custom = KeyBinding(action: .placeWindow(.preset(.rightHalf)), shortcut: TestShortcut.f14)
             try await withSettingsSession([custom]) { session in
@@ -544,7 +544,7 @@ extension DesktopAcceptanceTests {
                 let restored = try piccolo.settingsRestoreDefaults()
 
                 #expect(restored.state.error == nil, "restoring set the error \(restored.state.error ?? "")")
-                #expect(restored.state.bindings.count == 25, "the state lists \(restored.state.bindings.count) bindings")
+                #expect(restored.state.bindings.count == 27, "the state lists \(restored.state.bindings.count) bindings")
                 #expect(restored.state.resizeStep == 0.1, "the resize step became \(restored.state.resizeStep)")
                 #expect(!restored.state.bindings.contains { $0.id == custom.id }, "the custom binding survived the restore")
 
@@ -554,13 +554,13 @@ extension DesktopAcceptanceTests {
                 #expect(try Data(contentsOf: copy) == before, "the copy differs from the file as it was before the restore")
 
                 let inFile = try session.fileConfig()
-                #expect(inFile.bindings.count == 25, "the file holds \(inFile.bindings.count) bindings")
+                #expect(inFile.bindings.count == 27, "the file holds \(inFile.bindings.count) bindings")
                 #expect(inFile.resizeStep == 0.1, "the file's resize step is \(inFile.resizeStep)")
 
                 let status = try piccolo.configStatus()
-                #expect(status.bindingCount == 25, "config.status counts \(status.bindingCount) bindings")
+                #expect(status.bindingCount == 27, "config.status counts \(status.bindingCount) bindings")
                 #expect(status.issues.isEmpty, "config.status reports issues: \(status.issues)")
-                #expect(status.registered.count == 25, "config.status lists \(status.registered.count) as registered")
+                #expect(status.registered.count == 27, "config.status lists \(status.registered.count) as registered")
             }
         }
 

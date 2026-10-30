@@ -98,7 +98,25 @@ struct ConfigModelTests {
             ])
         #expect(Modifier.allCases.map(\.rawValue) == ["command", "option", "control", "shift"])
         #expect(Direction.allCases.map(\.rawValue) == ["left", "right", "up", "down"])
-        #expect(DisplayDirection.allCases.map(\.rawValue) == ["next", "previous"])
+        #expect(DisplayDirection.allCases.map(\.rawValue) == ["next", "previous", "left", "right", "up", "down"])
+    }
+
+    @Test("the four geometric display directions round trip and decode from the file format")
+    func displayDirectionsRoundTrip() throws {
+        for direction in [DisplayDirection.left, .right, .up, .down, .next, .previous] {
+            #expect(try roundTrip(Action.moveToDisplay(direction)) == .moveToDisplay(direction))
+        }
+        let json = #"{"type": "moveToDisplay", "direction": "up"}"#
+        let decoded = try JSONDecoder().decode(Action.self, from: Data(json.utf8))
+        #expect(decoded == .moveToDisplay(.up))
+    }
+
+    @Test("a direction outside the file format is rejected, so its binding is skipped with an issue")
+    func unknownDisplayDirection() {
+        let json = #"{"type": "moveToDisplay", "direction": "diagonal"}"#
+        #expect(throws: (any Error).self) {
+            try JSONDecoder().decode(Action.self, from: Data(json.utf8))
+        }
     }
 
     // MARK: Decoding the file format

@@ -59,6 +59,10 @@ public enum ActionSummary {
         switch direction {
         case .next: String(localized: "Next Display", bundle: bundle)
         case .previous: String(localized: "Previous Display", bundle: bundle)
+        case .left: String(localized: "Display to the Left", bundle: bundle)
+        case .right: String(localized: "Display to the Right", bundle: bundle)
+        case .up: String(localized: "Display Above", bundle: bundle)
+        case .down: String(localized: "Display Below", bundle: bundle)
         }
     }
 

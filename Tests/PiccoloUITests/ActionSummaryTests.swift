@@ -53,6 +53,17 @@ struct ActionSummaryTests {
         #expect(ActionSummary.text(for: .moveToDisplay(.previous)) == "Previous Display")
     }
 
+    @Test("the four geometric display directions", arguments: [
+        (DisplayDirection.left, "Display to the Left"),
+        (.right, "Display to the Right"),
+        (.up, "Display Above"),
+        (.down, "Display Below"),
+    ] as [(DisplayDirection, String)])
+    func geometricDisplays(_ direction: DisplayDirection, _ text: String) {
+        #expect(ActionSummary.text(for: .moveToDisplay(direction)) == text)
+        #expect(ActionSummary.name(of: direction) == text)
+    }
+
     @Test("a grid says how many windows go in how many rows and columns")
     func grids() {
         #expect(ActionSummary.text(for: .arrangeGrid(GridSpec(count: 4, rows: 2, columns: 2))) == "Arrange 4 in 2 × 2")
