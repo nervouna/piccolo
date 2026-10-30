@@ -34,6 +34,10 @@ struct MenuContent: View {
 
         Divider()
 
+        Button(String(localized: "Getting Started…")) {
+            OnboardingController.shared.show()
+        }
+
         Button(String(localized: "Settings…")) {
             SettingsController.shared.show()
         }

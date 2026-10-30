@@ -54,6 +54,7 @@ final class DebugControlServer {
         registerSettingsCommands(in: &router)
         registerPreviewCommands(in: &router)
         registerNoticeCommands(in: &router)
+        registerOnboardingCommands(in: &router)
 
         router.register("status") { _ in
             let report = SelfCheck.makeReport()
