@@ -1,0 +1,60 @@
+name: Bug report
+description: Something in Piccolo does not work as described
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happens
+      description: What you did and what went wrong. Problems listed in Settings and log lines (Console, subsystem `io.damao.piccolo`) help.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: How to reproduce
+      description: The binding or the relevant part of `config.json`, the apps whose windows were involved, and your display setup.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The release (Settings, General tab, Version) or the commit you built.
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: macOS version
+    validations:
+      required: true
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where
+      options:
+        - Place Window
+        - Move to Display
+        - Arrange Grid
+        - Move Divider
+        - Destination preview
+        - Shortcuts and recording
+        - Settings window or menu
+        - Config file
+        - Install, launch at login or permissions
+        - Build scripts
+        - Docs
+    validations:
+      required: true
+  - type: textarea
+    id: fix
+    attributes:
+      label: Suggested fix
+      description: Optional. If you know where the cause is, say so.
