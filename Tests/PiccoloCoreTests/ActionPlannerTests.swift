@@ -223,6 +223,69 @@ struct MoveToDisplayPlanTests {
     }
 }
 
+@Suite("ActionPlanner: moveToDisplay in a direction")
+struct MoveToDisplayDirectionPlanTests {
+    /// The secondary is to the left of the primary, so `left` from the primary leads to it.
+    @Test("left from the primary goes to the display on its left, keeping the relative frame")
+    func leftFromPrimary() throws {
+        let plan = try ActionPlanner.plan(.moveToDisplay(.left), windowFrame: Rig.onPrimary, displays: Rig.both)
+
+        let expected = DisplayLayout.frame(moving: Rig.onPrimary, from: Rig.primary, to: Rig.secondary)
+        #expect(plan == .place(target: expected, visibleFrame: Rig.secondary.visibleFrame))
+        #expect(Rig.secondary.visibleFrame.contains(expected))
+    }
+
+    @Test("right from the secondary goes back to the primary, and so does a maximized window")
+    func rightFromSecondary() throws {
+        let plan = try ActionPlanner.plan(.moveToDisplay(.right), windowFrame: Rig.onSecondary, displays: Rig.both)
+
+        let expected = DisplayLayout.frame(moving: Rig.onSecondary, from: Rig.secondary, to: Rig.primary)
+        #expect(plan == .place(target: expected, visibleFrame: Rig.primary.visibleFrame))
+
+        let maximized = try ActionPlanner.plan(
+            .moveToDisplay(.right), windowFrame: Rig.secondary.visibleFrame, displays: Rig.both)
+        #expect(maximized == .place(target: Rig.primary.visibleFrame, visibleFrame: Rig.primary.visibleFrame))
+    }
+
+    @Test("right from the primary, with no display on its right, is nothing to do, and nothing wraps around")
+    func noCandidate() throws {
+        let plan = try ActionPlanner.plan(.moveToDisplay(.right), windowFrame: Rig.onPrimary, displays: Rig.both)
+
+        #expect(plan == .nothingToDo)
+    }
+
+    @Test("up and down with displays side by side are nothing to do")
+    func verticalWithoutDisplays() throws {
+        #expect(try ActionPlanner.plan(.moveToDisplay(.up), windowFrame: Rig.onPrimary, displays: Rig.both) == .nothingToDo)
+        #expect(try ActionPlanner.plan(.moveToDisplay(.down), windowFrame: Rig.onPrimary, displays: Rig.both) == .nothingToDo)
+    }
+
+    @Test("up from the primary goes to the display above it, which has its own visible frame")
+    func up() throws {
+        let above = Display(
+            frame: CGRect(x: 0, y: -900, width: 1600, height: 900),
+            visibleFrame: CGRect(x: 0, y: -900, width: 1600, height: 880))
+        let displays = [Rig.primary, above]
+        let plan = try ActionPlanner.plan(.moveToDisplay(.up), windowFrame: Rig.onPrimary, displays: displays)
+
+        let expected = DisplayLayout.frame(moving: Rig.onPrimary, from: Rig.primary, to: above)
+        #expect(plan == .place(target: expected, visibleFrame: above.visibleFrame))
+        #expect(above.visibleFrame.contains(expected))
+
+        let back = try ActionPlanner.plan(.moveToDisplay(.down), windowFrame: expected, displays: displays)
+        let backExpected = DisplayLayout.frame(moving: expected, from: above, to: Rig.primary)
+        #expect(back == .place(target: backExpected, visibleFrame: Rig.primary.visibleFrame))
+    }
+
+    @Test("with a single display every direction is nothing to do", arguments: DisplayDirection.allCases)
+    func singleDisplay(direction: DisplayDirection) throws {
+        let plan = try ActionPlanner.plan(
+            .moveToDisplay(direction), windowFrame: Rig.onPrimary, displays: [Rig.primary])
+
+        #expect(plan == .nothingToDo)
+    }
+}
+
 @Suite("ActionPlanner: other actions")
 struct OtherActionPlanTests {
     @Test("arrangeGrid is not a single-window action")

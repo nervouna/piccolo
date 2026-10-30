@@ -67,9 +67,16 @@ public enum Action: Codable, Equatable, Sendable {
     }
 }
 
+/// Where `moveToDisplay` sends the window. `next` and `previous` follow the displays' layout order
+/// and wrap around; the four directions pick a display geometrically and do not wrap around (see
+/// ``DisplayLayout/neighbor(of:_:in:)``).
 public enum DisplayDirection: String, Codable, CaseIterable, Equatable, Sendable {
     case next
     case previous
+    case left
+    case right
+    case up
+    case down
 }
 
 /// The side a divider moves toward.

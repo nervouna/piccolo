@@ -38,14 +38,32 @@ public enum DisplayLayout {
         return nearest
     }
 
-    /// The display that `direction` leads to from `index`, wrapping around at both ends.
+    /// The display that `direction` leads to from `index`.
     ///
-    /// Displays are ordered by `frame.minX`, then `frame.minY`, then index. With one display,
-    /// the result is `index` itself.
+    /// `next` and `previous` step through the displays ordered by `frame.minX`, then `frame.minY`,
+    /// then index, and wrap around at both ends. With one display, the result is `index` itself.
+    ///
+    /// `left`, `right`, `up` and `down` pick a display that lies entirely that way: for `left`, one
+    /// whose `maxX` is at most the source's `minX` plus 1 (and the same rule turned around for the
+    /// others, with y pointing down). Among those, the ones whose extent along the other axis
+    /// overlaps the source's are preferred, the largest overlap first; with none overlapping, the
+    /// nearest by the distance between the frames' centres. Ties go to the smaller gap between the
+    /// frames, then to the lower index. Nothing wraps around: when no display lies that way, the
+    /// result is `index` itself, which callers read as nothing to do.
     ///
     /// - Precondition: `index` is an index into `displays`.
     public static func neighbor(of index: Int, _ direction: DisplayDirection, in displays: [Display]) -> Int {
         precondition(displays.indices.contains(index), "display index \(index) is out of range")
+        switch direction {
+        case .next, .previous:
+            return stepped(from: index, direction == .next ? 1 : -1, in: displays)
+        case .left, .right, .up, .down:
+            return geometric(from: index, direction, in: displays) ?? index
+        }
+    }
+
+    /// The display one step further in the layout order, wrapping around.
+    private static func stepped(from index: Int, _ step: Int, in displays: [Display]) -> Int {
         let order = displays.indices.sorted { lhs, rhs in
             let left = displays[lhs].frame
             let right = displays[rhs].frame
@@ -56,8 +74,65 @@ public enum DisplayLayout {
         guard let position = order.firstIndex(of: index) else {
             preconditionFailure("display index \(index) is missing from its own ordering")
         }
-        let step = direction == .next ? 1 : order.count - 1
-        return order[(position + step) % order.count]
+        return order[((position + step) % order.count + order.count) % order.count]
+    }
+
+    /// The display that lies entirely in `direction` from `index`, or `nil` when there is none.
+    private static func geometric(from index: Int, _ direction: DisplayDirection, in displays: [Display]) -> Int? {
+        let source = displays[index].frame
+
+        /// A display in the direction, with its gap to the source and its overlap along the other axis.
+        struct Candidate {
+            let index: Int
+            let gap: CGFloat
+            let overlap: CGFloat
+            let centreDistance: CGFloat
+        }
+
+        var candidates: [Candidate] = []
+        for (other, display) in displays.enumerated() where other != index {
+            let frame = display.frame
+            let gap: CGFloat
+            let overlap: CGFloat
+            switch direction {
+            case .left:
+                guard frame.maxX <= source.minX + 1 else { continue }
+                gap = source.minX - frame.maxX
+                overlap = min(frame.maxY, source.maxY) - max(frame.minY, source.minY)
+            case .right:
+                guard frame.minX >= source.maxX - 1 else { continue }
+                gap = frame.minX - source.maxX
+                overlap = min(frame.maxY, source.maxY) - max(frame.minY, source.minY)
+            case .up:
+                guard frame.maxY <= source.minY + 1 else { continue }
+                gap = source.minY - frame.maxY
+                overlap = min(frame.maxX, source.maxX) - max(frame.minX, source.minX)
+            case .down:
+                guard frame.minY >= source.maxY - 1 else { continue }
+                gap = frame.minY - source.maxY
+                overlap = min(frame.maxX, source.maxX) - max(frame.minX, source.minX)
+            case .next, .previous:
+                return nil
+            }
+            let dx = frame.midX - source.midX
+            let dy = frame.midY - source.midY
+            candidates.append(
+                Candidate(index: other, gap: gap, overlap: overlap, centreDistance: dx * dx + dy * dy))
+        }
+
+        let overlapping = candidates.filter { $0.overlap > 0 }
+        if !overlapping.isEmpty {
+            return overlapping.min { lhs, rhs in
+                if lhs.overlap != rhs.overlap { return lhs.overlap > rhs.overlap }
+                if lhs.gap != rhs.gap { return lhs.gap < rhs.gap }
+                return lhs.index < rhs.index
+            }?.index
+        }
+        return candidates.min { lhs, rhs in
+            if lhs.centreDistance != rhs.centreDistance { return lhs.centreDistance < rhs.centreDistance }
+            if lhs.gap != rhs.gap { return lhs.gap < rhs.gap }
+            return lhs.index < rhs.index
+        }?.index
     }
 
     /// The frame a window takes after moving from one display to another.

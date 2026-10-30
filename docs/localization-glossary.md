@@ -40,6 +40,8 @@ keyboard symbols (⌃ ⌥ ⇧ ⌘) and the name "Piccolo" as they are in every l
 | Third | Third | 三分之一 | 三分之一 | 3分の1 | tiers | tercio | terço | Drittel | Piccolo | "Left Third", "Center Third", ... |
 | Left | Left | 左侧 | 左側 | 左 | Gauche | Izquierda | Esquerda | Links | AppKit MenuCommands (Left) | |
 | Right | Right | 右侧 | 右側 | 右 | Droite | Derecha | Direita | Rechts | AppKit MenuCommands (Right) | |
+| Above | Above | 上方 | 上方 | 上 | au-dessus | arriba | acima | oben | Piccolo | The display above the source, in "Display Above". No table we checked has the word. |
+| Below | Below | 下方 | 下方 | 下 | en dessous | abajo | abaixo | unten | Piccolo | The display below the source, in "Display Below". No table we checked has the word. |
 | Top | Top | 顶部 | 頂部 | 上 | Haut | Superior | Superior | Oben | AppKit MenuCommands (Top) | |
 | Center | Center | 居中 | 中央 | 中央に配置 | Centrer | Centrar | Centralizar | Zentriert | AppKit MenuCommands (Center) | |
 | Maximize | Maximize | 最大化 | 最大化 | 最大化 | Maximiser | Maximizar | Maximizar | Maximieren | Piccolo | Apple's Move & Resize command for the same frame is Fill (Füllen, Remplir, …), but Piccolo's English says Maximize, so the translations say maximize too. |
