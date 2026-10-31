@@ -300,4 +300,124 @@ struct DestinationsTests {
             try desk.executor.destinations(for: .moveDivider(.right), settings: ActionSettings(resizeStep: 0))
         }
     }
+
+    // MARK: swapWindow
+
+    @Test("swapWindow answers the two windows' new frames, in cell order, and moves nothing")
+    func swapWindow() throws {
+        let desk = Desk()
+        desk.openWindows(3)
+        try desk.arrange(count: 3, rows: 1, columns: 3)
+        desk.focused = 2
+        let before = try desk.frames(3)
+        let groups = desk.executor.linkedGroups
+        let records = desk.executor.windowRecords.map(\.record)
+        let mark = desk.log.count
+
+        let destinations = try desk.executor.destinations(for: .swapWindow(.right))
+
+        // Window 2 would take window 3's cell and window 3 window 2's. Window 1 is not part of it.
+        #expect(destinations == [
+            Destination(frame: before[1], window: id(3)),
+            Destination(frame: before[2], window: id(2)),
+        ])
+        #expect(desk.calls(since: mark).isEmpty)
+        #expect(try desk.frames(3) == before)
+        #expect(desk.executor.linkedGroups == groups, "a plan must not change the group")
+        #expect(desk.executor.windowRecords.map(\.record) == records, "a plan must not note a window")
+    }
+
+    @Test("the plan of a swap is what the real swap then does")
+    func swapWindowMatchesTheRun() throws {
+        let desk = Desk()
+        desk.openWindows(4)
+        try desk.arrange(count: 4, rows: 2, columns: 2)
+
+        let destinations = try desk.executor.destinations(for: .swapWindow(.down))
+        let swapped = try desk.swapped(.down)
+
+        #expect(destinations.count == 2)
+        for destination in destinations {
+            let entry = try #require(swapped.windows.first { $0.window == destination.window })
+            #expect(entry.target == destination.frame)
+            #expect(try desk.frame(of: UInt32(entry.window.rawValue)) == destination.frame)
+        }
+    }
+
+    @Test("the frames of a swap carry the window gap")
+    func swapWindowGap() throws {
+        let desk = Desk()
+        desk.openWindows(2)
+        try desk.arrange(count: 2, rows: 1, columns: 2)
+        desk.focused = 2
+
+        let destinations = try desk.executor.destinations(for: .swapWindow(.left), settings: ActionSettings(gap: 12))
+
+        let gapped = TileLayout.grid(windowCount: 2, rows: 1, columns: 2).frames(in: visible, gap: 12)
+        #expect(destinations == [
+            Destination(frame: gapped[0], window: id(2)),
+            Destination(frame: gapped[1], window: id(1)),
+        ])
+    }
+
+    @Test("swapWindow with no neighbour, no group or no focused window answers nothing")
+    func swapWindowNothingToDo() throws {
+        let desk = Desk()
+        desk.openWindows(2)
+        #expect(try desk.executor.destinations(for: .swapWindow(.right)).isEmpty)
+
+        try desk.arrange(count: 2, rows: 1, columns: 2)
+        let mark = desk.log.count
+        #expect(try desk.executor.destinations(for: .swapWindow(.left)).isEmpty)
+        #expect(try desk.executor.destinations(for: .swapWindow(.up)).isEmpty)
+        #expect(desk.calls(since: mark).isEmpty)
+        #expect(desk.executor.linkedGroups.count == 1)
+
+        desk.focused = nil
+        #expect(try desk.executor.destinations(for: .swapWindow(.right)).isEmpty)
+    }
+
+    @Test("swapWindow with a broken group answers nothing and does not dissolve it; the real run does")
+    func swapWindowBrokenGroup() throws {
+        let desk = Desk()
+        desk.openWindows(3)
+        try desk.arrange(count: 3, rows: 1, columns: 3)
+        desk.window(3).fake.origin.x += 12
+        let groups = desk.executor.linkedGroups
+        let mark = desk.log.count
+
+        #expect(try desk.executor.destinations(for: .swapWindow(.right)).isEmpty)
+
+        #expect(desk.executor.linkedGroups == groups, "the plan must leave the broken group for the real run")
+        #expect(desk.calls(since: mark).isEmpty)
+
+        #expect(try desk.swap(.right) == .nothingToDo(.dissolved(.moved(id(3)))))
+        #expect(desk.executor.linkedGroups.isEmpty)
+    }
+
+    @Test("swapWindow with a closed member answers nothing and keeps the group")
+    func swapWindowMissingMember() throws {
+        let desk = Desk()
+        desk.openWindows(3)
+        try desk.arrange(count: 3, rows: 1, columns: 3)
+        desk.close(3)
+        let groups = desk.executor.linkedGroups
+
+        #expect(try desk.executor.destinations(for: .swapWindow(.right)).isEmpty)
+        #expect(desk.executor.linkedGroups == groups)
+    }
+
+    @Test("swapWindow with onlyPid and a member of another process answers nothing and keeps the group")
+    func swapWindowOnlyPid() throws {
+        let desk = Desk()
+        desk.open(1, pid: 100)
+        desk.open(2, pid: 200)
+        desk.focused = 1
+        desk.focusOrder = [1, 2]
+        try desk.arrange(count: 2, rows: 1, columns: 2)
+        let groups = desk.executor.linkedGroups
+
+        #expect(try desk.executor.destinations(for: .swapWindow(.right), onlyPid: 100).isEmpty)
+        #expect(desk.executor.linkedGroups == groups)
+    }
 }

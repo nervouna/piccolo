@@ -11,7 +11,7 @@ struct SettingsState: Decodable, Equatable {
         var summary: String
         var shortcut: Shortcut?
         var shortcutText: String?
-        /// The kind's name in the config file: `placeWindow`, `moveToDisplay`, `arrangeGrid`, `moveDivider`.
+        /// The kind's name in the config file: `placeWindow`, `moveToDisplay`, `arrangeGrid`, `moveDivider`, `swapWindow`.
         var section: String
         /// Whether the list shows the binding under the current search.
         var visible: Bool

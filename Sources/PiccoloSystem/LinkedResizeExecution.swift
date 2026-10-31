@@ -68,19 +68,13 @@ extension ActionExecutor {
     ///    frame recorded for it.
     /// 3. `DividerMove.plan` gives the new layout, one `settings.resizeStep` away. Without one (a
     ///    window at its smallest, no divider in that direction) there is nothing to do.
-    /// 4. The windows whose cell changed glide to their new frames together (see ``WindowAnimator``),
-    ///    then are sent there with ``FrameSetter/apply(_:to:within:)`` in the group's visible frame:
-    ///    those that shrink first, then those that grow, so that no two windows overlap while it
-    ///    happens.
-    /// 5. The group records what the windows achieved (``LayoutGroup/recordAchieved(requested:achieved:)``).
-    ///    When a window refused its size, the divider is recorded where that window ended up, and
-    ///    the windows whose cell changed because of it are sent to their cells once more, so that
-    ///    the neighbour fills the space, without a glide. The group records the result again.
-    ///
-    /// A window that cannot be changed (closed meanwhile, or a failing Accessibility call) ends the
-    /// move: the windows after it in the order above are left alone, so that none grows into space
-    /// that is still taken. The group cannot be trusted any more: it is dissolved, and the windows
-    /// that were not moved are reported with the reason.
+    /// 4. The windows whose cell changed are sent to their new frames and the group records what they
+    ///    achieved (see ``carryOut(_:display:layout:previousTargets:handles:frames:settings:)``, which
+    ///    ``swapWindow(_:onlyPid:settings:)`` shares): they glide together (see ``WindowAnimator``),
+    ///    then are placed with ``FrameSetter/apply(_:to:within:)``, those that shrink first, then those
+    ///    that grow. A window that refused its size moves the divider to where it ended up, and the
+    ///    windows whose cell changed with it are sent once more, without a glide. A window that cannot
+    ///    be changed ends the move and dissolves the group.
     func moveDivider(_ direction: Direction, onlyPid: pid_t?, settings: ActionSettings) throws -> ActionOutcome {
         let planning: DividerMovePlanning
         switch try planDividerMove(direction, onlyPid: onlyPid, settings: settings) {
@@ -90,58 +84,12 @@ extension ActionExecutor {
         case .move(let found):
             planning = found
         }
-        let entry = planning.entry
-        var group = planning.group
-        let handles = planning.handles
-        let frames = planning.frames
-        let layout = planning.layout
-
-        let gap = settings.gap
-        let previousTargets = group.targetFrames(for: group.layout, gap: gap)
-        let targets = group.targetFrames(for: layout, gap: gap)
-        var placements = zip(targets, group.windows).map { target, window in
-            Placement(target: target, achieved: frames[window] ?? target)
-        }
-
-        var steps = group.steps(from: previousTargets, to: targets, current: placements.map(\.achieved))
-        var changedCells = Set(steps.map(\.cell))
-        send(steps, to: handles, within: group.visibleFrame, updating: &placements, animatingWith: settings)
-        if !placements.contains(where: { $0.failure != nil }) {
-            group.recordAchieved(requested: layout, achieved: placements.map(\.achieved), gap: gap)
-
-            // A window that refused its size moved the divider to where it ended up. The windows
-            // whose cell changed with it go there too.
-            steps = group.steps(
-                from: targets, to: group.targetFrames(for: group.layout, gap: gap),
-                current: placements.map(\.achieved))
-            if !steps.isEmpty {
-                changedCells.formUnion(steps.map(\.cell))
-                send(steps, to: handles, within: group.visibleFrame, updating: &placements)
-                if !placements.contains(where: { $0.failure != nil }) {
-                    group.recordAchieved(
-                        requested: group.layout, achieved: placements.map(\.achieved), gap: gap)
-                }
-            }
-        }
-
-        if placements.contains(where: { $0.failure != nil }) {
-            groups.dissolve(display: entry.display)
-        } else {
-            groups.update(group, onDisplay: entry.display)
-        }
-        // Only the windows whose cell changed, and that were changed, are noted.
-        for cell in changedCells.sorted() where placements[cell].failure == nil {
-            let window = group.windows[cell]
-            if let before = frames[window] {
-                records.recordChange(of: window, from: before, to: placements[cell].achieved)
-            }
-        }
-        let windows = zip(group.windows, placements).map { window, placement in
-            ArrangedWindow(
-                window: window, target: placement.target,
-                result: placement.failure.map { .failed(message: $0) } ?? .placed(achieved: placement.achieved))
-        }
-        return .dividerMove(.moved(DividerMoved(display: entry.display, windows: windows)))
+        let previousTargets = planning.group.targetFrames(for: planning.group.layout, gap: settings.gap)
+        let windows = carryOut(
+            planning.group, display: planning.entry.display, layout: planning.layout,
+            previousTargets: previousTargets, handles: planning.handles, frames: planning.frames,
+            settings: settings)
+        return .dividerMove(.moved(DividerMoved(display: planning.entry.display, windows: windows)))
     }
 
     /// A divider move planned, not yet carried out.
@@ -174,13 +122,63 @@ extension ActionExecutor {
     ) throws -> DividerPlanning {
         let step = settings.resizeStep
         guard step.isFinite, step > 0 else { throw ActionExecutionError.invalidResizeStep(step) }
-        guard let focused = arrangement.focusedWindowID() else {
+        let focused: FocusedGroup
+        switch try lookUpFocusedGroup(onlyPid: onlyPid) {
+        case .noFocusedWindow:
             return .nothingToDo(.noFocusedWindow, dissolve: nil)
-        }
-        guard let entry = groups.entry(containing: focused), let cell = entry.group.cell(of: focused) else {
+        case .noGroup:
             return .nothingToDo(.noGroup, dissolve: nil)
+        case .dissolved(let breakage, let display):
+            return .nothingToDo(.dissolved(breakage), dissolve: display)
+        case .found(let found):
+            focused = found
         }
-        let group = entry.group
+
+        guard
+            let layout = DividerMove.plan(
+                layout: focused.group.layout, focusedCell: focused.cell, direction: direction, step: step)
+        else { return .nothingToDo(.cannotMove, dissolve: nil) }
+        return .move(
+            DividerMovePlanning(
+                entry: focused.entry, group: focused.group, handles: focused.handles, frames: focused.frames,
+                layout: layout))
+    }
+
+    /// The group of the focused window, checked now, with the windows on screen.
+    struct FocusedGroup {
+        var entry: LayoutGroups.Entry
+        var group: LayoutGroup
+        /// The cell of the focused window.
+        var cell: Int
+        /// The handles and frames of the windows on screen.
+        var handles: [WindowID: any WindowFrameAccess]
+        var frames: [WindowID: CGRect]
+    }
+
+    /// What ``lookUpFocusedGroup(onlyPid:)`` found.
+    enum FocusedGroupLookup {
+        case found(FocusedGroup)
+        /// No window has the focus, or it is one of Piccolo's own.
+        case noFocusedWindow
+        /// The focused window is in no group.
+        case noGroup
+        /// The group no longer holds. `display` is the display of the group, which the run dissolves
+        /// and a plan leaves alone.
+        case dissolved(LayoutGroup.Breakage, display: Int)
+    }
+
+    /// Steps 1 and 2 of ``moveDivider(_:onlyPid:settings:)``, shared with ``swapWindow(_:onlyPid:settings:)``:
+    /// the group that holds the focused window, checked now. The windows on screen are read (those of
+    /// `onlyPid` only, when it is given), and the group no longer holds when a member is not among them
+    /// or an edge of one is more than 2 pt from the frame recorded for it. It touches neither a window
+    /// nor a group.
+    ///
+    /// - Throws: ``WindowError`` when the windows on screen cannot be read.
+    func lookUpFocusedGroup(onlyPid: pid_t?) throws -> FocusedGroupLookup {
+        guard let focused = arrangement.focusedWindowID() else { return .noFocusedWindow }
+        guard let entry = groups.entry(containing: focused), let cell = entry.group.cell(of: focused) else {
+            return .noGroup
+        }
 
         let onScreen = try arrangement.catalog(onlyPid)
         var handles: [WindowID: any WindowFrameAccess] = [:]
@@ -189,16 +187,96 @@ extension ActionExecutor {
             handles[window.candidate.id] = window.handle
             frames[window.candidate.id] = window.candidate.frame
         }
-        if let breakage = group.breakage(currentFrames: frames) {
-            return .nothingToDo(.dissolved(breakage), dissolve: entry.display)
+        if let breakage = entry.group.breakage(currentFrames: frames) {
+            return .dissolved(breakage, display: entry.display)
+        }
+        return .found(FocusedGroup(entry: entry, group: entry.group, cell: cell, handles: handles, frames: frames))
+    }
+
+    /// Sends the windows of `group` to the cells `layout` gives them and records what came of it: steps
+    /// 4 and 5 of ``moveDivider(_:onlyPid:settings:)``, shared with ``swapWindow(_:onlyPid:settings:)``.
+    ///
+    /// 1. Only the windows whose cell changed are sent (`LayoutGroup.steps(from:to:current:)`): those
+    ///    whose cell frame in `previousTargets` is not the one `layout` gives them now, and that are not
+    ///    already there. They glide to their new frames together (see ``WindowAnimator``), then are
+    ///    placed with ``FrameSetter/apply(_:to:within:)`` in the group's visible frame: those that shrink
+    ///    first, then those that grow.
+    /// 2. The group records what the windows achieved
+    ///    (``LayoutGroup/recordAchieved(requested:achieved:gap:)``). When a window refused its size, the
+    ///    divider is recorded where that window ended up, and the windows whose cell changed because of
+    ///    it are sent to their cells once more, so that the neighbour fills the space, without a glide.
+    ///    The group records the result again.
+    ///
+    /// A window that cannot be changed (closed meanwhile, or a failing Accessibility call) ends the
+    /// run: the windows after it in the order above are left alone, so that none grows into space that
+    /// is still taken. The group cannot be trusted any more: it is dissolved, and the windows that were
+    /// not moved are reported with the reason. Otherwise the group is updated. Every window that was
+    /// changed is noted in the window records.
+    ///
+    /// - Parameters:
+    ///   - group: the group as it will be after the run: its windows in the cells they are sent to.
+    ///   - display: the display of the group.
+    ///   - layout: the layout the windows are sent to, with the orientation and the cells per row
+    ///     (column) of the group's layout.
+    ///   - previousTargets: the frame each cell had, in cell order, for the window that is in it now.
+    ///   - handles: the windows on screen, and `frames` the frames they have now.
+    /// - Returns: every window of the group in cell order, with the last frame it was asked for and the
+    ///   frame it was read back at. A window that did not have to move is listed with its cell and the
+    ///   frame it already had.
+    func carryOut(
+        _ group: LayoutGroup,
+        display: Int,
+        layout: TileLayout,
+        previousTargets: [CGRect],
+        handles: [WindowID: any WindowFrameAccess],
+        frames: [WindowID: CGRect],
+        settings: ActionSettings
+    ) -> [ArrangedWindow] {
+        var group = group
+        let gap = settings.gap
+        let targets = group.targetFrames(for: layout, gap: gap)
+        var placements = zip(targets, group.windows).map { target, window in
+            Placement(target: target, achieved: frames[window] ?? target)
         }
 
-        guard
-            let layout = DividerMove.plan(
-                layout: group.layout, focusedCell: cell, direction: direction, step: step)
-        else { return .nothingToDo(.cannotMove, dissolve: nil) }
-        return .move(
-            DividerMovePlanning(entry: entry, group: group, handles: handles, frames: frames, layout: layout))
+        var steps = group.steps(from: previousTargets, to: targets, current: placements.map(\.achieved))
+        var changedCells = Set(steps.map(\.cell))
+        send(steps, to: handles, within: group.visibleFrame, updating: &placements, animatingWith: settings)
+        if !placements.contains(where: { $0.failure != nil }) {
+            group.recordAchieved(requested: layout, achieved: placements.map(\.achieved), gap: gap)
+
+            // A window that refused its size moved the divider to where it ended up. The windows
+            // whose cell changed with it go there too.
+            steps = group.steps(
+                from: targets, to: group.targetFrames(for: group.layout, gap: gap),
+                current: placements.map(\.achieved))
+            if !steps.isEmpty {
+                changedCells.formUnion(steps.map(\.cell))
+                send(steps, to: handles, within: group.visibleFrame, updating: &placements)
+                if !placements.contains(where: { $0.failure != nil }) {
+                    group.recordAchieved(
+                        requested: group.layout, achieved: placements.map(\.achieved), gap: gap)
+                }
+            }
+        }
+
+        if placements.contains(where: { $0.failure != nil }) {
+            groups.dissolve(display: display)
+        } else {
+            groups.update(group, onDisplay: display)
+        }
+        // Only the windows whose cell changed, and that were changed, are noted.
+        for cell in changedCells.sorted() where placements[cell].failure == nil {
+            let window = group.windows[cell]
+            if let before = frames[window] {
+                records.recordChange(of: window, from: before, to: placements[cell].achieved)
+            }
+        }
+        return zip(group.windows, placements).map { window, placement in
+            ArrangedWindow(
+                window: window, target: placement.target,
+                result: placement.failure.map { .failed(message: $0) } ?? .placed(achieved: placement.achieved))
+        }
     }
 
     /// What is known about one window of the group during a move.

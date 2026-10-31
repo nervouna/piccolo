@@ -3,7 +3,8 @@ import Foundation
 import PiccoloControl
 import PiccoloCore
 
-/// The commands about linked resize: `action.run` with a `moveDivider` action, and `groups.list`.
+/// The commands about linked resize: `action.run` with a `moveDivider` or a `swapWindow` action, and
+/// `groups.list`.
 extension PiccoloClient {
     /// Why `moveDivider` left every window where it was, as `action.run` reports it.
     struct DividerNothingToDo: Equatable {
@@ -53,15 +54,62 @@ extension PiccoloClient {
         else {
             throw AcceptanceFailure("Piccolo's moveDivider answer is neither moved nor nothingToDo: \(result)")
         }
-        let windows = try entries.map { entry -> ArrangedWindow in
+        return .moved(display: display, windows: try Self.arrangedWindows(entries, answer: "moveDivider"))
+    }
+
+    /// The windows of a `moveDivider` or `swapWindow` answer, in cell order.
+    private static func arrangedWindows(_ entries: [JSONValue], answer: String) throws -> [ArrangedWindow] {
+        try entries.map { entry -> ArrangedWindow in
             guard let number = entry["window"]?.intValue, let target = entry["target"]?.rectValue else {
-                throw AcceptanceFailure("Piccolo's moveDivider answer lists a malformed window: \(entry)")
+                throw AcceptanceFailure("Piccolo's \(answer) answer lists a malformed window: \(entry)")
             }
             return ArrangedWindow(
                 windowNumber: number, target: target, achieved: entry["achieved"]?.rectValue,
                 error: entry["error"]?.stringValue)
         }
-        return .moved(display: display, windows: windows)
+    }
+
+    /// Why `swapWindow` left every window where it was, as `action.run` reports it: the same shape as
+    /// for `moveDivider`, with the reasons `noFocusedWindow`, `noGroup`, `dissolved` and `noNeighbour`.
+    typealias SwapNothingToDo = DividerNothingToDo
+
+    /// What `action.run` answered to a `swapWindow` action.
+    enum SwapWindowResult: Equatable {
+        /// The windows traded cells. The windows of the group in cell order after the swap, each with
+        /// the frame it was last sent to and the frame read back.
+        case swapped(display: Int, windows: [ArrangedWindow])
+        case nothingToDo(SwapNothingToDo)
+    }
+
+    /// `action.run` with a `swapWindow` action, restricted to the windows of one process.
+    ///
+    /// `onlyPid` is not optional on purpose, as for `moveDivider`: a group that holds a window of
+    /// another process is dissolved by the app instead of swapped.
+    func swapWindow(_ direction: Direction, onlyPid: pid_t) throws -> SwapWindowResult {
+        var params: [String: JSONValue]
+        do {
+            params = try JSONValue(encoding: Action.swapWindow(direction)).objectValue ?? [:]
+        } catch {
+            throw AcceptanceFailure("the direction \(direction) cannot be encoded: \(error)")
+        }
+        params["onlyPid"] = .int(Int(onlyPid))
+        let result = try send("action.run", params)
+
+        if result["nothingToDo"]?.boolValue == true {
+            guard let reason = result["reason"]?.stringValue, let message = result["message"]?.stringValue else {
+                throw AcceptanceFailure("Piccolo's swapWindow answer has nothingToDo but no reason: \(result)")
+            }
+            return .nothingToDo(
+                SwapNothingToDo(
+                    reason: reason, cause: result["cause"]?.stringValue,
+                    windowNumber: result["window"]?.intValue, message: message))
+        }
+        guard result["swapped"]?.boolValue == true, let display = result["display"]?.intValue,
+            let entries = result["windows"]?.arrayValue
+        else {
+            throw AcceptanceFailure("Piccolo's swapWindow answer is neither swapped nor nothingToDo: \(result)")
+        }
+        return .swapped(display: display, windows: try Self.arrangedWindows(entries, answer: "swapWindow"))
     }
 
     /// A window of a group, with the frame the group recorded for it.

@@ -32,6 +32,24 @@ public struct LayoutGroup: Equatable, Sendable {
         windows.firstIndex(of: window)
     }
 
+    /// The group after the windows in cells `first` and `second` trade places: each window moves to
+    /// the other's cell, and takes along the frame it was last measured at. The layout and the visible
+    /// frame are the same, so the cells keep their sizes and each window takes the size of the cell
+    /// it moves into once it is sent there (``recordAchieved(requested:achieved:gap:)`` then records
+    /// what the windows achieved).
+    ///
+    /// - Precondition: both cells are cells of the group.
+    public func swappingCells(_ first: Int, _ second: Int) -> LayoutGroup {
+        precondition(
+            windows.indices.contains(first) && windows.indices.contains(second),
+            "both cells must be cells of the group")
+        var windows = windows
+        var frames = frames
+        windows.swapAt(first, second)
+        frames.swapAt(first, second)
+        return LayoutGroup(layout: layout, windows: windows, visibleFrame: visibleFrame, frames: frames)
+    }
+
     /// Why a group no longer holds: the first window, in cell order, that is not where the
     /// group recorded it.
     public enum Breakage: Equatable, Sendable {

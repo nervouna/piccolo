@@ -9,7 +9,7 @@ import PiccoloCore
 /// translation. The examples below are the English ones.
 public enum ActionSummary {
     /// One line that says what the action does: "Left Half", "Custom (25%, 0%, 50% × 100%)",
-    /// "Next Display", "Arrange 4 in 2 × 2", "Move Divider Left".
+    /// "Next Display", "Arrange 4 in 2 × 2", "Move Divider Left", "Swap Window Left".
     public static func text(for action: Action, bundle: Bundle = AppLanguage.currentTextBundle) -> String {
         switch action {
         case .placeWindow(.preset(let preset)):
@@ -31,6 +31,13 @@ public enum ActionSummary {
             case .right: return String(localized: "Move Divider Right", bundle: bundle)
             case .up: return String(localized: "Move Divider Up", bundle: bundle)
             case .down: return String(localized: "Move Divider Down", bundle: bundle)
+            }
+        case .swapWindow(let direction):
+            switch direction {
+            case .left: return String(localized: "Swap Window Left", bundle: bundle)
+            case .right: return String(localized: "Swap Window Right", bundle: bundle)
+            case .up: return String(localized: "Swap Window Up", bundle: bundle)
+            case .down: return String(localized: "Swap Window Down", bundle: bundle)
             }
         }
     }

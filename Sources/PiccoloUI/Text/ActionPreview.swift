@@ -4,8 +4,8 @@ import PiccoloCore
 /// What the editor's preview draws: the windows an action would produce, as rectangles in the
 /// unit square (0 to 1 in both directions, origin at the top-left like the screen coordinates).
 public enum ActionPreview {
-    /// The rectangles for `action`, or `nil` when the action has no picture (a display move or a
-    /// divider move places nothing on its own).
+    /// The rectangles for `action`, or `nil` when the action has no picture (a display move, a
+    /// divider move or a swap places nothing on its own).
     ///
     /// - A preset is its frame. `center` keeps the window's own size, which is not known here, so
     ///   it is drawn as a centered half-size window.
@@ -23,7 +23,7 @@ public enum ActionPreview {
         case .arrangeGrid(let grid):
             guard grid.count >= 1, grid.rows >= 1, grid.columns >= 1 else { return nil }
             return cells(of: TileLayout.grid(windowCount: grid.count, rows: grid.rows, columns: grid.columns))
-        case .moveToDisplay, .moveDivider, .restoreWindow:
+        case .moveToDisplay, .moveDivider, .swapWindow, .restoreWindow:
             return nil
         }
     }

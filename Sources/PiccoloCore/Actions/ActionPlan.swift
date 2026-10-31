@@ -102,7 +102,7 @@ public enum ActionPlanner {
             guard let record, record.isInPlace(at: windowFrame) else { return .nothingToDo }
             return try restore(record, windowFrame: windowFrame, displays: displays)
 
-        case .arrangeGrid, .moveDivider:
+        case .arrangeGrid, .moveDivider, .swapWindow:
             throw .notSingleWindowAction
         }
     }

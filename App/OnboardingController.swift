@@ -109,7 +109,7 @@ final class OnboardingController {
             return .arranged(placed: placed)
         case .nothingToDo:
             return .nothingToDo
-        case .dividerMove:
+        case .dividerMove, .swap:
             return .other
         }
     }

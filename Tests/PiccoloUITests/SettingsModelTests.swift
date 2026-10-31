@@ -165,6 +165,19 @@ struct SettingsModelTests {
         #expect(backend.saved.last == model.config)
     }
 
+    @Test("a binding can be changed to Swap Window and to another direction, keeping its shortcut")
+    func updateActionToSwap() {
+        let (model, backend) = make()
+
+        #expect(model.updateAction(UIFixture.idA, to: ActionKind.swapWindow.defaultAction))
+        #expect(model.binding(UIFixture.idA)?.action == .swapWindow(.left))
+        #expect(model.updateAction(UIFixture.idA, to: .swapWindow(.down)))
+
+        #expect(model.binding(UIFixture.idA)?.action == .swapWindow(.down))
+        #expect(model.binding(UIFixture.idA)?.shortcut == UIFixture.f13)
+        #expect(backend.saved.last == model.config)
+    }
+
     @Test("a custom frame inside the screen is accepted")
     func customFrameAccepted() {
         let (model, _) = make()
@@ -664,7 +677,7 @@ struct SettingsModelTests {
 
     // MARK: Restoring the default shortcuts
 
-    @Test("restoring keeps a copy of the file, replaces the bindings with the 28 defaults and keeps the resize step")
+    @Test("restoring keeps a copy of the file, replaces the bindings with the 32 defaults and keeps the resize step")
     func restoreDefaults() {
         let (model, backend) = make(Config(resizeStep: 0.2, bindings: UIFixture.twoBindings().bindings))
 
@@ -672,12 +685,12 @@ struct SettingsModelTests {
 
         #expect(backend.copies == [InMemorySettingsBackend.copyName])
         #expect(model.backupName == InMemorySettingsBackend.copyName)
-        #expect(model.bindings.count == 28)
+        #expect(model.bindings.count == 32)
         #expect(model.bindings.map(\.action) == Config.defaultShortcuts.bindings.map(\.action))
         #expect(model.bindings.map(\.shortcut) == Config.defaultShortcuts.bindings.map(\.shortcut))
         #expect(model.resizeStep == 0.2)
         #expect(backend.config.resizeStep == 0.2)
-        #expect(backend.config.bindings.count == 28)
+        #expect(backend.config.bindings.count == 32)
         #expect(model.error == nil)
         #expect(model.selectedBindingID == model.bindings.first?.id)
     }
@@ -738,8 +751,8 @@ struct SettingsModelTests {
 
         #expect(backend.copies.isEmpty)
         #expect(model.backupName == nil)
-        #expect(model.bindings.count == 28)
-        #expect(backend.config.bindings.count == 28)
+        #expect(model.bindings.count == 32)
+        #expect(backend.config.bindings.count == 32)
     }
 
     @Test("a restore the backend cannot carry out changes nothing, and the error says why")
@@ -836,12 +849,12 @@ struct SettingsModelTests {
 
         #expect(model.restoreDefaultShortcuts())
 
-        #expect(model.bindings.count == 28)
+        #expect(model.bindings.count == 32)
         #expect(model.resizeStep == 0.2)
         #expect(model.animation == .slow)
         #expect(model.gridFillOrder == .columns)
         #expect(model.destinationPreview == false)
-        #expect(backend.config.bindings.count == 28)
+        #expect(backend.config.bindings.count == 32)
         #expect(backend.config.resizeStep == 0.2)
         #expect(backend.config.animation == .slow)
         #expect(backend.config.gridFillOrder == .columns)

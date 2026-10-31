@@ -9,28 +9,38 @@ extension ConfigDirectory {
     /// returns its URL.
     @discardableResult
     func write(
-        resizeStep: Double, gridFillOrder: GridFillOrder = .rows, as name: String = "config.json"
+        resizeStep: Double, gridFillOrder: GridFillOrder = .rows, gap: Int = Config.defaultGap,
+        destinationPreview: Bool = Config.defaultDestinationPreview, bindings: [KeyBinding] = [],
+        as name: String = "config.json"
     ) throws -> URL {
         let target = file(name)
         try ConfigStore(url: target).save(
-            Config(resizeStep: resizeStep, gridFillOrder: gridFillOrder, bindings: []))
+            Config(
+                resizeStep: resizeStep, gridFillOrder: gridFillOrder, destinationPreview: destinationPreview,
+                gap: gap, bindings: bindings))
         return target
     }
 }
 
-/// Runs `body` against a Piccolo whose config has no bindings, the resize step `step` and the grid
-/// fill order `gridFillOrder`, so that the expected frames do not depend on the config of whoever runs
-/// the tests, and with a fixture that starts with no windows. Afterwards the fixture windows are closed
-/// and Piccolo is back on its default config (see `withConfigDirectory`).
+/// Runs `body` against a Piccolo whose config has no bindings (unless `bindings` gives some), the
+/// resize step `step`, the grid fill order `gridFillOrder`, the window `gap` and the destination
+/// preview setting, so that the expected frames do not depend on the config of whoever runs the tests,
+/// and with a fixture that starts with no windows. Afterwards the fixture windows are closed and
+/// Piccolo is back on its default config (see `withConfigDirectory`).
 func withLinkedResize<Result>(
     step: Double = LinkedRun.defaultStep,
     gridFillOrder: GridFillOrder = .rows,
+    gap: Int = Config.defaultGap,
+    destinationPreview: Bool = Config.defaultDestinationPreview,
+    bindings: [KeyBinding] = [],
     _ body: (LinkedRun) async throws -> Result
 ) async throws -> Result {
     let screen = try await ArrangeRun.screens()[0]
     return try await withConfigDirectory { directory in
         try PiccoloClient().loadConfig(
-            at: try directory.write(resizeStep: step, gridFillOrder: gridFillOrder))
+            at: try directory.write(
+                resizeStep: step, gridFillOrder: gridFillOrder, gap: gap, destinationPreview: destinationPreview,
+                bindings: bindings))
         return try await withFixture { fixture in
             try await body(
                 LinkedRun(

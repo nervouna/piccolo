@@ -77,9 +77,10 @@ struct ActionPreviewTests {
         #expect(ActionPreview.rects(for: .arrangeGrid(GridSpec(count: 2, rows: 2, columns: 0))) == nil)
     }
 
-    @Test("display and divider moves have no picture")
+    @Test("display moves, divider moves and swaps have no picture")
     func noPicture() {
         #expect(ActionPreview.rects(for: .moveToDisplay(.next)) == nil)
         #expect(ActionPreview.rects(for: .moveDivider(.left)) == nil)
+        #expect(ActionPreview.rects(for: .swapWindow(.left)) == nil)
     }
 }

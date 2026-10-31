@@ -15,6 +15,8 @@ public enum Action: Codable, Equatable, Sendable {
     case moveDivider(Direction)
     /// Puts the focused window back where it was before Piccolo moved it. No parameters.
     case restoreWindow
+    /// Exchanges the focused window with its neighbour on that side in a group Piccolo arranged.
+    case swapWindow(Direction)
 
     private enum CodingKeys: String, CodingKey {
         case type
@@ -43,6 +45,8 @@ public enum Action: Codable, Equatable, Sendable {
             self = .moveDivider(try container.decode(Direction.self, forKey: .direction))
         case "restoreWindow":
             self = .restoreWindow
+        case "swapWindow":
+            self = .swapWindow(try container.decode(Direction.self, forKey: .direction))
         default:
             throw DecodingError.dataCorruptedError(
                 forKey: .type, in: container,
@@ -69,6 +73,9 @@ public enum Action: Codable, Equatable, Sendable {
             try container.encode(direction, forKey: .direction)
         case .restoreWindow:
             try container.encode("restoreWindow", forKey: .type)
+        case .swapWindow(let direction):
+            try container.encode("swapWindow", forKey: .type)
+            try container.encode(direction, forKey: .direction)
         }
     }
 }
@@ -85,7 +92,7 @@ public enum DisplayDirection: String, Codable, CaseIterable, Equatable, Sendable
     case down
 }
 
-/// The side a divider moves toward.
+/// The side a divider moves toward, or the side of the neighbour a swap trades places with.
 public enum Direction: String, Codable, CaseIterable, Equatable, Sendable {
     case left
     case right

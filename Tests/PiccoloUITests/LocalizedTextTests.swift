@@ -87,6 +87,17 @@ struct LocalizedTextTests {
         #expect(ActionSummary.text(for: action, bundle: chinese) != ActionSummary.text(for: action, bundle: english))
     }
 
+    @Test("every swap direction", arguments: [
+        (Direction.left, "与左侧窗口交换"), (.right, "与右侧窗口交换"), (.up, "与上方窗口交换"),
+        (.down, "与下方窗口交换"),
+    ] as [(Direction, String)])
+    func swaps(_ direction: Direction, _ text: String) {
+        let action = Action.swapWindow(direction)
+
+        #expect(ActionSummary.text(for: action, bundle: chinese) == text)
+        #expect(ActionSummary.text(for: action, bundle: chinese) != ActionSummary.text(for: action, bundle: english))
+    }
+
     @Test("the four directions have names")
     func directionNames() {
         #expect(Direction.allCases.map { ActionSummary.name(of: $0, bundle: chinese) } == ["左侧", "右侧", "上方", "下方"])
@@ -100,7 +111,7 @@ struct LocalizedTextTests {
             #expect(!zh.isEmpty)
             #expect(zh != kind.title(bundle: english), "\(kind)")
         }
-        #expect(ActionKind.allCases.map { $0.title(bundle: chinese) } == ["放置窗口", "恢复窗口", "移到显示器", "网格排列", "移动分隔线"])
+        #expect(ActionKind.allCases.map { $0.title(bundle: chinese) } == ["放置窗口", "恢复窗口", "移到显示器", "网格排列", "移动分隔线", "交换窗口"])
     }
 
     @Test("the percentages are written the same in every language")
@@ -119,6 +130,7 @@ struct LocalizedTextTests {
             + DisplayDirection.allCases.map { .moveToDisplay($0) }
             + [.arrangeGrid(GridSpec(count: 4, rows: 2, columns: 2))]
             + Direction.allCases.map { .moveDivider($0) }
+            + Direction.allCases.map { .swapWindow($0) }
         for action in actions {
             let text = ActionSummary.text(for: action, bundle: bundle)
             #expect(!text.isEmpty, "\(action) in \(language.rawValue)")

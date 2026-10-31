@@ -59,6 +59,10 @@ struct ConfigModelTests {
             Action.moveDivider(.right),
             Action.moveDivider(.up),
             Action.moveDivider(.down),
+            Action.swapWindow(.left),
+            Action.swapWindow(.right),
+            Action.swapWindow(.up),
+            Action.swapWindow(.down),
         ])
     func actionRoundTrip(_ action: Action) throws {
         #expect(try roundTrip(action) == action)
@@ -416,5 +420,58 @@ struct ConfigFileFormatTests {
 
             """
         #expect(try written([binding]) == expected)
+    }
+
+    @Test("a swapWindow binding is written as a type and a direction")
+    func swapWindow() throws {
+        let binding = KeyBinding(
+            id: Fixture.idE,
+            action: .swapWindow(.right),
+            shortcut: Shortcut(keyCode: 124, modifiers: [.control, .option, .shift, .command]))
+        let expected = """
+            {
+              "animation" : "fast",
+              "bindings" : [
+                {
+                  "action" : {
+                    "direction" : "right",
+                    "type" : "swapWindow"
+                  },
+                  "id" : "9B8A7C6D-5E4F-4A3B-8C2D-1E0F9A8B7C6D",
+                  "shortcut" : {
+                    "keyCode" : 124,
+                    "modifiers" : [
+                      "command",
+                      "control",
+                      "option",
+                      "shift"
+                    ]
+                  }
+                }
+              ],
+              "destinationPreview" : true,
+              "gap" : 0,
+              "gridFillOrder" : "rows",
+              "resizeStep" : 0.05,
+              "version" : 1
+            }
+
+            """
+        #expect(try written([binding]) == expected)
+    }
+
+    @Test("swapWindow is read from its type and direction, and a missing or unknown direction is refused")
+    func readSwapWindow() throws {
+        let decoder = JSONDecoder()
+        for direction in Direction.allCases {
+            let json = Data(#"{"type": "swapWindow", "direction": "\#(direction.rawValue)"}"#.utf8)
+            #expect(try decoder.decode(Action.self, from: json) == .swapWindow(direction))
+        }
+        #expect(throws: DecodingError.self) {
+            try decoder.decode(Action.self, from: Data(#"{"type": "swapWindow"}"#.utf8))
+        }
+        #expect(throws: DecodingError.self) {
+            try decoder.decode(Action.self, from: Data(#"{"type": "swapWindow", "direction": "next"}"#.utf8))
+        }
     }
 }

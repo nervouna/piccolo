@@ -85,10 +85,11 @@ struct SettingsViewRenderTests {
         shortcut: Shortcut(keyCode: 0, modifiers: [.control, .option]))
     private static let display = KeyBinding(action: .moveToDisplay(.next))
     private static let divider = KeyBinding(action: .moveDivider(.left))
+    private static let swap = KeyBinding(action: .swapWindow(.right))
 
     @Test("the whole window renders in light and dark appearance, with every kind of binding")
     func wholeWindow() throws {
-        let all = [Self.leftHalf, Self.custom, Self.grid, Self.display, Self.divider]
+        let all = [Self.leftHalf, Self.custom, Self.grid, Self.display, Self.divider, Self.swap]
         for (name, dark) in [("light", false), ("dark", true)] {
             let model = model(all, issues: ["bindings[4] shortcut was refused: taken by the system"])
             let bitmap = try render(SettingsView(model: model, host: host), dark: dark)
@@ -121,7 +122,7 @@ struct SettingsViewRenderTests {
     func eachAction() throws {
         let bindings: [(String, KeyBinding)] = [
             ("preset", Self.leftHalf), ("custom", Self.custom), ("grid", Self.grid),
-            ("display", Self.display), ("divider", Self.divider),
+            ("display", Self.display), ("divider", Self.divider), ("swap", Self.swap),
         ]
         for (name, binding) in bindings {
             let model = model([binding])
