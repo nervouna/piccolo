@@ -31,7 +31,8 @@ extension ActionExecutor {
     ///   run dissolves it, this does not) or when the divider cannot move.
     /// - `swapWindow`: the two windows that would trade cells, in cell order, each with its new cell (the
     ///   cell of the other one, with the window gap). None when there is no group, when the group no
-    ///   longer holds (the run dissolves it, this does not) or when there is no neighbour on that side.
+    ///   longer holds (the run dissolves it, this does not) or when there is no neighbour on that side
+    ///   (the run bounces the window then when the animation is on; planning never does).
     ///
     /// Like a run, it reads the focused window and the windows on screen, which can take a while, so it
     /// belongs off the main thread, on the queue the actions run on. The parameters mean what they
@@ -60,7 +61,7 @@ extension ActionExecutor {
 
         case .swapWindow(let direction):
             switch try planSwap(direction, onlyPid: onlyPid) {
-            case .nothingToDo:
+            case .nothingToDo, .noNeighbour:
                 return []
             case .swap(let planning):
                 let frames = planning.group.targetFrames(for: planning.group.layout, gap: settings.gap)

@@ -44,6 +44,9 @@ public struct AnimatedWindow {
 ///   only. A window whose change fails otherwise, or whose tick takes longer than the whole duration,
 ///   is dropped from the animation: it gets nothing more, and the caller's final placement deals with
 ///   it. The other windows carry on, unless `ordered` is set.
+///
+/// ``bounce(_:from:towards:duration:)`` plays the bounce of a Swap Window press with no neighbour on the
+/// same ticks.
 public struct WindowAnimator: Sendable {
     /// The most ticks per second.
     public static let ticksPerSecond = 60.0
@@ -78,26 +81,7 @@ public struct WindowAnimator: Sendable {
         var active = Array(glides.indices)
         guard !active.isEmpty else { return }
 
-        let interval = 1 / Self.ticksPerSecond
-        let begin = clock.now()
-        let end = begin + duration
-        var previousTick = begin
-        while !active.isEmpty {
-            // The next tick is one interval after the last one. When the end falls before the tick
-            // after that, this is the last tick, and it waits for the end.
-            var wake = previousTick + interval
-            var isLast = false
-            if end - wake < interval - Self.epsilon {
-                wake = max(end, wake)
-                isLast = true
-            }
-            let wait = wake - clock.now()
-            if wait > 0 { clock.sleep(wait) }
-
-            let tickStart = clock.now()
-            isLast = isLast || tickStart >= end
-            let progress = isLast ? 1 : (tickStart - begin) / duration
-
+        ticks(for: duration) { progress in
             var position = 0
             while position < active.count {
                 let began = clock.now()
@@ -114,8 +98,92 @@ public struct WindowAnimator: Sendable {
                     position += 1
                 }
             }
+            return !active.isEmpty
+        }
+    }
+
+    /// Plays the bounce of one window towards `direction` and back, and returns whether it did.
+    ///
+    /// The window goes through the frames of ``EdgeBounce`` on the same ticks as an animation: at most
+    /// 60 a second, progress taken from the clock, and the last tick at progress 1, which is the start
+    /// frame, so that the window ends exactly where it began. A tick sends only what changed: the
+    /// position for `left`, `right` and `down`, the size for `up`. The window is neither shifted into a
+    /// visible frame nor read back, and a tick that is slow is not a reason to drop the window: the
+    /// ticks that follow are fewer, and the last one still comes.
+    ///
+    /// A call that throws ends the bounce at once, and the window is put back at `start` with the calls
+    /// that still work. That is how a window whose size is not settable answers `up`: its first tick
+    /// throws, and nothing has changed yet. The result is then `false`.
+    ///
+    /// - Parameters:
+    ///   - window: The window to bounce.
+    ///   - start: The frame it is at, and comes back to.
+    ///   - direction: The side to bounce towards.
+    ///   - duration: Seconds. Zero or less bounces nothing and does not touch the clock.
+    /// - Returns: `true` when the window went out and came back, `false` when there was no bounce, or it
+    ///   was cut short.
+    public func bounce(
+        _ window: any WindowFrameAccess, from start: CGRect, towards direction: Direction,
+        duration: TimeInterval = EdgeBounce.duration
+    ) -> Bool {
+        guard duration > 0 else { return false }
+        // What the window has, as far as the animator knows: the start, then what it was sent.
+        var sent = start
+        var failed = false
+        ticks(for: duration) { progress in
+            let frame = EdgeBounce.frame(from: start, towards: direction, progress: progress)
+            do {
+                if frame.origin != sent.origin {
+                    try window.setPosition(frame.origin)
+                    sent.origin = frame.origin
+                }
+                if frame.size != sent.size {
+                    try window.setSize(frame.size)
+                    sent.size = frame.size
+                }
+                return true
+            } catch {
+                failed = true
+                return false
+            }
+        }
+        guard failed else { return true }
+        // Back to the start frame, as far as the window lets us.
+        if sent.origin != start.origin { try? window.setPosition(start.origin) }
+        if sent.size != start.size { try? window.setSize(start.size) }
+        return false
+    }
+
+    /// Calls `tick` with the progress of an animation of `duration` seconds, once per tick, until the
+    /// last tick (at progress 1) or until `tick` answers `false`. Zero or less never gets here.
+    ///
+    /// Ticks start at least 1/60 s apart; the progress is the time since the start over the duration,
+    /// and the last tick waits for the end of the duration, or comes at the first tick after it when
+    /// the calls were late.
+    private func ticks(for duration: TimeInterval, _ tick: (_ progress: Double) -> Bool) {
+        let interval = 1 / Self.ticksPerSecond
+        let begin = clock.now()
+        let end = begin + duration
+        var previousTick = begin
+        while true {
+            // The next tick is one interval after the last one. When the end falls before the tick
+            // after that, this is the last tick, and it waits for the end.
+            var wake = previousTick + interval
+            var isLast = false
+            if end - wake < interval - Self.epsilon {
+                wake = max(end, wake)
+                isLast = true
+            }
+            let wait = wake - clock.now()
+            if wait > 0 { clock.sleep(wait) }
+
+            let tickStart = clock.now()
+            isLast = isLast || tickStart >= end
+            let progress = isLast ? 1 : (tickStart - begin) / duration
+
+            let more = tick(progress)
             previousTick = tickStart
-            if isLast { break }
+            if isLast || !more { break }
         }
     }
 }

@@ -20,6 +20,12 @@ final class FakeWindow: WindowFrameAccess, @unchecked Sendable {
     /// Makes `setPosition` fail with this error, from the call numbered `failPositionFromCall` on.
     var failPositionWith: WindowError?
     var failPositionFromCall = 1
+    /// Makes only the `setPosition` calls numbered like this fail (1 is the first), each with a plain
+    /// Accessibility error.
+    var failPositionOnCalls: Set<Int> = []
+    /// Makes only the `setSize` calls numbered like this fail (1 is the first), each with a plain
+    /// Accessibility error.
+    var failSizeOnCalls: Set<Int> = []
     /// Makes the window ignore `setPosition` silently, from this call on (1 is the first call).
     var ignorePositionFromCall: Int?
     var failFrameWith: WindowError?
@@ -48,6 +54,9 @@ final class FakeWindow: WindowFrameAccess, @unchecked Sendable {
     func setSize(_ newSize: CGSize) throws {
         calls.append("size")
         if let failSizeWith { throw failSizeWith }
+        if failSizeOnCalls.contains(calls.filter({ $0 == "size" }).count) {
+            throw WindowError.accessibility(operation: "set AXSize", code: -25204)
+        }
         let display = displays.first { $0.contains(origin) } ?? displays[0]
         size = CGSize(
             width: min(max(newSize.width, minimumSize.width), min(maximumSize.width, display.width)),
@@ -59,6 +68,9 @@ final class FakeWindow: WindowFrameAccess, @unchecked Sendable {
         calls.append("position")
         let number = calls.filter { $0 == "position" }.count
         if let failPositionWith, number >= failPositionFromCall { throw failPositionWith }
+        if failPositionOnCalls.contains(number) {
+            throw WindowError.accessibility(operation: "set AXPosition", code: -25204)
+        }
         if let ignorePositionFromCall, number >= ignorePositionFromCall { return }
         origin = newOrigin
     }

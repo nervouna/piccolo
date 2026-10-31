@@ -54,12 +54,14 @@ final class DeskWindow: WindowFrameAccess, @unchecked Sendable {
         if isClosed { throw WindowError.windowGone }
         desk.willChange(window: number, with: "size")
         try fake.setSize(size)
+        desk.didChange(window: number, kind: .size, frame: fake.frameValue)
     }
 
     func setPosition(_ origin: CGPoint) throws {
         if isClosed { throw WindowError.windowGone }
         desk.willChange(window: number, with: "position")
         try fake.setPosition(origin)
+        desk.didChange(window: number, kind: .position, frame: fake.frameValue)
     }
 }
 
@@ -77,6 +79,20 @@ final class Desk: @unchecked Sendable {
 
     /// Every size and position change the windows received, as "<number> size" or "<number> position".
     var log: [String] = []
+    /// One change a window took: which window, what changed, the frame after it and the time on `clock`.
+    struct Change: Equatable {
+        enum Kind { case size, position }
+        var window: UInt32
+        var kind: Kind
+        var frame: CGRect
+        var time: TimeInterval
+    }
+
+    /// Every size and position change the windows took (those that threw are not in it), in order.
+    private(set) var trace: [Change] = []
+    /// The clock the changes are timed on; without one their time is 0.
+    var clock: FakeClock?
+
     /// The `onlyPid` of each request for the windows on screen.
     private(set) var catalogRequests: [pid_t?] = []
     private var overlapsFound: [String] = []
@@ -247,6 +263,10 @@ final class Desk: @unchecked Sendable {
     var overlaps: [String] {
         checkOverlaps(label: "at the end")
         return overlapsFound
+    }
+
+    fileprivate func didChange(window number: UInt32, kind: Change.Kind, frame: CGRect) {
+        trace.append(Change(window: number, kind: kind, frame: frame, time: clock?.time ?? 0))
     }
 
     fileprivate func willChange(window number: UInt32, with operation: String) {

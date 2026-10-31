@@ -118,7 +118,8 @@ struct FailureNoticeMappingTests {
         #expect(notice(.noGroup) == .noGroup)
         #expect(notice(.dissolved(.missing(id))) == .dissolved)
         #expect(notice(.dissolved(.moved(id))) == .dissolved)
-        #expect(notice(.noNeighbour) == .noNeighbour)
+        #expect(notice(.noNeighbour(bounced: false)) == .noNeighbour)
+        #expect(notice(.noNeighbour(bounced: true)) == nil)
     }
 
     @Test("the notices have stable names")

@@ -215,7 +215,7 @@ struct SwapExecutionTests {
         #expect(try desk.frame(of: 2) == before[0])
         #expect(try desk.frame(of: 3) == before[1])
         #expect(try group(desk).windows == [id(2), id(3), id(1)])
-        #expect(try desk.swap(.right) == .nothingToDo(.noNeighbour))
+        #expect(try desk.swap(.right) == .nothingToDo(.noNeighbour(bounced: false)))
         #expect(desk.focused == 1)
         #expect(desk.order == order, "no window was raised")
         #expect(desk.focusOrder == focusOrder)
@@ -306,11 +306,11 @@ struct SwapExecutionTests {
         let mark = desk.log.count
 
         desk.focused = 1
-        #expect(try desk.swap(.left) == .nothingToDo(.noNeighbour))
-        #expect(try desk.swap(.up) == .nothingToDo(.noNeighbour))
-        #expect(try desk.swap(.down) == .nothingToDo(.noNeighbour))
+        #expect(try desk.swap(.left) == .nothingToDo(.noNeighbour(bounced: false)))
+        #expect(try desk.swap(.up) == .nothingToDo(.noNeighbour(bounced: false)))
+        #expect(try desk.swap(.down) == .nothingToDo(.noNeighbour(bounced: false)))
         desk.focused = 2
-        #expect(try desk.swap(.right) == .nothingToDo(.noNeighbour))
+        #expect(try desk.swap(.right) == .nothingToDo(.noNeighbour(bounced: false)))
 
         #expect(desk.calls(since: mark).isEmpty)
         #expect(try desk.frames(2) == before)
@@ -324,7 +324,7 @@ struct SwapExecutionTests {
         desk.openWindows(1)
         try desk.arrange(count: 1, rows: 1, columns: 1)
         for direction in Direction.allCases {
-            #expect(try desk.swap(direction) == .nothingToDo(.noNeighbour))
+            #expect(try desk.swap(direction) == .nothingToDo(.noNeighbour(bounced: false)))
         }
     }
 
@@ -636,7 +636,7 @@ struct SwapExecutionTests {
         #expect(SwapOutcome.Reason.dissolved(.missing(DeskRig.id(7))).message.contains("no longer on screen"))
         #expect(SwapOutcome.Reason.noGroup.message.contains("not in a group"))
         #expect(!SwapOutcome.Reason.noFocusedWindow.message.isEmpty)
-        #expect(SwapOutcome.Reason.noNeighbour.message.contains("neighbour"))
+        #expect(SwapOutcome.Reason.noNeighbour(bounced: false).message.contains("neighbour"))
     }
 }
 
@@ -692,7 +692,7 @@ struct AnimatedSwapTests {
         #expect(clock.sleeps.isEmpty)
     }
 
-    @Test("with no neighbour there is nothing to glide")
+    @Test("with no neighbour there is nothing to glide: the focused window only bounces, in 0.2 s whatever the speed")
     func noNeighbour() throws {
         let clock = FakeClock()
         let desk = try makeDesk(clock: clock)
@@ -700,8 +700,8 @@ struct AnimatedSwapTests {
 
         let outcome = try desk.executor.run(.swapWindow(.left), settings: ActionSettings(animation: .slow))
 
-        #expect(outcome == .swap(.nothingToDo(.noNeighbour)))
-        #expect(desk.calls(since: mark).isEmpty)
-        #expect(clock.sleeps.isEmpty)
+        #expect(outcome == .swap(.nothingToDo(.noNeighbour(bounced: true))))
+        #expect(desk.calls(since: mark).allSatisfy { $0 == "1 position" }, "\(desk.calls(since: mark))")
+        #expect(abs(clock.elapsed - 0.2) < 1e-9)
     }
 }

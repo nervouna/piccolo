@@ -15,6 +15,9 @@ extension PiccoloClient {
         /// For `dissolved`: the window that broke the group.
         var windowNumber: Int?
         var message: String
+        /// For a `swapWindow` that found `noNeighbour`: whether the focused window bounced. `nil` for
+        /// every other answer.
+        var bounced: Bool?
     }
 
     /// What `action.run` answered to a `moveDivider` action.
@@ -102,7 +105,8 @@ extension PiccoloClient {
             return .nothingToDo(
                 SwapNothingToDo(
                     reason: reason, cause: result["cause"]?.stringValue,
-                    windowNumber: result["window"]?.intValue, message: message))
+                    windowNumber: result["window"]?.intValue, message: message,
+                    bounced: result["bounced"]?.boolValue))
         }
         guard result["swapped"]?.boolValue == true, let display = result["display"]?.intValue,
             let entries = result["windows"]?.arrayValue

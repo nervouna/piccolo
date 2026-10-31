@@ -30,7 +30,9 @@ extension DebugControlServer {
     ///   `{"swapped": true, "display": index, "windows": [...]}` as for `moveDivider`, every window of
     ///   the group in cell order after the swap, or `{"nothingToDo": true, "reason": "noFocusedWindow" |
     ///   "noGroup" | "dissolved" | "noNeighbour", "message": text}`, where `dissolved` adds `"window"`
-    ///   and `"cause"` as for `moveDivider`.
+    ///   and `"cause"` as for `moveDivider`, and `noNeighbour` adds `"bounced"`: `true` when the focused
+    ///   window bounced towards that side and back (the animation is not off, and the window let it),
+    ///   `false` when it did not.
     /// - `focus.history`: `{"windows": [window numbers]}`, most recently focused first.
     /// - `groups.list`: the groups of windows Piccolo arranged and still tracks, one per display (after a
     ///   swap the windows are listed in their exchanged order):
@@ -137,8 +139,13 @@ extension DebugControlServer {
             return nothingToDo(reason: "noGroup", message: reason.message)
         case .dissolved(let breakage):
             return dissolved(breakage, message: reason.message)
-        case .noNeighbour:
-            return nothingToDo(reason: "noNeighbour", message: reason.message)
+        case .noNeighbour(let bounced):
+            return [
+                "nothingToDo": .bool(true),
+                "reason": .string("noNeighbour"),
+                "message": .string(reason.message),
+                "bounced": .bool(bounced),
+            ]
         }
     }
 
