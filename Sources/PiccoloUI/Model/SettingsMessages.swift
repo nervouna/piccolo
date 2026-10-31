@@ -31,7 +31,7 @@ enum SettingsMessages {
             case ("count", _):
                 return String(localized: "The number of windows cannot be more than rows × columns.", bundle: bundle)
             case ("resizeStep", _):
-                return String(localized: "The resize step must be more than 0% and at most 50%.", bundle: bundle)
+                return String(localized: "The linked resize step must be more than 0% and at most 50%.", bundle: bundle)
             case ("gap", _):
                 return String(localized: "The window gap must be a whole number from 0 to 64 pt.", bundle: bundle)
             default: return "\(field) \(rule)."
@@ -48,7 +48,7 @@ enum SettingsMessages {
         case "y": String(localized: "Top", bundle: bundle)
         case "width": String(localized: "Width", bundle: bundle)
         case "height": String(localized: "Height", bundle: bundle)
-        case "resizeStep": String(localized: "The resize step", bundle: bundle)
+        case "resizeStep": String(localized: "The linked resize step", bundle: bundle)
         default: field.prefix(1).uppercased() + field.dropFirst()
         }
     }
