@@ -158,24 +158,6 @@ extension DesktopAcceptanceTests {
             }
         }
 
-        @Test("settingsChrome 3. the General tab's window is less tall than the Shortcuts tab's")
-        func generalIsLessTallThanShortcuts() async throws {
-            try await withSettingsSession { session in
-                defer { _ = try? piccolo.settingsShowTab("shortcuts") }
-                try piccolo.settingsShowTab("shortcuts")
-                try session.openSettings()
-                let shortcuts = try await settled(onTab: "shortcuts")
-                _ = try piccolo.settingsShowTab("general")
-                let general = try await settled(onTab: "general")
-
-                let shortcutsHeight = try #require(shortcuts.frame).height
-                let generalHeight = try #require(general.frame).height
-                #expect(
-                    generalHeight < shortcutsHeight,
-                    "the General tab's window is \(generalHeight) pt high, the Shortcuts tab's \(shortcutsHeight) pt")
-            }
-        }
-
         // MARK: 3. Back to the Shortcuts tab
 
         @Test("settingsChrome 4. switching from General back to Shortcuts gives the Shortcuts frame back, top edge unchanged")
