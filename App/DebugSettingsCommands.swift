@@ -12,7 +12,7 @@ import PiccoloUI
 /// `settings.setResizeStep`, `settings.setGap`, `settings.setAnimation`, `settings.setGridFillOrder`,
 /// `settings.setDestinationPreview`, `settings.setLanguage`, `settings.restoreDefaults`), the restart
 /// that applies a new language (`settings.restartNow`), recording a row of the keymap
-/// (`settings.beginRecording`, `settings.cancelRecording`, `settings.record`), the rest of the keymap
+/// (`settings.beginRecording`, `settings.cancelRecording`, `settings.record`, `settings.pressKey`), the rest of the keymap
 /// (`settings.clearShortcut`, `settings.resolveConflict`, `settings.addLayout`, `settings.updateLayout`,
 /// `settings.editLayout`, `settings.dismissLayoutEditor`), the history (`settings.undo`, `settings.redo`),
 /// and the login item (`loginItem.status`, `loginItem.set`).
@@ -248,6 +248,15 @@ extension DebugControlServer {
             return try recordByKeyPress(press) { $0.beginRecording(row) }
         }
 
+        // Posts one key press to the Settings window with real keyboard events, as a person's key press, and
+        // begins no recording: ⌘Z (keyCode 6, modifiers ["command"]) undoes, ⇧⌘Z redoes. Answers the state
+        // once the window has handled the press. Refuses (`ok: false`, nothing posted) unless Piccolo is the
+        // frontmost application and the Settings window is key, like `settings.record`.
+        router.register("settings.pressKey") { params in
+            let request = try params.decode(PressKeyParams.self)
+            return try pressKeyInSettings(Shortcut(keyCode: request.keyCode, modifiers: Set(request.modifiers)))
+        }
+
         // Takes away a row's shortcut, as the ✕ in the shortcut button does.
         router.register("settings.clearShortcut") { params in
             let row = try rowID(named: try params.decode(RowParams.self).row)
@@ -350,13 +359,54 @@ extension DebugControlServer {
         }
     }
 
-    // MARK: Recording by key press
+    // MARK: Key presses
 
     /// Starts a recording with `begin`, posts `press` with real keyboard events and answers the state once
     /// the recorder has taken it. Refuses (nothing posted) unless Piccolo may post events, is the frontmost
     /// application and has the Settings window as its key window.
     private nonisolated static func recordByKeyPress(
         _ press: Shortcut, begin: @MainActor (SettingsModel) -> Bool
+    ) throws -> JSONValue {
+        try postToSettingsWindow(
+            press, begin: begin,
+            count: { $0.model.pressesTaken },
+            lostReason: { settings in
+                settings.model.isRecording
+                    ? nil
+                    : "the recording ended before the key press arrived: the Settings window is no longer the key window"
+            },
+            giveUp: { $0.model.cancelRecording() },
+            timeoutMessage: "the key press was posted but the recorder did not receive it within "
+                + "\(Int(recordTimeout)) s; recording was cancelled")
+    }
+
+    /// Posts `press` with real keyboard events to the Settings window, which handles it as it handles a key
+    /// press of a person (⌘Z undoes, ...), and answers the state once the window's key monitor has handled it.
+    /// Begins no recording. Refuses (nothing posted) under the same conditions as ``recordByKeyPress(_:begin:)``.
+    private nonisolated static func pressKeyInSettings(_ press: Shortcut) throws -> JSONValue {
+        try postToSettingsWindow(
+            press, begin: { _ in true },
+            count: { $0.keyPressesSeen },
+            lostReason: { settings in
+                settings.isKey ? nil : "the Settings window stopped being the key window before the key press arrived"
+            },
+            giveUp: { _ in },
+            timeoutMessage: "the key press was posted but the Settings window did not handle it within "
+                + "\(Int(recordTimeout)) s")
+    }
+
+    /// The common part of the commands that post a key press to the Settings window. Checks that Piccolo may
+    /// post events, is the frontmost application and has the Settings window as its key window, runs `begin`
+    /// (a rejection answers its message), posts `press`, and waits until `count` has gone up, which is when
+    /// the press has arrived and had its effect. While it waits, `lostReason` says why the press can no longer
+    /// arrive, if it can't; `giveUp` undoes what `begin` did when nothing arrives.
+    private nonisolated static func postToSettingsWindow(
+        _ press: Shortcut,
+        begin: @MainActor (SettingsModel) -> Bool,
+        count: @MainActor (SettingsController) -> Int,
+        lostReason: @MainActor (SettingsController) -> String?,
+        giveUp: @MainActor (SettingsController) -> Void,
+        timeoutMessage: String
     ) throws -> JSONValue {
         guard CGPreflightPostEventAccess() else {
             throw ControlCommandError.failed(
@@ -366,7 +416,7 @@ extension DebugControlServer {
 
         // The checks and the posting are one step on the main thread, so that nothing can
         // change the frontmost application in between.
-        let pressesBefore: Int = try onMainActor {
+        let countBefore: Int = try onMainActor {
             let settings = SettingsController.shared
             guard NSApplication.shared.isActive,
                 NSWorkspace.shared.frontmostApplication?.processIdentifier
@@ -384,38 +434,35 @@ extension DebugControlServer {
             guard begin(settings.model) else {
                 throw rejection(of: settings.model)
             }
-            let pressesBefore = settings.model.pressesTaken
+            let countBefore = count(settings)
             do {
                 try postKeyPress(press)
             } catch {
-                settings.model.cancelRecording()
+                giveUp(settings)
                 throw error
             }
-            return pressesBefore
+            return countBefore
         }
 
-        // The events are asynchronous: wait until the recorder has taken the key press.
+        // The events are asynchronous: wait until the window has handled the key press.
         let deadline = Date().addingTimeInterval(recordTimeout)
         while Date() < deadline {
-            let (taken, stillRecording) = onMainActor {
-                let model = SettingsController.shared.model
-                return (model.pressesTaken, model.isRecording)
+            let (seen, lost) = onMainActor {
+                let settings = SettingsController.shared
+                return (count(settings), lostReason(settings))
             }
-            if taken > pressesBefore {
+            if seen > countBefore {
                 return onMainActor { settingsState() }
             }
-            if !stillRecording {
-                // Something else ended the recording (the window lost key status, the app
-                // was deactivated) before the key press arrived.
-                throw ControlCommandError.failed(
-                    "the recording ended before the key press arrived: the Settings window is no longer the key window")
+            if let lost {
+                // Something else ended the wait (the window lost key status, the app was deactivated)
+                // before the key press arrived.
+                throw ControlCommandError.failed(lost)
             }
             Thread.sleep(forTimeInterval: 0.01)
         }
-        onMainActor { SettingsController.shared.model.cancelRecording() }
-        throw ControlCommandError.failed(
-            "the key press was posted but the recorder did not receive it within \(Int(recordTimeout)) s; "
-                + "recording was cancelled")
+        onMainActor { giveUp(SettingsController.shared) }
+        throw ControlCommandError.failed(timeoutMessage)
     }
 
     /// The row a name stands for (see ``KeymapRowID/name``).
@@ -608,6 +655,11 @@ extension DebugControlServer {
 
     private struct RecordParams: Decodable {
         var row: String
+        var keyCode: Int
+        var modifiers: [Modifier]
+    }
+
+    private struct PressKeyParams: Decodable {
         var keyCode: Int
         var modifiers: [Modifier]
     }

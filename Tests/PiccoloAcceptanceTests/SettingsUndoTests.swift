@@ -203,6 +203,77 @@ extension DesktopAcceptanceTests {
                 #expect(!(try piccolo.settingsState().canUndo), "a dropped conflict is a step")
             }
         }
+
+        // MARK: f. The keys
+
+        private static let commandZ = Shortcut(keyCode: 6, modifiers: [.command])
+        private static let shiftCommandZ = Shortcut(keyCode: 6, modifiers: [.command, .shift])
+
+        @Test("undo 6. ⌘Z posted as a real key press while the window is key undoes the last change; ⇧⌘Z redoes it")
+        func undoByKey() async throws {
+            try await withSettingsSession(Config.defaultShortcuts.bindings) { session in
+                try piccolo.settingsSetGap(16)
+                try piccolo.settingsSetGap(20)
+                try piccolo.settingsSetGap(24)
+                try session.openSettings()
+                #expect(try session.fileConfig().gap == 24)
+
+                let undone = try await session.pressKey(Self.commandZ)
+
+                #expect(undone.gap == 20, "the state has the gap \(undone.gap) after ⌘Z")
+                #expect(try session.fileConfig().gap == 20, "the file does not have 20 after ⌘Z")
+                #expect(undone.canRedo)
+                #expect(undone.error == nil)
+                #expect(undone.recordingRow == nil)
+
+                let redone = try await session.pressKey(Self.shiftCommandZ)
+
+                #expect(redone.gap == 24, "the state has the gap \(redone.gap) after ⇧⌘Z")
+                #expect(try session.fileConfig().gap == 24, "the file does not have 24 after ⇧⌘Z")
+                #expect(!redone.canRedo)
+
+                // With nothing left to redo the press is still taken, and changes nothing.
+                let again = try await session.pressKey(Self.shiftCommandZ)
+                #expect(again.gap == 24)
+                #expect(try session.fileConfig().gap == 24)
+            }
+        }
+
+        @Test("undo 7. settings.pressKey refuses unless Piccolo is frontmost with the Settings window key, and posts nothing")
+        func pressKeyRefusesWithoutFocus() async throws {
+            let screens = try await MainActor.run { try Layout.screens() }
+            let start = Layout.frame(
+                in: screens[0], offset: CGPoint(x: 120, y: 80), size: CGSize(width: 640, height: 420))
+            try await withSettingsSession(Config.defaultShortcuts.bindings) { session in
+                try piccolo.settingsSetGap(16)
+                try piccolo.settingsSetGap(20)
+
+                // The Settings window is closed: there is no key window.
+                let closed = try piccolo.settingsPressKeyRaw(Self.commandZ)
+                #expect(!closed.ok, "settings.pressKey was accepted with Settings closed")
+
+                // Settings is open but another application is frontmost.
+                try session.openSettings()
+                try await withFixture { fixture in
+                    let window = try fixture.open(id: "in-front", frame: start)
+                    _ = try await Measure.waitForFrame(ofWindow: window.windowNumber, matching: start)
+                    try await Focus.bring(window, of: fixture)
+
+                    let response = try piccolo.settingsPressKeyRaw(Self.commandZ)
+                    #expect(!response.ok, "settings.pressKey was accepted while the fixture was frontmost")
+                    #expect(
+                        response.error?.contains("frontmost") == true,
+                        "the refusal is \"\(response.error ?? "nil")\"")
+                    let keys = try fixture.keyEvents(id: "in-front")
+                    #expect(keys.isEmpty, "the fixture window received the key press: \(keys)")
+                }
+                let state = try piccolo.settingsState()
+                #expect(state.gap == 20, "a refused settings.pressKey changed the gap to \(state.gap)")
+                #expect(try session.fileConfig().gap == 20)
+                #expect(state.canUndo)
+                #expect(!state.canRedo)
+            }
+        }
     }
 }
 
@@ -241,5 +312,42 @@ extension PiccoloClient {
             throw AcceptanceFailure("\(command) was refused without saying why")
         }
         return message
+    }
+}
+
+extension PiccoloClient {
+    /// `settings.pressKey`, answering the raw response (for refusals).
+    func settingsPressKeyRaw(_ shortcut: Shortcut) throws -> ControlResponse {
+        try sendRaw(
+            "settings.pressKey",
+            [
+                "keyCode": .int(shortcut.keyCode),
+                "modifiers": .array(shortcut.modifiers.map(\.rawValue).sorted().map { .string($0) }),
+            ])
+    }
+}
+
+extension SettingsSession {
+    /// `settings.pressKey` once Piccolo is frontmost with the Settings window key. A refusal for that reason
+    /// leaves nothing behind (no key was posted), so it is tried again, handing Piccolo to LaunchServices in
+    /// between, until `timeout`; any other failure ends the wait.
+    func pressKey(_ shortcut: Shortcut, timeout: TimeInterval = 20) async throws -> SettingsState {
+        try await bringPiccoloForward()
+        let piccolo = self.piccolo
+        return try await eventually(
+            "settings.pressKey of \(shortcut) to be accepted", timeout: timeout, interval: 0.25
+        ) {
+            let response = try piccolo.settingsPressKeyRaw(shortcut)
+            if response.ok {
+                return .satisfied(try piccolo.decodeState(response.result ?? .null, of: "settings.pressKey"))
+            }
+            let message = response.error ?? "no reason given"
+            guard message.contains("frontmost") || message.contains("key window") else {
+                throw AcceptanceFailure("settings.pressKey was refused: \(message)")
+            }
+            // Not in front yet: try to bring it forward again, then look again.
+            if let bundle = try? piccolo.bundlePath() { try? Shell.open([bundle]) }
+            return .unsatisfied(message)
+        }
     }
 }

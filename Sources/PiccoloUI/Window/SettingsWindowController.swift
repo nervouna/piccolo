@@ -36,6 +36,10 @@ public final class SettingsWindowController: NSObject, NSWindowDelegate, NSToolb
     /// Whether the window animates to the size of a tab. A test turns it off, so that it need not wait.
     var animatesFrameChanges = true
     private var keyMonitor: Any?
+    /// How many key presses the key monitor has handled for this window while it was key, whatever it did
+    /// with them. The debug control channel posts a key press and waits for this to change
+    /// (`settings.pressKey`); nothing else reads it.
+    public private(set) var keyPressesSeen = 0
     private var deactivationObserver: (any NSObjectProtocol)?
     private var activationObserver: (any NSObjectProtocol)?
 
@@ -509,7 +513,10 @@ public final class SettingsWindowController: NSObject, NSWindowDelegate, NSToolb
         guard isKey, event.window === window else {
             return event
         }
-        return take(event) ? nil : event
+        let taken = take(event)
+        // Counted after the press has had its effect, so that a caller that sees the count change sees the result.
+        keyPressesSeen += 1
+        return taken ? nil : event
     }
 
     /// What the window does with a key press: while a row records, the recorder takes every press (⌘Z

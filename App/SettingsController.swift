@@ -41,6 +41,12 @@ final class SettingsController {
         windowController.isKey
     }
 
+    /// How many key presses the window has handled while it was key. The debug control channel waits for
+    /// it to change after it posts one.
+    var keyPressesSeen: Int {
+        windowController.keyPressesSeen
+    }
+
     /// Opens the window, or brings it to the front.
     func show() {
         windowController.show()
