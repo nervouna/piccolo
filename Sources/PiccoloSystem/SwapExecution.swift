@@ -56,7 +56,8 @@ extension ActionExecutor {
     ///    that no longer holds (it is dissolved) there is nothing to do.
     /// 2. `SwapNeighbor.neighbor(of:direction:in:)` gives the cell to swap with. Without one there is
     ///    nothing to swap, except that with `settings.animation` on (and an animator) the focused window
-    ///    bounces: it goes 16 pt towards that side and back in 0.2 s, whatever the animation speed (see
+    ///    bounces: it goes 16 pt towards that side, springs back past its start by about 2 pt and settles,
+    ///    in 0.42 s whatever the animation speed (see
     ///    ``EdgeBounce`` and ``WindowAnimator/bounce(_:from:towards:duration:)``), and ends exactly at
     ///    the frame it started at. For `up` it is squashed instead, because macOS keeps a window below
     ///    the menu bar. The group is neither recorded nor dissolved: the window is back at its recorded

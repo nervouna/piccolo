@@ -391,9 +391,10 @@ extension LinkedRun {
     }
 
     /// Checks the frames seen during a bounce of a window that started at `start`: it went out towards
-    /// `direction` by at least 8 pt and by no more than the amplitude (1 pt tolerance), the whole
-    /// frame moving for left, right and down, and only the bottom edge for up (the top edge and the
-    /// width stay).
+    /// `direction` by at least 8 pt and by no more than the amplitude (1 pt tolerance), then overshot
+    /// the start by no more than 4 pt, and it is back on the start frame at the end. The whole frame
+    /// moves for left, right and down, and only the bottom edge for up (the top edge and the width
+    /// stay); the overshoot of up grows the height.
     fileprivate func expectBounce(of start: CGRect, towards direction: Direction, samples: [CGRect]) {
         #expect(samples.count >= 10, "\(direction): only \(samples.count) samples of the window")
         var deepest: CGFloat = 0
@@ -422,6 +423,13 @@ extension LinkedRun {
             if depth > EdgeBounce.amplitude + 1 {
                 problems.append("seen \(depth) pt out at \(describe(sample)), the bounce is \(EdgeBounce.amplitude) pt")
             }
+            // The spring overshoots the start by about 2 pt, on the other side.
+            if depth < -4 {
+                problems.append("seen \(-depth) pt past the start at \(describe(sample)), the overshoot is at most 4 pt")
+            }
+        }
+        if let last = samples.last, !framesMatch(last, start) {
+            problems.append("the last frame seen is \(describe(last)), the window should be back on \(describe(start))")
         }
         #expect(problems.isEmpty, "\(direction) from \(describe(start)): \(problems.prefix(3))")
         #expect(

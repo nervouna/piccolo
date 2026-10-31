@@ -44,7 +44,7 @@ struct WindowAnimatorBounceTests {
         #expect(frames.last == BounceStage.start)
         #expect(frames.map(\.minX).max() == BounceStage.start.minX + 16)
         #expect(stage.window.frameValue == BounceStage.start)
-        #expect(abs(stage.clock.elapsed - 0.2) < 1e-9)
+        #expect(abs(stage.clock.elapsed - 0.42) < 1e-9)
     }
 
     @Test("it ticks at most 60 times a second, the first tick one tick after the start")
@@ -54,7 +54,8 @@ struct WindowAnimatorBounceTests {
         stage.bounce(.left)
 
         let times = stage.journal.changes.map(\.time)
-        #expect(times.count <= 12)
+        // 0.42 s at 60 ticks a second: 25 ticks, and the last at the end.
+        #expect(times.count <= 26, "\(times.count) changes in 0.42 s")
         #expect(abs((times.first ?? 0) - (FakeClock.origin + 1.0 / 60)) < 1e-9)
         for (earlier, later) in zip(times, times.dropFirst()) {
             #expect(later - earlier >= 1.0 / 60 - 1e-9)
@@ -82,11 +83,13 @@ struct WindowAnimatorBounceTests {
         let bounced = stage.bounce(.left)
 
         #expect(bounced)
-        #expect(stage.journal.changes.count < 12, "\(stage.journal.changes.count) changes")
+        // Each change takes 0.03 s, so at most 0.42 / 0.03 = 14 of them fit, and a tick can start in the
+        // last 0.03 s: 15 at most.
+        #expect(stage.journal.changes.count <= 15, "\(stage.journal.changes.count) changes")
         #expect(stage.journal.changes.last?.frame == BounceStage.start)
         #expect(stage.window.frameValue == BounceStage.start)
         // A tick that starts before the end can take its time, but no further tick follows the last.
-        #expect(stage.clock.elapsed < 0.2 + 2 * 0.03 + 1e-9, "took \(stage.clock.elapsed) s")
+        #expect(stage.clock.elapsed < 0.42 + 2 * 0.03 + 1e-9, "took \(stage.clock.elapsed) s")
     }
 
     @Test("sleeps that run long drop frames too, and the last tick is still at progress 1")
@@ -120,7 +123,7 @@ struct WindowAnimatorBounceTests {
 
         #expect(!bounced)
         #expect(stage.window.frameValue == BounceStage.start)
-        #expect(stage.clock.elapsed < 0.2, "the bounce went on after the failure: \(stage.clock.elapsed) s")
+        #expect(stage.clock.elapsed < 0.21, "the bounce went on after the failure: \(stage.clock.elapsed) s")
     }
 
     @Test("a window that keeps failing is left where it is, and the bounce is not played")
