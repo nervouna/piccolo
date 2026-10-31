@@ -9,8 +9,8 @@ import Testing
 ///
 /// Every test runs inside `withLinkedResize(gridFillOrder: .columns)`: the config in effect (a
 /// temporary file, loaded with `config.load`) has no bindings, a known resize step and the fill order
-/// `columns`, and afterwards Piccolo is back on its default config (`withConfigDirectory` ends with
-/// `config.reload`). Every `arrangeGrid` and every `moveDivider` passes the fixture's pid as `onlyPid`,
+/// `columns`, and afterwards Piccolo is back on the fresh-install config (`withConfigDirectory` ends by
+/// loading it again). Every `arrangeGrid` and every `moveDivider` passes the fixture's pid as `onlyPid`,
 /// so the windows of the machine's owner are never arranged. The expected frames come from `TileLayout`
 /// on the visible frame of the display the app reports (`Layout.screens()`), within the usual one
 /// point; the halves written out in the tests are compared within two points, because a half of an odd

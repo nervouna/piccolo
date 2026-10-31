@@ -203,7 +203,7 @@ final class SettingsSession {
 /// closed. Afterwards, whether `body` succeeded or not, a recording is cancelled, Settings is
 /// closed (and checked to be gone), Piccolo is restarted if it was brought forward (so that the
 /// tests that follow can fire simulated hotkeys, see ``PiccoloProcess``), and Piccolo is back
-/// on its default config with the default config folder untouched (`withConfigDirectory`
+/// on the fresh-install config with the default config folder untouched (`withConfigDirectory`
 /// checks both).
 ///
 /// Every edit through Settings is written to the file Piccolo has loaded, so nothing here may

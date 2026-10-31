@@ -10,8 +10,8 @@ import Testing
 /// keyboard events (`hotkey.simulate`) runs its action on the focused window of the fixture.
 ///
 /// Every test writes its config into a temporary directory and applies it with `config.load`,
-/// so nothing is written to the default location, and ends with `config.reload`, which releases
-/// the test's hotkeys again (see ``withConfigDirectory(_:)``). The shortcuts are real global
+/// so nothing is written to the default location, and ends by loading the fresh-install config
+/// again, which releases the test's hotkeys (see ``withConfigDirectory(_:)``). The shortcuts are real global
 /// hotkeys on a machine somebody works at: only control + option + shift + command with F13 to
 /// F19 are used.
 ///
@@ -255,7 +255,7 @@ extension DesktopAcceptanceTests {
         // MARK: 8. The default shortcuts
 
         // Every default is a real global hotkey while this test runs, so the test is short and
-        // withConfigDirectory ends it with config.reload. A default that the system refuses on this
+        // withConfigDirectory ends it by loading the fresh-install config. A default that the system refuses on this
         // machine shows up as an issue here, and as a missing registration.
         @Test("config 8. all 32 default shortcuts are registered with no issues on this machine")
         func defaultShortcutsRegister() async throws {
