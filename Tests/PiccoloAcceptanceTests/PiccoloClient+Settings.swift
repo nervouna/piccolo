@@ -49,6 +49,10 @@ struct SettingsState: Decodable, Equatable {
     var restartRequired: Bool
     /// Why the last restart could not be arranged, if it could not.
     var restartError: String?
+    /// Whether `settings.undo` has a change to take back.
+    var canUndo: Bool
+    /// Whether `settings.redo` has an undone change to apply again.
+    var canRedo: Bool
 }
 
 /// The Settings window commands of the Debug control channel.
