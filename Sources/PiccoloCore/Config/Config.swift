@@ -12,12 +12,12 @@ public struct Config: Codable, Equatable, Sendable {
     /// Linked-resize step when the file does not set one: 5% of the screen.
     public static let defaultResizeStep = 0.05
     /// Window animation when the file does not set one.
-    public static let defaultAnimation = WindowAnimation.fast
+    public static let defaultAnimation = WindowAnimation.medium
     /// Grid fill order when the file does not set one.
-    public static let defaultGridFillOrder = GridFillOrder.rows
+    public static let defaultGridFillOrder = GridFillOrder.columns
     /// Destination preview when the file does not set one.
     public static let defaultDestinationPreview = true
-    /// Window gap when the file does not set one: none.
+    /// Window gap when the file does not set one: 16 points.
     public static let defaultGap = WindowGap.default
 
     /// Format version of the file.

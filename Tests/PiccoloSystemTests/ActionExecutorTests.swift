@@ -52,7 +52,7 @@ struct ExecutorPlaceWindowTests {
     func presets(preset: Preset) throws {
         let window = Rig.window(at: Rig.onPrimary)
 
-        let outcome = try executor(window: window).run(.placeWindow(.preset(preset)))
+        let outcome = try executor(window: window).run(.placeWindow(.preset(preset)), settings: .pinned())
 
         let expected = FrameResolver.frame(
             for: .preset(preset), visibleFrame: Rig.primary.visibleFrame, currentFrame: Rig.onPrimary)
@@ -65,7 +65,7 @@ struct ExecutorPlaceWindowTests {
         let window = Rig.window(at: Rig.onSecondary)
         let rect = FractionalRect(x: 0.25, y: 0.1, width: 0.5, height: 0.8)
 
-        let outcome = try executor(window: window).run(.placeWindow(.custom(rect)))
+        let outcome = try executor(window: window).run(.placeWindow(.custom(rect)), settings: .pinned())
 
         let expected = FrameResolver.frame(
             for: .custom(rect), visibleFrame: Rig.secondary.visibleFrame, currentFrame: Rig.onSecondary)
@@ -79,7 +79,7 @@ struct ExecutorPlaceWindowTests {
         let window = Rig.window(at: Rig.onSecondary)
         window.minimumSize = CGSize(width: 700, height: 400)
 
-        let outcome = try executor(window: window).run(.placeWindow(.preset(.rightThird)))
+        let outcome = try executor(window: window).run(.placeWindow(.preset(.rightThird)), settings: .pinned())
 
         let target = FrameResolver.frame(
             for: .preset(.rightThird), visibleFrame: Rig.secondary.visibleFrame, currentFrame: Rig.onSecondary)
@@ -100,13 +100,13 @@ struct ExecutorPlaceWindowTests {
         let window = Rig.window(at: Rig.onPrimary)
         window.isFixedSize = true
 
-        let center = try executor(window: window).run(.placeWindow(.preset(.center)))
+        let center = try executor(window: window).run(.placeWindow(.preset(.center)), settings: .pinned())
         let centered = FrameResolver.frame(
             for: .preset(.center), visibleFrame: Rig.primary.visibleFrame, currentFrame: Rig.onPrimary)
         #expect(center == .placed(target: centered, achieved: centered))
         #expect(try window.frame().size == Rig.onPrimary.size)
 
-        let left = try executor(window: window).run(.placeWindow(.preset(.leftHalf)))
+        let left = try executor(window: window).run(.placeWindow(.preset(.leftHalf)), settings: .pinned())
         let target = FrameResolver.frame(
             for: .preset(.leftHalf), visibleFrame: Rig.primary.visibleFrame, currentFrame: centered)
         #expect(
@@ -122,7 +122,7 @@ struct ExecutorPlaceWindowTests {
         let rect = FractionalRect(x: 0, y: 0, width: 0, height: 1)
 
         #expect(throws: ActionPlanningError.invalidAction(.outOfRange(field: "width", rule: "must be > 0"))) {
-            try executor(window: window).run(.placeWindow(.custom(rect)))
+            try executor(window: window).run(.placeWindow(.custom(rect)), settings: .pinned())
         }
         #expect(window.calls.isEmpty)
     }
@@ -134,7 +134,7 @@ struct ExecutorMoveToDisplayTests {
     func next() throws {
         let window = Rig.window(at: Rig.onPrimary)
 
-        let outcome = try executor(window: window).run(.moveToDisplay(.next))
+        let outcome = try executor(window: window).run(.moveToDisplay(.next), settings: .pinned())
 
         let expected = DisplayLayout.frame(moving: Rig.onPrimary, from: Rig.primary, to: Rig.secondary)
         #expect(outcome == .placed(target: expected, achieved: expected))
@@ -147,8 +147,8 @@ struct ExecutorMoveToDisplayTests {
         let window = Rig.window(at: Rig.onPrimary)
         let run = executor(window: window)
 
-        _ = try run.run(.moveToDisplay(.next))
-        let outcome = try run.run(.moveToDisplay(.previous))
+        _ = try run.run(.moveToDisplay(.next), settings: .pinned())
+        let outcome = try run.run(.moveToDisplay(.previous), settings: .pinned())
 
         guard case .placed(_, let achieved) = outcome else {
             Issue.record("expected a placement, got \(outcome)")
@@ -166,7 +166,7 @@ struct ExecutorMoveToDisplayTests {
     func maximized() throws {
         let window = Rig.window(at: Rig.primary.visibleFrame)
 
-        let outcome = try executor(window: window).run(.moveToDisplay(.next))
+        let outcome = try executor(window: window).run(.moveToDisplay(.next), settings: .pinned())
 
         #expect(
             outcome
@@ -181,7 +181,7 @@ struct ExecutorMoveToDisplayTests {
         let window = Rig.window(at: start)
         window.minimumSize = CGSize(width: 500, height: 400)
 
-        let outcome = try executor(window: window).run(.moveToDisplay(.next))
+        let outcome = try executor(window: window).run(.moveToDisplay(.next), settings: .pinned())
 
         guard case .placed(_, let achieved) = outcome else {
             Issue.record("expected a placement, got \(outcome)")
@@ -195,7 +195,7 @@ struct ExecutorMoveToDisplayTests {
         let window = Rig.window(at: Rig.onPrimary)
 
         for direction in DisplayDirection.allCases {
-            let outcome = try executor(window: window, displays: [Rig.primary]).run(.moveToDisplay(direction))
+            let outcome = try executor(window: window, displays: [Rig.primary]).run(.moveToDisplay(direction), settings: .pinned())
             #expect(outcome == .nothingToDo)
         }
         #expect(window.calls.isEmpty)
@@ -212,7 +212,7 @@ struct ExecutorErrorTests {
         let calls = Calls()
 
         do {
-            _ = try executor(window: window, calls: calls).run(.moveDivider(.left), settings: ActionSettings(resizeStep: step))
+            _ = try executor(window: window, calls: calls).run(.moveDivider(.left), settings: ActionSettings.pinned(resizeStep: step))
             Issue.record("moveDivider accepted the resize step \(step)")
         } catch let error as ActionExecutionError {
             guard case .invalidResizeStep = error else {
@@ -239,7 +239,7 @@ struct ExecutorErrorTests {
         let run = ActionExecutor(window: { throw error }, displays: { Rig.both })
 
         #expect(throws: error) {
-            try run.run(.placeWindow(.preset(.leftHalf)))
+            try run.run(.placeWindow(.preset(.leftHalf)), settings: .pinned())
         }
     }
 
@@ -249,7 +249,7 @@ struct ExecutorErrorTests {
         window.failFrameWith = .accessibility(operation: "read AXPosition", code: -25204)
 
         #expect(throws: WindowError.accessibility(operation: "read AXPosition", code: -25204)) {
-            try executor(window: window).run(.moveToDisplay(.next))
+            try executor(window: window).run(.moveToDisplay(.next), settings: .pinned())
         }
     }
 
@@ -259,7 +259,7 @@ struct ExecutorErrorTests {
         window.failPositionWith = .attributeNotSettable("AXPosition")
 
         #expect(throws: WindowError.attributeNotSettable("AXPosition")) {
-            try executor(window: window).run(.placeWindow(.preset(.leftHalf)))
+            try executor(window: window).run(.placeWindow(.preset(.leftHalf)), settings: .pinned())
         }
     }
 
@@ -268,7 +268,7 @@ struct ExecutorErrorTests {
         let window = Rig.window(at: Rig.onPrimary)
 
         #expect(throws: ActionPlanningError.noDisplays) {
-            try executor(window: window, displays: []).run(.placeWindow(.preset(.leftHalf)))
+            try executor(window: window, displays: []).run(.placeWindow(.preset(.leftHalf)), settings: .pinned())
         }
         #expect(window.calls.isEmpty)
     }
@@ -280,7 +280,7 @@ struct ExecutorErrorTests {
         let run = ActionExecutor(window: { window }, displays: { throw Failure() })
 
         #expect(throws: Failure()) {
-            try run.run(.moveToDisplay(.next))
+            try run.run(.moveToDisplay(.next), settings: .pinned())
         }
         #expect(window.calls.isEmpty)
     }

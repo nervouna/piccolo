@@ -22,7 +22,6 @@ extension DesktopAcceptanceTests {
 
         private static let leftHalf = Action.placeWindow(.preset(.leftHalf))
         private static let topLeft = Action.placeWindow(.preset(.topLeft))
-        private static let controlOptionLeft = Shortcut(keyCode: 123, modifiers: [.control, .option])
 
         // MARK: a. A setting
 
@@ -75,14 +74,15 @@ extension DesktopAcceptanceTests {
 
         // MARK: b. A conflict
 
-        @Test("undo 2. a conflict replaced with settings.record and settings.resolveConflict is one step: undo gives ⌃⌥← back to Left Half and the old shortcut to Top Left, in the file and registered")
+        @Test("undo 2. a conflict replaced with settings.record and settings.resolveConflict is one step: undo gives its shortcut back to Left Half and the old shortcut to Top Left, in the file and registered")
         func undoReplacedConflict() async throws {
+            let leftShortcut = try Config.defaultShortcut(of: Self.leftHalf)
             try await withSettingsSession(Config.defaultShortcuts.bindings) { session in
                 try piccolo.settingsSetSearch("")
                 try session.openSettings()
                 let before = try session.fileBindings()
                 let left = try #require(before.first { $0.action == Self.leftHalf })
-                #expect(left.shortcut == Self.controlOptionLeft)
+                #expect(left.shortcut == leftShortcut)
                 let topLeft = try #require(before.first { $0.action == Self.topLeft })
                 let defaultTopLeft = try #require(
                     Config.defaultShortcuts.bindings.first { $0.action == Self.topLeft }?.shortcut)
@@ -90,7 +90,7 @@ extension DesktopAcceptanceTests {
                 let rowsBefore = try piccolo.keymapState().rows
                 let registeredBefore = try piccolo.configStatus().registered
 
-                let recorded = try await session.record("placeWindow.topLeft", Self.controlOptionLeft)
+                let recorded = try await session.record("placeWindow.topLeft", leftShortcut)
                 #expect(recorded.conflict != nil, "recording a taken shortcut answered no conflict")
                 try piccolo.keymapResolveConflict(replace: true)
                 #expect(!(try session.fileBindings().contains { $0.id == left.id }), "the replace did not take the shortcut")
@@ -102,7 +102,10 @@ extension DesktopAcceptanceTests {
                 #expect(try session.fileBindings() == before, "the file does not hold the bindings it held before the replace")
                 let rows = try piccolo.keymapState().rows
                 let leftRow = try #require(rows.first { $0.row == "placeWindow.leftHalf" })
-                #expect(leftRow.shortcuts.map(\.shortcutText) == ["⌃⌥←"], "Left Half has \(leftRow.shortcuts)")
+                #expect(
+                    leftRow.shortcuts.map(\.shortcutText)
+                        == rowsBefore.first { $0.row == "placeWindow.leftHalf" }?.shortcuts.map(\.shortcutText),
+                    "Left Half has \(leftRow.shortcuts)")
                 #expect(leftRow.shortcuts.map(\.bindingID) == [left.id])
                 let topLeftRow = try #require(rows.first { $0.row == "placeWindow.topLeft" })
                 #expect(
@@ -116,9 +119,9 @@ extension DesktopAcceptanceTests {
                 let registered = try piccolo.configStatus().registered
                 #expect(Set(registered.map(\.id)) == Set(registeredBefore.map(\.id)))
                 let holders = registered.filter {
-                    $0.keyCode == Self.controlOptionLeft.keyCode && $0.modifiers == Self.controlOptionLeft.modifiers
+                    $0.keyCode == leftShortcut.keyCode && $0.modifiers == leftShortcut.modifiers
                 }
-                #expect(holders.map(\.id) == [left.id], "⌃⌥← is registered for \(holders.map(\.id))")
+                #expect(holders.map(\.id) == [left.id], "Left Half's shortcut is registered for \(holders.map(\.id))")
                 #expect(
                     registered.contains {
                         $0.id == topLeft.id && $0.keyCode == defaultTopLeft.keyCode && $0.modifiers == defaultTopLeft.modifiers
@@ -128,9 +131,11 @@ extension DesktopAcceptanceTests {
                 #expect(redone.error == nil)
                 #expect(!(try session.fileBindings().contains { $0.id == left.id }), "the redo did not replace again")
                 let holdersAfterRedo = try piccolo.configStatus().registered.filter {
-                    $0.keyCode == Self.controlOptionLeft.keyCode && $0.modifiers == Self.controlOptionLeft.modifiers
+                    $0.keyCode == leftShortcut.keyCode && $0.modifiers == leftShortcut.modifiers
                 }
-                #expect(holdersAfterRedo.map(\.id) == [topLeft.id], "⌃⌥← is registered for \(holdersAfterRedo.map(\.id))")
+                #expect(
+                    holdersAfterRedo.map(\.id) == [topLeft.id],
+                    "Left Half's shortcut is registered for \(holdersAfterRedo.map(\.id))")
             }
         }
 
@@ -143,10 +148,10 @@ extension DesktopAcceptanceTests {
             try await withSettingsSession([a, b]) { session in
                 try piccolo.settingsSetGap(12)
                 let (restored, _) = try piccolo.settingsRestoreDefaults()
-                #expect(restored.bindings.count == 32)
+                #expect(restored.bindings.count == 33)
                 #expect(restored.gap == 12, "the restore changed the gap")
                 let restoredBindings = try session.fileBindings()
-                #expect(restoredBindings.count == 32)
+                #expect(restoredBindings.count == 33)
 
                 let undone = try piccolo.settingsUndo()
 
@@ -157,7 +162,7 @@ extension DesktopAcceptanceTests {
                 #expect(undone.canUndo, "the gap is still a step")
 
                 let redone = try piccolo.settingsRedo()
-                #expect(redone.bindings.count == 32)
+                #expect(redone.bindings.count == 33)
                 #expect(try session.fileBindings() == restoredBindings)
                 #expect(try session.fileConfig().gap == 12)
             }
@@ -186,12 +191,13 @@ extension DesktopAcceptanceTests {
 
         @Test("undo 5. closing the window drops a pending conflict, so that it does not come back with the window")
         func closingDropsConflict() async throws {
+            let leftShortcut = try Config.defaultShortcut(of: Self.leftHalf)
             try await withSettingsSession(Config.defaultShortcuts.bindings) { session in
                 try piccolo.settingsSetSearch("")
                 try session.openSettings()
                 let beforeBytes = try session.fileBytes()
 
-                let state = try await session.record("placeWindow.topLeft", Self.controlOptionLeft)
+                let state = try await session.record("placeWindow.topLeft", leftShortcut)
                 #expect(state.conflict != nil, "recording a taken shortcut answered no conflict")
 
                 try piccolo.settingsClose()

@@ -18,8 +18,8 @@ struct SettingsLoadTests {
 
             let result = try ConfigStore(url: url).load()
 
-            #expect(result.config.animation == .fast)
-            #expect(result.config.gridFillOrder == .rows)
+            #expect(result.config.animation == .medium)
+            #expect(result.config.gridFillOrder == .columns)
             #expect(result.config.destinationPreview == true)
             #expect(result.issues.isEmpty)
             #expect(result.droppedEntries == false)
@@ -111,13 +111,13 @@ struct SettingsLoadTests {
         try withTemporaryDirectory { directory in
             let url = directory.appending(path: "config.json")
             try writeText(
-                #"{"animation":"bounce","bindings":[],"destinationPreview":false,"gridFillOrder":"columns","version":1}"#,
+                #"{"animation":"bounce","bindings":[],"destinationPreview":false,"gridFillOrder":"rows","version":1}"#,
                 to: url)
 
             let result = try ConfigStore(url: url).load()
 
-            #expect(result.config.animation == .fast)
-            #expect(result.config.gridFillOrder == .columns)
+            #expect(result.config.animation == .medium)
+            #expect(result.config.gridFillOrder == .rows)
             #expect(result.config.destinationPreview == false)
             #expect(result.issues.count == 1)
         }

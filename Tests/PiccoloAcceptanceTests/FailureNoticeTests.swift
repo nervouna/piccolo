@@ -50,7 +50,7 @@ extension DesktopAcceptanceTests {
             let divider = KeyBinding(action: .moveDivider(.right), shortcut: TestShortcut.f13)
 
             try await withConfigDirectory { config in
-                try piccolo.loadConfig(at: try config.write(Config(destinationPreview: false, bindings: [divider])))
+                try piccolo.loadConfig(at: try config.write(Config.frameTest(destinationPreview: false, bindings: [divider])))
                 try await withFixture { fixture in
                     let window = try fixture.open(id: "notice", frame: start)
                     _ = try await Measure.waitForFrame(ofWindow: window.windowNumber, matching: start)
@@ -106,7 +106,7 @@ extension DesktopAcceptanceTests {
                 for: .preset(.maximize), visibleFrame: screens[0].visibleFrame, currentFrame: start)
 
             try await withConfigDirectory { config in
-                try piccolo.loadConfig(at: try config.write(Config(destinationPreview: false, bindings: [maximize])))
+                try piccolo.loadConfig(at: try config.write(Config.frameTest(destinationPreview: false, bindings: [maximize])))
                 try await withFixture { fixture in
                     let window = try fixture.open(id: "notice-place", frame: start)
                     _ = try await Measure.waitForFrame(ofWindow: window.windowNumber, matching: start)
@@ -138,7 +138,7 @@ extension DesktopAcceptanceTests {
             let divider = KeyBinding(action: .moveDivider(.right), shortcut: TestShortcut.f13)
 
             try await withConfigDirectory { config in
-                try piccolo.loadConfig(at: try config.write(Config(destinationPreview: false, bindings: [divider])))
+                try piccolo.loadConfig(at: try config.write(Config.frameTest(destinationPreview: false, bindings: [divider])))
                 try await withFixture { fixture in
                     let window = try fixture.open(id: "notice-run", frame: start)
                     _ = try await Measure.waitForFrame(ofWindow: window.windowNumber, matching: start)

@@ -39,7 +39,7 @@ private struct Run {
     }
 
     func run(_ action: Action, _ animation: WindowAnimation) throws -> ActionOutcome {
-        try executor.run(action, settings: ActionSettings(animation: animation))
+        try executor.run(action, settings: ActionSettings.pinned(animation: animation))
     }
 
     /// What the window was sent, without the times.
@@ -106,14 +106,14 @@ struct AnimatedSingleWindowTests {
         #expect(run.clock.sleeps.isEmpty)
     }
 
-    @Test("the default settings are animated: Fast")
+    @Test("the default settings are animated: Medium")
     func defaultSettingsAnimate() throws {
         let run = Run()
 
         _ = try run.executor.run(.placeWindow(.preset(.leftHalf)))
 
         #expect(run.steps.count > 3)
-        #expect(abs(run.clock.elapsed - WindowAnimation.fast.duration) < 1e-9)
+        #expect(abs(run.clock.elapsed - WindowAnimation.medium.duration) < 1e-9)
     }
 
     @Test("a window that is already at its target is not animated")
@@ -218,9 +218,9 @@ struct AnimatedArrangeTests {
         let plain = makeDesk(animator: nil)
 
         let outcome = try animated.executor.run(
-            .arrangeGrid(Self.grid), settings: ActionSettings(animation: .slow))
+            .arrangeGrid(Self.grid), settings: ActionSettings.pinned(animation: .slow))
         let reference = try plain.executor.run(
-            .arrangeGrid(Self.grid), settings: ActionSettings(animation: .off))
+            .arrangeGrid(Self.grid), settings: ActionSettings.pinned(animation: .off))
 
         #expect(outcome == reference)
         #expect(try animated.frames(3) == plain.frames(3))
@@ -234,8 +234,8 @@ struct AnimatedArrangeTests {
         let animated = makeDesk(animator: clock)
         let plain = makeDesk(animator: nil)
 
-        _ = try animated.executor.run(.arrangeGrid(Self.grid), settings: ActionSettings(animation: .slow))
-        _ = try plain.executor.run(.arrangeGrid(Self.grid), settings: ActionSettings(animation: .off))
+        _ = try animated.executor.run(.arrangeGrid(Self.grid), settings: ActionSettings.pinned(animation: .slow))
+        _ = try plain.executor.run(.arrangeGrid(Self.grid), settings: ActionSettings.pinned(animation: .off))
 
         #expect(abs(clock.elapsed - 0.4) < 1e-9, "three windows took \(clock.elapsed) s: they must share one clock")
         // The last calls are the plain run's, in the same order.
@@ -255,8 +255,8 @@ struct AnimatedArrangeTests {
         let animated = makeDesk(animator: clock)
         let plain = makeDesk(animator: nil)
 
-        _ = try animated.executor.run(.arrangeGrid(Self.grid), settings: ActionSettings(animation: .off))
-        _ = try plain.executor.run(.arrangeGrid(Self.grid), settings: ActionSettings(animation: .off))
+        _ = try animated.executor.run(.arrangeGrid(Self.grid), settings: ActionSettings.pinned(animation: .off))
+        _ = try plain.executor.run(.arrangeGrid(Self.grid), settings: ActionSettings.pinned(animation: .off))
 
         #expect(animated.log == plain.log)
         #expect(clock.sleeps.isEmpty && clock.elapsed == 0)
@@ -270,8 +270,8 @@ struct AnimatedArrangeTests {
         animated.window(2).fake.failPositionWith = .attributeNotSettable("AXPosition")
         plain.window(2).fake.failPositionWith = .attributeNotSettable("AXPosition")
 
-        let outcome = try animated.executor.run(.arrangeGrid(Self.grid), settings: ActionSettings(animation: .fast))
-        let reference = try plain.executor.run(.arrangeGrid(Self.grid), settings: ActionSettings(animation: .off))
+        let outcome = try animated.executor.run(.arrangeGrid(Self.grid), settings: ActionSettings.pinned(animation: .fast))
+        let reference = try plain.executor.run(.arrangeGrid(Self.grid), settings: ActionSettings.pinned(animation: .off))
 
         #expect(outcome == reference)
         #expect(try animated.frame(of: 1) == plain.frame(of: 1))
@@ -290,7 +290,7 @@ struct AnimatedArrangeTests {
         try first.setPosition(cells[0].origin)
         let mark = animated.log.count
 
-        _ = try animated.executor.run(.arrangeGrid(Self.grid), settings: ActionSettings(animation: .fast))
+        _ = try animated.executor.run(.arrangeGrid(Self.grid), settings: ActionSettings.pinned(animation: .fast))
 
         let calls = animated.calls(since: mark)
         #expect(calls.filter { $0.hasPrefix("1 ") }.count == 3, "window 1 only gets the final apply: \(calls)")
@@ -317,7 +317,7 @@ struct AnimatedDividerTests {
 
     private func move(_ desk: Desk, _ direction: Direction, _ animation: WindowAnimation) throws -> ActionOutcome {
         try desk.executor.run(
-            .moveDivider(direction), settings: ActionSettings(resizeStep: Self.step, animation: animation))
+            .moveDivider(direction), settings: ActionSettings.pinned(resizeStep: Self.step, animation: animation))
     }
 
     @Test("the divider glides, and the windows end where they do without animation")

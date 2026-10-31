@@ -4,17 +4,17 @@ import PiccoloCore
 import PiccoloSystem
 import Testing
 
-/// Like `withFixture`, with a config in effect that has no bindings and every setting at its default
-/// (the grid fills rows first, the preview is on), loaded from a temporary file. The expected frames of
-/// the arrange tests are those of a rows-first grid, and `action.run` reads the settings of the config in
-/// effect. Every test already starts on the fresh-install config (`FreshInstallConfig`), which has the
-/// same settings; the config here keeps these tests independent of that. Afterwards Piccolo is back on
-/// the fresh-install config (see `withConfigDirectory`).
+/// Like `withFixture`, with a config in effect that has no bindings and the settings of the frame tests
+/// (``FrameTestSettings``: no gap, the grid fills rows first, the Fast animation; the preview is on), loaded
+/// from a temporary file. The expected frames of the arrange tests are those of a rows-first grid, and
+/// `action.run` reads the settings of the config in effect. Every test already starts on the fresh-install
+/// config (`FreshInstallConfig`), which has the same settings; the config here keeps these tests independent
+/// of that. Afterwards Piccolo is back on the fresh-install config (see `withConfigDirectory`).
 func withFixtureOnDefaultSettings<Result>(
     _ body: (FixtureApp) async throws -> Result
 ) async throws -> Result {
     try await withConfigDirectory { directory in
-        try PiccoloClient().loadConfig(at: try directory.write(Config(bindings: [])))
+        try PiccoloClient().loadConfig(at: try directory.write(Config.frameTest()))
         return try await withFixture(body)
     }
 }

@@ -225,7 +225,7 @@ struct SwapExecutionTests {
     func gap() throws {
         let desk = Desk()
         desk.openWindows(2)
-        let settings = ActionSettings(gap: 12)
+        let settings = ActionSettings.pinned(gap: 12)
         _ = try desk.executor.run(.arrangeGrid(GridSpec(count: 2, rows: 1, columns: 2)), settings: settings)
         desk.focused = 2
         let layout = TileLayout.grid(windowCount: 2, rows: 1, columns: 2)
@@ -248,10 +248,10 @@ struct SwapExecutionTests {
         let desk = Desk()
         desk.openWindows(2)
         _ = try desk.executor.run(
-            .arrangeGrid(GridSpec(count: 2, rows: 1, columns: 2)), settings: ActionSettings(gap: 12))
+            .arrangeGrid(GridSpec(count: 2, rows: 1, columns: 2)), settings: ActionSettings.pinned(gap: 12))
         desk.focused = 2
 
-        try desk.swapped(.left, settings: ActionSettings(gap: 20))
+        try desk.swapped(.left, settings: ActionSettings.pinned(gap: 20))
 
         let wanted = cells(TileLayout.grid(windowCount: 2, rows: 1, columns: 2), gap: 20)
         #expect(try desk.frame(of: 2) == wanted[0])
@@ -265,7 +265,7 @@ struct SwapExecutionTests {
         try desk.arrange(count: 2, rows: 1, columns: 2)
         desk.focused = 2
 
-        let outcome = try desk.swap(.left, settings: ActionSettings(resizeStep: 0))
+        let outcome = try desk.swap(.left, settings: ActionSettings.pinned(resizeStep: 0))
 
         guard case .swapped = outcome else {
             Issue.record("expected the windows to swap, got \(outcome)")
@@ -661,8 +661,8 @@ struct AnimatedSwapTests {
         let markAnimated = animated.log.count
         let markPlain = plain.log.count
 
-        let outcome = try animated.executor.run(.swapWindow(.right), settings: ActionSettings(animation: .slow))
-        let reference = try plain.executor.run(.swapWindow(.right), settings: ActionSettings(animation: .off))
+        let outcome = try animated.executor.run(.swapWindow(.right), settings: ActionSettings.pinned(animation: .slow))
+        let reference = try plain.executor.run(.swapWindow(.right), settings: ActionSettings.pinned(animation: .off))
 
         #expect(outcome == reference)
         #expect(try animated.frames(3) == plain.frames(3))
@@ -685,8 +685,8 @@ struct AnimatedSwapTests {
         let markAnimated = animated.log.count
         let markPlain = plain.log.count
 
-        _ = try animated.executor.run(.swapWindow(.right), settings: ActionSettings(animation: .off))
-        _ = try plain.executor.run(.swapWindow(.right), settings: ActionSettings(animation: .off))
+        _ = try animated.executor.run(.swapWindow(.right), settings: ActionSettings.pinned(animation: .off))
+        _ = try plain.executor.run(.swapWindow(.right), settings: ActionSettings.pinned(animation: .off))
 
         #expect(animated.calls(since: markAnimated) == plain.calls(since: markPlain))
         #expect(clock.sleeps.isEmpty)
@@ -698,7 +698,7 @@ struct AnimatedSwapTests {
         let desk = try makeDesk(clock: clock)
         let mark = desk.log.count
 
-        let outcome = try desk.executor.run(.swapWindow(.left), settings: ActionSettings(animation: .slow))
+        let outcome = try desk.executor.run(.swapWindow(.left), settings: ActionSettings.pinned(animation: .slow))
 
         #expect(outcome == .swap(.nothingToDo(.noNeighbour(bounced: true))))
         #expect(desk.calls(since: mark).allSatisfy { $0 == "1 position" }, "\(desk.calls(since: mark))")

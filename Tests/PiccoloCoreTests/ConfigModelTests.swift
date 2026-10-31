@@ -134,6 +134,7 @@ struct ConfigModelTests {
             animation: .fast,
             gridFillOrder: .rows,
             destinationPreview: true,
+            gap: 0,
             bindings: [
                 KeyBinding(
                     id: Fixture.idA,
@@ -192,11 +193,14 @@ struct ConfigModelTests {
 
 @Suite("Config file format")
 struct ConfigFileFormatTests {
-    /// Saves one config holding `bindings` and returns the exact text written to disk.
+    /// Saves one config holding `bindings` and returns the exact text written to disk. The settings are
+    /// pinned to the ones the expected texts below were written for (Fast, rows first, no gap), not the
+    /// defaults of a new install.
     private func written(_ bindings: [KeyBinding]) throws -> String {
         try withTemporaryDirectory { directory in
             let url = directory.appending(path: "config.json")
-            try ConfigStore(url: url).save(Config(bindings: bindings))
+            try ConfigStore(url: url).save(
+                Config(animation: .fast, gridFillOrder: .rows, gap: 0, bindings: bindings))
             return try String(contentsOf: url, encoding: .utf8)
         }
     }
@@ -348,7 +352,7 @@ struct ConfigFileFormatTests {
             """
         try withTemporaryDirectory { directory in
             let url = directory.appending(path: "config.json")
-            try ConfigStore(url: url).save(.default)
+            try ConfigStore(url: url).save(Config(animation: .fast, gridFillOrder: .rows, gap: 0))
             #expect(try String(contentsOf: url, encoding: .utf8) == expected)
         }
     }

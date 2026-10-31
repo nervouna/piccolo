@@ -33,7 +33,13 @@ struct KeymapViewRenderTests {
     private static let shiftA = Shortcut(keyCode: 0, modifiers: [.shift])
     private static let controlOptionLeft = Shortcut(keyCode: 123, modifiers: [.control, .option])
 
-    /// A model on the default shortcuts, which have four grids and no custom area, or on `bindings`.
+    /// The default shortcuts without their custom area: four grids and an empty Custom Areas card.
+    private static let defaultsWithoutAreas = Config.defaultShortcuts.bindings.filter {
+        if case .placeWindow(.custom) = $0.action { return false }
+        return true
+    }
+
+    /// A model on the default shortcuts, which have four grids and one custom area, or on `bindings`.
     private func model(
         _ bindings: [KeyBinding] = Config.defaultShortcuts.bindings, issues: [String] = []
     ) -> SettingsModel {
@@ -108,11 +114,11 @@ struct KeymapViewRenderTests {
         }
     }
 
-    /// The default tab in light and dark appearance.
-    private func baseline() throws -> [Bool: Data] {
+    /// The tab on `bindings` (the default shortcuts) in light and dark appearance.
+    private func baseline(_ bindings: [KeyBinding] = Config.defaultShortcuts.bindings) throws -> [Bool: Data] {
         var images: [Bool: Data] = [:]
         for dark in [false, true] {
-            let bitmap = try render(tab(model()), dark: dark)
+            let bitmap = try render(tab(model(bindings)), dark: dark)
             #expect(hasContent(bitmap), "the keymap is blank in \(dark ? "dark" : "light") appearance")
             keep(bitmap, as: "keymap-default-\(dark ? "dark" : "light")")
             images[dark] = png(bitmap)
@@ -406,14 +412,14 @@ struct KeymapViewRenderTests {
 
     @Test("the Custom Areas card without a row still draws, and a row in it makes it look different")
     func customAreasCard() throws {
-        let images = try baseline()
-        let empty = model()
+        let images = try baseline(Self.defaultsWithoutAreas)
+        let empty = model(Self.defaultsWithoutAreas)
         let group = try #require(empty.keymap.first { $0.section == .customAreas })
-        #expect(group.rows.isEmpty, "the default shortcuts have a custom area")
+        #expect(group.rows.isEmpty, "the bindings still have a custom area")
         try expectDiffers(
             from: images, named: "custom-area-row", { model in
                 #expect(model.keymap.first { $0.section == .customAreas }?.rows.count == 1)
-            }, bindings: Config.defaultShortcuts.bindings + [Self.area])
+            }, bindings: Self.defaultsWithoutAreas + [Self.area])
     }
 
     @Test("a search that matches nothing draws the empty state")

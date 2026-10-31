@@ -9,7 +9,7 @@
 Piccolo is a macOS menu bar app that moves, resizes and arranges windows with global keyboard shortcuts. You bind each shortcut to one action in the Settings window, such as placing the focused window at a preset or custom frame, moving it to another display, or arranging your most recently focused windows in a grid; the bindings live in a JSON file you can also edit by hand.
 
 
-<img src="docs/images/settings-shortcuts.png" alt="Settings window, Shortcuts tab: a search field and a keymap in grouped cards, Halves, Quarters, Thirds and Other, each row with a small picture of the frame, the action's name and its shortcut, such as ⌃⌥← for Left Half." width="640">
+<img src="docs/images/settings-shortcuts.png" alt="Settings window, Shortcuts tab: a search field and a keymap in grouped cards, Halves, Quarters, Thirds and Other, each row with a small picture of the frame, the action's name and its shortcut, such as ⌃⌥H for Left Half." width="640">
 
 ## Status
 
@@ -74,7 +74,7 @@ The guide is a small floating panel in the top-right corner of the display with 
 - **The ⋯ menu** next to the search field has Restore Default Shortcuts… and Reveal Config in Finder. Restore Default Shortcuts… replaces every binding with the [default shortcuts](#default-shortcuts) after you confirm. The linked resize step, the window animation, the window gap, the arranging order and the destination preview stay. A copy of the config file is kept next to it first.
 - **Problems.** When the config file has problems, a banner under the search field lists them. A warning sign before a shortcut button means the shortcut is not active, because macOS refused it or Piccolo cannot register it; the banner says why. While you record a shortcut every shortcut is off, and no row is marked.
 - **Recording a shortcut.** Click the button on the right of a row. It reads "Record Shortcut" with a dashed border when the row has none, and shows the shortcut, such as ⌃⌥F13, when it has one. Click it, then press the keys: the button reads "Type shortcut…". Press Escape, or click the button again or anywhere else, to cancel. Press Delete or Forward Delete on its own to clear the shortcut. Move the pointer over a shortcut and click the ✕ in the button to clear it.
-- **Rules.** A shortcut needs ⌘, ⌥ or ⌃, or it must be a function key (F1 to F20). Shift on its own does not count, so ⇧A is refused. A refused shortcut shows the reason under the row and recording goes on, so press the keys again. A shortcut that another row already has shows a box under the row, for example "⌃⌥← is already used by Left Half.", with Cancel and Replace. Replace moves the shortcut to this row in one step, and the other row is left without it.
+- **Rules.** A shortcut needs ⌘, ⌥ or ⌃, or it must be a function key (F1 to F20). Shift on its own does not count, so ⇧A is refused. A refused shortcut shows the reason under the row and recording goes on, so press the keys again. A shortcut that another row already has shows a box under the row, for example "⌃⌥H is already used by Left Half.", with Cancel and Replace. Replace moves the shortcut to this row in one step, and the other row is left without it.
 - **Hand-edited files.** A config file can bind one built-in action more than once. All of those shortcuts work; the row shows the extra ones as small tags before the button, each with a ✕ that removes that binding. Settings offers no way to add a second shortcut to a row.
 - **Saving.** Every accepted change is written to the config file straight away. There is no save button.
 - **While recording.** Every global shortcut is switched off, so you can press a shortcut that already exists to record it again. The Settings window takes the key press itself, so keys such as ⌘Q and ⌘, can be recorded.
@@ -85,9 +85,9 @@ The guide is a small floating panel in the top-right corner of the display with 
 
 - **Language** is the language of Piccolo's menu and Settings window: System default or one of the [supported languages](#languages). A change applies after Piccolo restarts, which the Restart Now button under the picker does.
 - **Launch at login** starts Piccolo when you log in. When macOS is waiting for you to allow it, the tab says so and offers a button to open Login Items in System Settings.
-- **Moving windows: Window animation** is how long a window takes to move to its new place, as a segmented control: Off, Fast (0.15 s, the default), Medium (0.25 s) or Slow (0.4 s). It applies to every action, including Arrange Grid, Move Divider and Swap Window.
-- **Window gap** is the space, in points, that Piccolo leaves between the windows it places side by side and between those windows and the edges of the visible frame. The default is 0, which changes nothing. Whole numbers from 0 to 64 are accepted, typed or with the arrows; any other value is refused, and the message shows under the field. See [Window gap](#window-gap).
-- **Arranging windows: Fill order** decides where the windows go when they do not fill the grid. Two pictures show the choice: with 3 windows in a 2 × 2 grid, Rows first (the default) puts two windows on top and one across the bottom; Columns first puts two on the left and one down the right side.
+- **Moving windows: Window animation** is how long a window takes to move to its new place, as a segmented control: Off, Fast (0.15 s), Medium (0.25 s, the default) or Slow (0.4 s). It applies to every action, including Arrange Grid, Move Divider and Swap Window.
+- **Window gap** is the space, in points, that Piccolo leaves between the windows it places side by side and between those windows and the edges of the visible frame. The default is 16; 0 leaves no space. Whole numbers from 0 to 64 are accepted, typed or with the arrows; any other value is refused, and the message shows under the field. See [Window gap](#window-gap).
+- **Arranging windows: Fill order** decides where the windows go when they do not fill the grid. Two pictures show the choice: with 3 windows in a 2 × 2 grid, Rows first puts two windows on top and one across the bottom; Columns first (the default) puts two on the left and one down the right side.
 - **Show destination while a shortcut is held** shows where the windows will go while you hold a shortcut. Release it to move them, or press Escape to cancel. The default is on. When it is off, windows move as soon as the shortcut is pressed.
 - **Linked resize step** is how far each Move Divider key press moves a divider, as a share of the display's visible width or height (see [Move Divider](#move-divider)). The default is 5%. Typed values above 0% up to 50% are accepted; any other value is refused, and the message shows under the field. The arrows change it in steps of 1%, between 1% and 50%.
 - **Accessibility** shows whether Piccolo has the permission (Granted), or Not granted with a button that opens its settings. The card with Accessibility and Config file is tinted while the permission is missing.
@@ -123,7 +123,7 @@ The choice is stored as Piccolo's own language, which is the same setting System
 
 ## Actions
 
-Each binding runs one action. The windows glide to their new frames over the time set by [Window animation](#general-tab) (0.15 s by default) and end up where they would without it.
+Each binding runs one action. The windows glide to their new frames over the time set by [Window animation](#general-tab) (0.25 s by default) and end up where they would without it.
 
 | Action | Parameters | What it does |
 |---|---|---|
@@ -235,40 +235,41 @@ Piccolo starts with these shortcuts, so the window actions work right after inst
 
 | Action | Shortcut |
 |---|---|
-| Left Half | ⌃⌥← |
-| Right Half | ⌃⌥→ |
-| Top Half | ⌃⌥↑ |
-| Bottom Half | ⌃⌥↓ |
+| Left Half | ⌃⌥H |
+| Right Half | ⌃⌥L |
 | Top Left | ⌃⌥U |
 | Top Right | ⌃⌥I |
 | Bottom Left | ⌃⌥J |
 | Bottom Right | ⌃⌥K |
-| Left Third | ⌃⌥D |
-| Center Third | ⌃⌥F |
-| Right Third | ⌃⌥G |
-| Left Two Thirds | ⌃⌥E |
-| Right Two Thirds | ⌃⌥T |
-| Maximize | ⌃⌥↩ |
+| Left Third | ⌃⌥A |
+| Center Third | ⌃⌥S |
+| Right Third | ⌃⌥D |
+| Left Two Thirds | ⌃⌥Q |
+| Right Two Thirds | ⌃⌥E |
+| Maximize | ⌃⌥R |
 | Center | ⌃⌥C |
 | Restore Window | ⌃⌥⌫ |
+| Next Display | ⌃⌥] |
+| Previous Display | ⌃⌥[ |
 | Display to the Left | ⌃⌥⌘← |
 | Display to the Right | ⌃⌥⌘→ |
 | Display Above | ⌃⌥⌘↑ |
 | Display Below | ⌃⌥⌘↓ |
-| Arrange 2 in 1 × 2 | ⌃⌥⇧2 |
-| Arrange 3 in 1 × 3 | ⌃⌥⇧3 |
-| Arrange 4 in 2 × 2 | ⌃⌥⇧4 |
-| Arrange 6 in 2 × 3 | ⌃⌥⇧6 |
-| Move Divider Left | ⌃⌥⇧← |
-| Move Divider Right | ⌃⌥⇧→ |
-| Move Divider Up | ⌃⌥⇧↑ |
-| Move Divider Down | ⌃⌥⇧↓ |
-| Swap Window Left | ⌃⌥⇧⌘← |
-| Swap Window Right | ⌃⌥⇧⌘→ |
-| Swap Window Up | ⌃⌥⇧⌘↑ |
-| Swap Window Down | ⌃⌥⇧⌘↓ |
+| Arrange 2 in 1 × 2 | ⌃⌥2 |
+| Arrange 3 in 1 × 3 | ⌃⌥3 |
+| Arrange 3 in 2 × 2 | ⌃⌥4 |
+| Arrange 6 in 2 × 3 | ⌃⌥6 |
+| Move Divider Left | ⌃⌥- |
+| Move Divider Right | ⌃⌥= |
+| Move Divider Up | ⌃⌥⇧- |
+| Move Divider Down | ⌃⌥⇧= |
+| Swap Window Left | ⌃⌥← |
+| Swap Window Right | ⌃⌥→ |
+| Swap Window Up | ⌃⌥↑ |
+| Swap Window Down | ⌃⌥↓ |
+| Custom area (25% from the left, 10% from the top, half the width, 65% of the height) | ⌃⌥W |
 
-(⌃ is Control, ⌥ is Option, ⇧ is Shift and ⌘ is Command.) The four Move Divider shortcuts move the dividers of windows that Arrange Grid placed, see [Move Divider](#move-divider), and the four Swap Window shortcuts exchange a window of such a group with its neighbour, see [Swap Window](#swap-window). That makes 32 shortcuts.
+(⌃ is Control, ⌥ is Option, ⇧ is Shift and ⌘ is Command.) The four Move Divider shortcuts move the dividers of windows that Arrange Grid placed, see [Move Divider](#move-divider), and the four Swap Window shortcuts exchange a window of such a group with its neighbour, see [Swap Window](#swap-window). Top Half and Bottom Half have no default shortcut: their rows in Settings show none until you record one. That makes 33 shortcuts.
 
 A shortcut that another app already holds, for example another window manager with the same shortcuts, is refused by the system. Piccolo does not register it and reports the refusal in the config problems: the menu counts them, the Settings window lists them and the system log has the details.
 
@@ -337,10 +338,10 @@ The keys can appear in any order. These are the keys of the file:
 | Key | Value | Meaning |
 |---|---|---|
 | `version` | `1` | Required. The only version this build reads and writes. |
-| `animation` | `"off"`, `"fast"`, `"medium"` or `"slow"` | Optional, default `"fast"`. How long a window takes to move: 0, 0.15, 0.25 or 0.4 seconds. |
-| `gridFillOrder` | `"rows"` or `"columns"` | Optional, default `"rows"`. Where the windows go when they do not fill the grid: row by row, or column by column. |
+| `animation` | `"off"`, `"fast"`, `"medium"` or `"slow"` | Optional, default `"medium"`. How long a window takes to move: 0, 0.15, 0.25 or 0.4 seconds. |
+| `gridFillOrder` | `"rows"` or `"columns"` | Optional, default `"columns"`. Where the windows go when they do not fill the grid: row by row, or column by column. |
 | `destinationPreview` | `true` or `false` | Optional, default `true`. Whether holding a shortcut shows where its windows will go before they move. |
-| `gap` | integer | Optional, default `0`. The window gap in points, from 0 to 64: the space left between windows Piccolo places and between them and the edges of the screen (see [Window gap](#window-gap)). |
+| `gap` | integer | Optional, default `16`. The window gap in points, from 0 to 64: the space left between windows Piccolo places and between them and the edges of the screen (see [Window gap](#window-gap)). |
 | `resizeStep` | number | Optional, default `0.05`. How far a linked resize moves a divider, as a fraction of the screen: above 0 and at most 0.5. |
 | `bindings` | array | Required; may be empty. The bindings, in the order of the Settings list. |
 | `id` | UUID string | Required in each binding. Identifies the binding; each binding needs its own. |

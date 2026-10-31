@@ -21,14 +21,17 @@ struct ActionSettingsTests {
     func defaults() {
         #expect(ActionSettings.default == ActionSettings(Config.default))
         #expect(ActionSettings.default.resizeStep == Config.defaultResizeStep)
-        #expect(ActionSettings.default.animation == .fast)
-        #expect(ActionSettings.default.gridFillOrder == .rows)
+        #expect(ActionSettings.default.animation == .medium)
+        #expect(ActionSettings.default.gridFillOrder == .columns)
+        #expect(ActionSettings.default.gap == 16)
     }
 
     @Test("the initialiser defaults to the default config's settings")
     func initialiserDefaults() {
         #expect(ActionSettings() == ActionSettings.default)
-        #expect(ActionSettings(resizeStep: 0.1) == ActionSettings(resizeStep: 0.1, animation: .fast, gridFillOrder: .rows))
+        #expect(
+            ActionSettings(resizeStep: 0.1)
+                == ActionSettings(resizeStep: 0.1, animation: .medium, gridFillOrder: .columns, gap: 16))
     }
 
     @Test("the window animations last 0, 0.15, 0.25 and 0.4 seconds, with the raw values of the file format")

@@ -24,7 +24,9 @@ struct GeneralTabTests {
     }
 
     private func model(issues: [String] = [], language: FakeLanguage = FakeLanguage()) -> SettingsModel {
-        let backend = InMemorySettingsBackend(config: Config(bindings: []), issues: issues)
+        // The settings these tests were written for: Fast, rows first, no gap (not the defaults of a new install).
+        let backend = InMemorySettingsBackend(
+            config: Config(animation: .fast, gridFillOrder: .rows, gap: 0, bindings: []), issues: issues)
         return SettingsModel(backend: backend, loginItem: FakeLoginItem(), language: language) { _ in nil }
     }
 
@@ -132,7 +134,7 @@ struct GeneralTabTests {
 
     @Test("a refused save of the window animation names the window until the next accepted change")
     func refusedAnimationNamesTheWindow() {
-        let backend = InMemorySettingsBackend(config: Config(bindings: []))
+        let backend = InMemorySettingsBackend(config: Config(animation: .fast, bindings: []))
         let model = SettingsModel(backend: backend, loginItem: FakeLoginItem(), language: FakeLanguage()) { _ in nil }
         #expect(model.errorTarget == nil)
 

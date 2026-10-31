@@ -10,8 +10,8 @@ public enum ActionPreview {
     /// - A preset is its frame. `center` keeps the window's own size, which is not known here, so
     ///   it is drawn as a centered half-size window.
     /// - A custom frame is the frame.
-    /// - A grid is its cells in `fillOrder`, in the order the windows fill them: row by row (the
-    ///   default) or column by column. With fewer windows than cells the short last row (column)
+    /// - A grid is its cells in `fillOrder`, in the order the windows fill them: row by row or
+    ///   column by column. With fewer windows than cells the short last row (column)
     ///   stretches over the full width (height), as the arrangement does.
     public static func rects(for action: Action, fillOrder: GridFillOrder = .rows) -> [CGRect]? {
         switch action {

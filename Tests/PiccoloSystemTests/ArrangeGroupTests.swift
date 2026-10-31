@@ -66,7 +66,7 @@ struct ArrangeGroupTests {
     func nothingToArrange() throws {
         let desk = Desk()
 
-        let outcome = try desk.executor.run(.arrangeGrid(GridSpec(count: 4, rows: 2, columns: 2)))
+        let outcome = try desk.executor.run(.arrangeGrid(GridSpec(count: 4, rows: 2, columns: 2)), settings: .pinned())
 
         #expect(outcome == .nothingToDo)
         #expect(desk.executor.linkedGroups.isEmpty)

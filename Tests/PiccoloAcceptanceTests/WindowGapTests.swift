@@ -46,7 +46,7 @@ extension DesktopAcceptanceTests {
         ) async throws -> Result {
             let screen = try Layout.screens()[0]
             return try await withConfigDirectory { directory in
-                try piccolo.loadConfig(at: try directory.write(Config(gap: gap, bindings: [])))
+                try piccolo.loadConfig(at: try directory.write(Config.frameTest(gap: gap)))
                 return try await withFixture { fixture in try await body(fixture, screen) }
             }
         }

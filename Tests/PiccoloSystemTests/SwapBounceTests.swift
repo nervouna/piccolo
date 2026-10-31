@@ -26,7 +26,7 @@ private struct BounceRig {
 
     /// Presses the swap key with this animation.
     func swap(_ direction: Direction, _ animation: WindowAnimation = .fast) throws -> SwapOutcome {
-        try desk.swap(direction, settings: ActionSettings(animation: animation))
+        try desk.swap(direction, settings: ActionSettings.pinned(animation: animation))
     }
 
     /// The changes the windows took since `mark`.
@@ -355,7 +355,7 @@ struct SwapNoBounceTests {
         let mark = rig.desk.log.count
 
         let destinations = try rig.desk.executor.destinations(
-            for: .swapWindow(.left), settings: ActionSettings(animation: .slow))
+            for: .swapWindow(.left), settings: ActionSettings.pinned(animation: .slow))
 
         #expect(destinations.isEmpty)
         #expect(rig.desk.calls(since: mark).isEmpty)

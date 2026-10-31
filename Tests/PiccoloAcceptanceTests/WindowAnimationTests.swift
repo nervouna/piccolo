@@ -109,7 +109,7 @@ extension DesktopAcceptanceTests {
 
             try await withConfigDirectory { config in
                 let url = config.file()
-                try ConfigStore(url: url).save(Config(animation: .slow))
+                try ConfigStore(url: url).save(Config.frameTest(animation: .slow))
                 let loaded = try piccolo.loadConfig(at: url)
                 #expect(loaded.issues.isEmpty, "loading the config reported \(loaded.issues)")
 
@@ -126,14 +126,14 @@ extension DesktopAcceptanceTests {
             }
         }
 
-        @Test("animation 4. a config without animation means Fast: the glide lasts 0.15 s")
-        func defaultIsFast() async throws {
+        @Test("animation 4. a config without animation means Medium: the glide lasts 0.25 s")
+        func defaultIsMedium() async throws {
             let (start, target) = try placement()
 
             try await withConfigDirectory { config in
                 let url = config.file()
-                // The default config: no animation key at all.
-                try Data(#"{"version": 1, "bindings": []}"#.utf8).write(to: url)
+                // No animation key at all. The gap is set to 0 so that the target is the left half itself.
+                try Data(#"{"version": 1, "gap": 0, "bindings": []}"#.utf8).write(to: url)
                 let loaded = try piccolo.loadConfig(at: url)
                 #expect(loaded.issues.isEmpty, "loading the config reported \(loaded.issues)")
 
@@ -144,10 +144,10 @@ extension DesktopAcceptanceTests {
                         try client.runAction(.placeWindow(.preset(.leftHalf)))
                     }
 
-                    try expectGlide(of: window, in: observed, from: start, to: target, atLeast: 2, duration: 0.15)
+                    try expectGlide(of: window, in: observed, from: start, to: target, atLeast: 2, duration: 0.25)
                     #expect(
-                        observed.elapsed < 0.15 + 0.3,
-                        "a Fast glide of 0.15 s took \(observed.elapsed) s")
+                        observed.elapsed < 0.25 + 0.3,
+                        "a Medium glide of 0.25 s took \(observed.elapsed) s")
                     _ = try await Measure.waitForFrame(ofWindow: window.windowNumber, matching: target)
                 }
             }
@@ -161,7 +161,7 @@ extension DesktopAcceptanceTests {
 
             try await withConfigDirectory { config in
                 let url = config.file()
-                try ConfigStore(url: url).save(Config(animation: .slow))
+                try ConfigStore(url: url).save(Config.frameTest(animation: .slow))
                 _ = try piccolo.loadConfig(at: url)
 
                 try await withFixture { fixture in
