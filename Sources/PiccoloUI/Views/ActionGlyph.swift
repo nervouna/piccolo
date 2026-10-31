@@ -101,18 +101,18 @@ struct ActionGlyph: View {
             screen {
                 Image(systemName: ActionGlyphKind.displaySymbol(direction))
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(accent)
                     .frame(width: Self.size.width, height: Self.size.height)
             }
         case .divider(let direction):
             screen {
                 windows(ActionGlyphKind.halves(split: direction), filled: false)
-                arrow(direction, color: accent)
+                arrow(direction)
             }
         case .swap(let direction):
             screen {
                 windows(ActionGlyphKind.halves(split: direction), filled: true)
-                arrow(direction, color: .primary)
+                arrow(direction)
             }
         case .restore:
             screen {
@@ -160,11 +160,12 @@ struct ActionGlyph: View {
         }
     }
 
-    /// The arrow across the split, centred on a pill of the screen's colour, so that the split line stops behind it.
-    private func arrow(_ direction: Direction, color: Color) -> some View {
+    /// The arrow across the split, in the accent colour like every arrow of the glyphs, centred on a pill of the
+    /// screen's colour, so that the split line stops behind it.
+    private func arrow(_ direction: Direction) -> some View {
         Image(systemName: ActionGlyphKind.arrowSymbol(direction))
             .font(.system(size: 8, weight: .heavy))
-            .foregroundStyle(color)
+            .foregroundStyle(accent)
             .padding(.horizontal, 2)
             .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 3))
             .frame(width: Self.size.width, height: Self.size.height)

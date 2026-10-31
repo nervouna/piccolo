@@ -178,9 +178,11 @@ struct KeymapViewRenderTests {
     }
 
     /// The sRGB components of the pixel that holds `point`, in points from the top-left corner of a glyph-sized bitmap.
-    private func pixel(_ bitmap: NSBitmapImageRep, at point: CGPoint) -> [CGFloat]? {
-        let x = Int(point.x * CGFloat(bitmap.pixelsWide) / ActionGlyph.size.width)
-        let y = Int(point.y * CGFloat(bitmap.pixelsHigh) / ActionGlyph.size.height)
+    private func pixel(_ bitmap: NSBitmapImageRep, at point: CGPoint, in size: CGSize = ActionGlyph.size)
+        -> [CGFloat]?
+    {
+        let x = Int(point.x * CGFloat(bitmap.pixelsWide) / size.width)
+        let y = Int(point.y * CGFloat(bitmap.pixelsHigh) / size.height)
         return components(of: bitmap.colorAt(x: x, y: y))
     }
 
@@ -260,6 +262,73 @@ struct KeymapViewRenderTests {
             let edge = pixel(bitmap, at: CGPoint(x: 0.5, y: size.height / 2))
             let fill = pixel(bitmap, at: CGPoint(x: 4, y: size.height / 2))
             #expect(!same(edge, fill, tolerance: 0.001), "the frame of \(direction) is not drawn, appearance dark: \(dark)")
+        }
+    }
+
+    /// The sRGB components of the accent colour as the render draws it in the given appearance, which is not
+    /// those of `NSColor.controlAccentColor` itself: the bitmap's colour space shifts a saturated colour.
+    private func drawnAccent(dark: Bool) throws -> [CGFloat]? {
+        let size = ActionGlyph.size
+        let swatch = try render(
+            Color(nsColor: .controlAccentColor), size: NSSize(width: size.width, height: size.height), dark: dark)
+        return pixel(swatch, at: CGPoint(x: size.width / 2, y: size.height / 2))
+    }
+
+    /// Whether the ink drawn on `background` within `region` (in points from the top-left corner of a glyph-sized
+    /// bitmap) is the accent colour. The most strongly inked pixel of the region is looked at: a pixel the arrow
+    /// covers only in part is a mix of the background and the arrow's colour, so it must lie on the line from one
+    /// to the other, and be at least halfway to the accent colour.
+    private func inkIsAccent(
+        _ bitmap: NSBitmapImageRep, on background: [CGFloat], accent: [CGFloat], in region: CGRect
+    ) -> Bool {
+        let size = ActionGlyph.size
+        func distance(_ first: [CGFloat], _ second: [CGFloat]) -> CGFloat {
+            sqrt(zip(first.prefix(3), second.prefix(3)).map { ($0 - $1) * ($0 - $1) }.reduce(0, +))
+        }
+        let reach = distance(accent, background)
+        guard reach > 0 else { return false }
+        var strongest: (pixel: [CGFloat], distance: CGFloat)?
+        for x in 0..<bitmap.pixelsWide {
+            for y in 0..<bitmap.pixelsHigh {
+                let point = CGPoint(
+                    x: (CGFloat(x) + 0.5) * size.width / CGFloat(bitmap.pixelsWide),
+                    y: (CGFloat(y) + 0.5) * size.height / CGFloat(bitmap.pixelsHigh))
+                guard region.contains(point), let pixel = components(of: bitmap.colorAt(x: x, y: y)) else { continue }
+                let away = distance(pixel, background)
+                if away > (strongest?.distance ?? 0) { strongest = (pixel, away) }
+            }
+        }
+        guard let strongest else { return false }
+        let coverage = strongest.distance / reach
+        let expected = zip(background, accent).map { $0 + coverage * ($1 - $0) }
+        return coverage >= 0.5 && same(strongest.pixel, expected, tolerance: 0.04)
+    }
+
+    @Test(
+        "every arrow of the glyphs, on a split or in a display's screen, is drawn in the accent colour",
+        arguments: [false, true])
+    func arrowsAreAccent(dark: Bool) throws {
+        let size = ActionGlyph.size
+        let accent = try #require(try drawnAccent(dark: dark))
+        // The screen's colour: that of the bare screen's inside, beside its frame.
+        let screen = try #require(pixel(try glyph(.frames([]), dark: dark), at: CGPoint(x: 4, y: size.height / 2)))
+        // Where an arrow is: on the pill in the middle of a split, which lies well inside the pill, and in the
+        // middle of the screen of a display, clear of its frame.
+        let split = CGRect(x: size.width / 2 - 4, y: size.height / 2 - 3, width: 8, height: 6)
+        let display = CGRect(x: 5, y: 3, width: size.width - 10, height: size.height - 6)
+        var kinds: [(String, ActionGlyphKind, CGRect)] = []
+        for direction in Direction.allCases {
+            kinds.append(("divider \(direction.rawValue)", .divider(direction), split))
+            kinds.append(("swap \(direction.rawValue)", .swap(direction), split))
+        }
+        for direction in DisplayDirection.allCases {
+            kinds.append(("display \(direction.rawValue)", .display(direction), display))
+        }
+        for (name, kind, region) in kinds {
+            let bitmap = try glyph(kind, dark: dark)
+            #expect(
+                inkIsAccent(bitmap, on: screen, accent: accent, in: region),
+                "the arrow of \(name) is not drawn in the accent colour, appearance dark: \(dark)")
         }
     }
 
@@ -410,11 +479,39 @@ struct KeymapViewRenderTests {
         let search = fittingHeight(view.searchField)
         #expect(search > 0)
         #expect(
-            fittingHeight(view.menuLabel) == search,
-            "the ⋯ button is \(fittingHeight(view.menuLabel)) pt tall, the search field \(search) pt")
+            fittingHeight(view.menu) == search,
+            "the ⋯ button is \(fittingHeight(view.menu)) pt tall, the search field \(search) pt")
         #expect(
             fittingHeight(view.controls) == search,
             "the search field and the ⋯ button make \(fittingHeight(view.controls)) pt, search field \(search) pt")
+    }
+
+    @Test(
+        "the ⋯ button draws a bezel over its whole 30 pt × search field height, with rounded corners",
+        arguments: [false, true])
+    func menuButtonBezel(dark: Bool) throws {
+        let size = CGSize(width: ShortcutsTab.menuWidth, height: ShortcutsTab.controlHeight)
+        let pixels = NSSize(width: size.width, height: size.height)
+        let window = Color(nsColor: .windowBackgroundColor)
+        let button = try render(tab(model()).menu.background(window), size: pixels, dark: dark)
+        let bare = try render(window, size: pixels, dark: dark)
+        func at(_ bitmap: NSBitmapImageRep, _ x: CGFloat, _ y: CGFloat) -> [CGFloat]? {
+            pixel(bitmap, at: CGPoint(x: x, y: y), in: size)
+        }
+        let background = at(bare, 0.5, 0.5)
+        // The bezel reaches 2 pt short of each edge, so that it is as tall and as wide as the button: a system
+        // menu draws a capsule about half as tall.
+        let inside: [(CGFloat, CGFloat)] = [
+            (size.width / 2, 2), (size.width / 2, size.height - 2), (2, size.height / 2),
+            (size.width - 2, size.height / 2),
+        ]
+        for (x, y) in inside {
+            #expect(
+                !same(at(button, x, y), background, tolerance: 0.01),
+                "the ⋯ button draws no bezel at (\(x), \(y)), appearance dark: \(dark)")
+        }
+        // The very corner lies outside the 6 pt radius.
+        #expect(same(at(button, 0.5, 0.5), background, tolerance: 0.01), "the corner of the ⋯ button is not rounded")
     }
 
     /// The height a view asks for, laid out off screen.

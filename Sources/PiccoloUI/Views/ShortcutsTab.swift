@@ -9,6 +9,8 @@ struct ShortcutsTab: View {
     static let controlHeight: CGFloat = 26
     /// The width of the "⋯" button.
     static let menuWidth: CGFloat = 30
+    /// The corner radius of the search field, which the "⋯" button shares.
+    static let cornerRadius: CGFloat = 6
 
     @Bindable var model: SettingsModel
     let host: SettingsHost
@@ -89,48 +91,12 @@ struct ShortcutsTab: View {
         .padding(.horizontal, 8)
         .padding(.vertical, 5)
         .frame(height: Self.controlHeight)
-        .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 6))
+        .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: Self.cornerRadius))
     }
 
-    private var menu: some View {
-        Menu {
-            Button {
-                model.askToRestoreDefaults()
-            } label: {
-                Text(localized: "Restore Default Shortcuts…")
-            }
-            .help(
-                Text(
-                    localized:
-                        "Replace every shortcut with the defaults. A copy of the config file is kept next to it."))
-            Button {
-                host.revealConfigInFinder()
-            } label: {
-                Text(localized: "Reveal Config in Finder")
-            }
-        } label: {
-            menuLabel
-        }
-        .menuStyle(.borderlessButton)
-        .menuIndicator(.hidden)
-        .fixedSize()
-    }
-
-    /// The picture of the "⋯" button: a square as tall as the search field, filled and outlined like a bordered
-    /// macOS button. Internal, so that the render tests can measure it.
-    var menuLabel: some View {
-        Image(systemName: "ellipsis")
-            .frame(width: Self.menuWidth, height: Self.controlHeight)
-            .background {
-                RoundedRectangle(cornerRadius: 6)
-                    .fill(Color(nsColor: .controlBackgroundColor))
-                    .shadow(color: .black.opacity(0.15), radius: 0.5, y: 0.5)
-            }
-            .overlay {
-                RoundedRectangle(cornerRadius: 6)
-                    .strokeBorder(Color(nsColor: .separatorColor), lineWidth: 0.5)
-            }
-            .accessibilityLabel(Text(localized: "More"))
+    /// The "⋯" button, which opens the menu. Internal, so that the render tests can measure it.
+    var menu: some View {
+        MoreMenuButton(model: model, host: host)
     }
 
     // MARK: Cards
@@ -168,6 +134,100 @@ struct ShortcutsTab: View {
                 }
             }
         }
+    }
+}
+
+/// The "⋯" button next to the search field: the system's bordered button, a small square as tall as the search
+/// field and with its corner radius, which pops a menu up under it. It is a `Button` and not a `Menu`: a `Menu`
+/// draws the system's short capsule whatever its button style, border shape and frame, and a borderless one draws
+/// nothing but its label.
+private struct MoreMenuButton: View {
+    let model: SettingsModel
+    let host: SettingsHost
+
+    @State private var anchor = MenuAnchor()
+
+    var body: some View {
+        Button {
+            popUpMenu()
+        } label: {
+            // The label fills the button, so that the frame below sets the size of the bezel.
+            Image(systemName: "ellipsis")
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .buttonStyle(.bordered)
+        .buttonBorderShape(.roundedRectangle(radius: ShortcutsTab.cornerRadius))
+        .frame(width: ShortcutsTab.menuWidth, height: ShortcutsTab.controlHeight)
+        .background { MenuAnchorView(anchor: anchor).allowsHitTesting(false) }
+        .accessibilityLabel(Text(localized: "More"))
+    }
+
+    /// Shows the menu with its top-left corner at the button's bottom-left corner.
+    private func popUpMenu() {
+        guard let view = anchor.view else { return }
+        let entries = [
+            MenuEntry(
+                title: String(localized: "Restore Default Shortcuts…", bundle: .module),
+                toolTip: String(
+                    localized:
+                        "Replace every shortcut with the defaults. A copy of the config file is kept next to it.",
+                    bundle: .module)
+            ) { [model] in
+                model.askToRestoreDefaults()
+            },
+            MenuEntry(title: String(localized: "Reveal Config in Finder", bundle: .module)) { [host] in
+                host.revealConfigInFinder()
+            },
+        ]
+        let menu = NSMenu()
+        for entry in entries {
+            menu.addItem(entry.item)
+        }
+        let bottom = view.isFlipped ? view.bounds.maxY : view.bounds.minY
+        // An item does not retain its target: the entries stay alive until the menu is gone.
+        withExtendedLifetime(entries) {
+            _ = menu.popUp(positioning: nil, at: NSPoint(x: view.bounds.minX, y: bottom), in: view)
+        }
+    }
+}
+
+/// The view a menu is popped up under, which the button's background holds on to.
+@MainActor
+private final class MenuAnchor {
+    weak var view: NSView?
+}
+
+private struct MenuAnchorView: NSViewRepresentable {
+    let anchor: MenuAnchor
+
+    func makeNSView(context: Context) -> NSView {
+        let view = NSView()
+        anchor.view = view
+        return view
+    }
+
+    func updateNSView(_ view: NSView, context: Context) {
+        anchor.view = view
+    }
+}
+
+/// A menu item that runs a closure.
+@MainActor
+private final class MenuEntry: NSObject {
+    let item = NSMenuItem()
+    private let run: @MainActor () -> Void
+
+    init(title: String, toolTip: String? = nil, run: @escaping @MainActor () -> Void) {
+        self.run = run
+        super.init()
+        item.title = title
+        item.toolTip = toolTip
+        item.action = #selector(runClosure)
+        item.target = self
+    }
+
+    @objc private func runClosure() {
+        run()
     }
 }
 
