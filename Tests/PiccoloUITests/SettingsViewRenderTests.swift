@@ -6,9 +6,10 @@ import PiccoloCore
 
 @testable import PiccoloUI
 
-/// Draws the Settings views into bitmaps, off screen, as a smoke test that every state of the
-/// window can be built and laid out. Nothing is shown and no permission is involved: the views
-/// draw themselves into a bitmap of their own hosting view.
+/// Draws the Settings views into bitmaps, as a smoke test that every state of the window can be built and
+/// laid out. Nothing is shown and no permission is involved: the views draw themselves into a bitmap of their
+/// own hosting view. The windows whose bitmaps are compared are ordered front invisibly (`orderFrontInvisibly`),
+/// because a window that is not on screen can have an incomplete first layout.
 ///
 /// Set `PICCOLO_RENDER_DIR` to a folder to keep the images, for example to look at the layout in
 /// light and dark appearance.
@@ -31,7 +32,16 @@ struct SettingsViewRenderTests {
         return SettingsModel(backend: backend, loginItem: loginItem, language: language) { code in ["0": "a", "11": "b"][String(code)] }
     }
 
-    /// Renders `view` at `size` with the given appearance and returns the bitmap.
+    /// Orders `window` front with alpha 0 and no mouse events, as `SettingsWindowTabsTests.generalFollowsItsContent`
+    /// does: the window is laid out as one on screen, and nothing is shown or clicked. The caller orders it out.
+    private func orderFrontInvisibly(_ window: NSWindow) {
+        window.alphaValue = 0
+        window.ignoresMouseEvents = true
+        window.orderFront(nil)
+    }
+
+    /// Renders `view` at `size` with the given appearance and returns the bitmap. The window is ordered front
+    /// invisibly while the bitmap is taken, and out again after.
     private func render<Content: View>(
         _ view: Content, size: NSSize = SettingsViewRenderTests.size, dark: Bool = false
     ) throws -> NSBitmapImageRep {
@@ -42,6 +52,8 @@ struct SettingsViewRenderTests {
             defer: false)
         window.appearance = NSAppearance(named: dark ? .darkAqua : .aqua)
         window.contentView = hosting
+        orderFrontInvisibly(window)
+        defer { window.orderOut(nil) }
         hosting.layoutSubtreeIfNeeded()
         let bitmap = try #require(hosting.bitmapImageRepForCachingDisplay(in: hosting.bounds))
         hosting.cacheDisplay(in: hosting.bounds, to: bitmap)
@@ -70,11 +82,14 @@ struct SettingsViewRenderTests {
     /// What the window shows once the layout has settled: renders again and again, 20 ms apart, until two in
     /// a row are the same, and returns the last. The first layout of a tab can differ from the next one (a
     /// scroll view's content is laid out against its scroller only on a later pass), so a single render is
-    /// not a fair picture of the tab. At most 5 s: a layout that never settles gives the last render.
+    /// not a fair picture of the tab. At most 250 polls: a layout that never settles gives the last render. The
+    /// budget counts polls that ran, not seconds, because a full test run can block the main thread for seconds
+    /// at a time; the wall-clock limit of 120 s only stops a hang.
     private func settledContent(of window: NSWindow, dark: Bool = false) async throws -> NSBitmapImageRep {
-        let deadline = ContinuousClock.now.advanced(by: .seconds(5))
+        let limit = ContinuousClock.now.advanced(by: .seconds(120))
         var previous = try renderContent(of: window, dark: dark)
-        while ContinuousClock.now < deadline {
+        for _ in 0..<250 {
+            guard ContinuousClock.now < limit else { break }
             try await Task.sleep(for: .milliseconds(20))
             let next = try renderContent(of: window, dark: dark)
             if png(next) == png(previous) { return next }
@@ -84,15 +99,18 @@ struct SettingsViewRenderTests {
     }
 
     /// Waits, on the main actor, until `reached` holds and the window's frame has stayed the same for three
-    /// polls in a row: a poll every 20 ms, and at most 5 s. The window follows the model's tab on a later
+    /// polls in a row: a poll every 20 ms, and at most 250 polls. The window follows the model's tab on a later
     /// turn of the main queue and resizes in an animation, which when the machine is busy can take longer
-    /// than any fixed pause. A window that never gets there does not fail the wait: the expectations after
-    /// it do, and say what the window is.
+    /// than any fixed pause. The budget counts the polls that ran, not seconds: a full test run can block the
+    /// main thread for seconds at a time, and the time spent blocked must not use the budget up. A window that
+    /// never gets there does not fail the wait: the expectations after it do, and say what the window is. The
+    /// wall-clock limit of 120 s only stops a hang.
     private func waitUntilSettled(_ window: NSWindow, reached: () -> Bool) async throws {
-        let deadline = ContinuousClock.now.advanced(by: .seconds(5))
+        let limit = ContinuousClock.now.advanced(by: .seconds(120))
         var previous: CGRect?
         var steady = 0
-        while ContinuousClock.now < deadline {
+        for _ in 0..<250 {
+            guard ContinuousClock.now < limit else { return }
             let frame = window.frame
             steady = (frame == previous && reached()) ? steady + 1 : 0
             previous = frame
@@ -180,7 +198,11 @@ struct SettingsViewRenderTests {
     func followsTheModel() async throws {
         let model = model([Self.leftHalf, Self.custom])
         let (controller, window) = makeWindow(model)
-        defer { withExtendedLifetime(controller) {} }
+        orderFrontInvisibly(window)
+        defer {
+            window.orderOut(nil)
+            withExtendedLifetime(controller) {}
+        }
         try await waitUntilSettled(window) { controller.content?.tab == .shortcuts }
         let shortcutsFrame = window.frame
         let shortcuts = try await settledContent(of: window)
