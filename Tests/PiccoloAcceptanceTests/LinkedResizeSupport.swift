@@ -27,7 +27,7 @@ extension ConfigDirectory {
 /// resize step `step`, the window `animation`, the grid fill order `gridFillOrder`, the window `gap`
 /// and the destination preview setting, so that the expected frames do not depend on the config of whoever runs the tests,
 /// and with a fixture that starts with no windows. Afterwards the fixture windows are closed and
-/// Piccolo is back on its default config (see `withConfigDirectory`).
+/// Piccolo is back on the fresh-install config the test started on (see `withConfigDirectory`).
 func withLinkedResize<Result>(
     step: Double = LinkedRun.defaultStep,
     animation: WindowAnimation = Config.defaultAnimation,
