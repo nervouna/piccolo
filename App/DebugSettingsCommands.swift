@@ -14,8 +14,8 @@ import PiccoloUI
 /// that applies a new language (`settings.restartNow`), recording a row of the keymap
 /// (`settings.beginRecording`, `settings.cancelRecording`, `settings.record`), the rest of the keymap
 /// (`settings.clearShortcut`, `settings.resolveConflict`, `settings.addLayout`, `settings.updateLayout`,
-/// `settings.editLayout`, `settings.dismissLayoutEditor`), and the login item (`loginItem.status`,
-/// `loginItem.set`).
+/// `settings.editLayout`, `settings.dismissLayoutEditor`), the history (`settings.undo`, `settings.redo`),
+/// and the login item (`loginItem.status`, `loginItem.set`).
 ///
 /// They drive the model the window uses, through the same methods and properties, so a rejected
 /// edit answers `ok: false` with the model's own message and the window follows what the commands
@@ -327,6 +327,27 @@ extension DebugControlServer {
                 return settingsState()
             }
         }
+
+        // Takes back the last change made in the window, as ⌘Z does, and answers the state; `ok: false`
+        // when there is nothing to take back, or when the backend cannot save (the model's message).
+        router.register("settings.undo") { _ in
+            try onMainActor {
+                let model = SettingsController.shared.model
+                guard model.canUndo else { throw ControlCommandError.failed("there is nothing to undo") }
+                guard model.undo() else { throw rejection(of: model) }
+                return settingsState()
+            }
+        }
+
+        // Applies the change that was taken back last, as ⇧⌘Z does.
+        router.register("settings.redo") { _ in
+            try onMainActor {
+                let model = SettingsController.shared.model
+                guard model.canRedo else { throw ControlCommandError.failed("there is nothing to redo") }
+                guard model.redo() else { throw rejection(of: model) }
+                return settingsState()
+            }
+        }
     }
 
     // MARK: Recording by key press
@@ -458,6 +479,8 @@ extension DebugControlServer {
             "language": .string(model.language.rawValue),
             "effectiveLanguage": .string(model.effectiveLanguage.rawValue),
             "restartRequired": .bool(model.restartRequired),
+            "canUndo": .bool(model.canUndo),
+            "canRedo": .bool(model.canRedo),
         ]
         state.merge(settingsWindowState()) { _, new in new }
         if let error = model.error {

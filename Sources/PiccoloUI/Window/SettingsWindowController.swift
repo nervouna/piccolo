@@ -14,7 +14,9 @@ import SwiftUI
 /// It is also what keeps recording from outliving its window: closing the window, the window
 /// losing key status and the app being deactivated all cancel a recording, which restores the
 /// global hotkeys. While the window is open and a binding is recording, it catches the key
-/// press before the rest of the app sees it, so that shortcuts like ⌘Q or ⌘, can be recorded.
+/// press before the rest of the app sees it, so that shortcuts like ⌘Q or ⌘, can be recorded. When
+/// nothing records it catches ⌘Z and ⇧⌘Z for ``SettingsModel/undo()`` and ``SettingsModel/redo()``,
+/// since Piccolo has no Edit menu.
 @MainActor
 public final class SettingsWindowController: NSObject, NSWindowDelegate, NSToolbarDelegate {
     public let model: SettingsModel
@@ -446,8 +448,10 @@ public final class SettingsWindowController: NSObject, NSWindowDelegate, NSToolb
 
     public func windowWillClose(_ notification: Notification) {
         model.cancelRecording()
-        // A confirmation still showing must not come back with the window the next time it opens.
+        // A confirmation still showing, and a shortcut that waits to be replaced, must not come back with
+        // the window the next time it opens.
         model.cancelRestoreDefaults()
+        model.resolveConflict(replace: false)
         model.dismissLayoutEditor()
         removeKeyMonitor()
     }
@@ -482,7 +486,7 @@ public final class SettingsWindowController: NSObject, NSWindowDelegate, NSToolb
         fitWindow(animated: false)
     }
 
-    // MARK: Key presses while recording
+    // MARK: Key presses
 
     private func installKeyMonitor() {
         guard keyMonitor == nil else { return }
@@ -499,14 +503,39 @@ public final class SettingsWindowController: NSObject, NSWindowDelegate, NSToolb
         keyMonitor = nil
     }
 
-    /// Gives a key press to the model if a binding is recording and the press is for this window.
-    /// Returns `nil` (the event is swallowed) when the recorder took it.
+    /// Gives a key press to the window's own handling if it is for this window while it is key. Returns
+    /// `nil` (the event is swallowed) when the press was taken, the event itself otherwise.
     private func offer(_ event: NSEvent) -> NSEvent? {
-        guard model.isRecording, isKey, event.window === window else {
+        guard isKey, event.window === window else {
             return event
         }
-        let press = Shortcut(keyCode: Int(event.keyCode), modifiers: Self.modifiers(of: event))
-        return model.record(press) ? nil : event
+        return take(event) ? nil : event
+    }
+
+    /// What the window does with a key press: while a row records, the recorder takes every press (⌘Z
+    /// included, which is a shortcut like any other then); otherwise ⌘Z undoes the last change and ⇧⌘Z
+    /// redoes it, unless a text field is being edited (it keeps its own undo) or a sheet is open on the
+    /// window (the sheet's own keys). Piccolo has no Edit menu, so nothing else would act on them. Answers
+    /// whether the press was taken.
+    func take(_ event: NSEvent) -> Bool {
+        if model.isRecording {
+            let press = Shortcut(keyCode: Int(event.keyCode), modifiers: Self.modifiers(of: event))
+            return model.record(press)
+        }
+        guard
+            let command = SettingsUndoKey.command(
+                characters: event.charactersIgnoringModifiers, keyCode: Int(event.keyCode),
+                modifiers: Self.modifiers(of: event)),
+            firstResponderKind != .textField, window?.attachedSheet == nil, model.layoutEditor == nil
+        else {
+            return false
+        }
+        switch command {
+        case .undo: model.undo()
+        case .redo: model.redo()
+        }
+        // Taken also when there was nothing to undo: nothing else would do anything with the press.
+        return true
     }
 
     /// The modifiers held with a key event, as the config names them.
