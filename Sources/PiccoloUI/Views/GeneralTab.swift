@@ -4,7 +4,8 @@ import SwiftUI
 /// The "General" tab, in the groups of #99 item 9: launch at login and the language without a header,
 /// then moving windows, arranging windows, and the Accessibility status with the config file. The app's
 /// name and version sit under the last group. A rejected window gap or linked resize step shows under its
-/// field; the config problems and the other messages are the Shortcuts tab's.
+/// field, and a rejected change that is about the window as a whole shows above the version; the config
+/// problems and the other messages are the Shortcuts tab's.
 struct GeneralTab: View {
     let model: SettingsModel
     let host: SettingsHost
@@ -119,6 +120,11 @@ struct GeneralTab: View {
                 }
             }
             .formStyle(.grouped)
+
+            // A rejected change of the window animation, the fill order or the destination preview.
+            if model.errorTarget == .window, let error = model.error {
+                FieldError(message: error)
+            }
 
             Text(verbatim: "Piccolo \(host.appVersion)")
                 .font(.footnote)

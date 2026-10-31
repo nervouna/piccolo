@@ -6,9 +6,10 @@ import PiccoloCore
 
 @testable import PiccoloUI
 
-/// The General tab as the Settings window shows it: its groups, a rejected value under its field, the
-/// fill order pictures and the config problems, which the tab leaves to the Shortcuts tab. Like the
-/// other render tests, the views are drawn into bitmaps off screen, and nothing is shown.
+/// The General tab as the Settings window shows it: its groups, a rejected value under its field, a
+/// window-level error above the version, the fill order pictures and the config problems, which the tab
+/// leaves to the Shortcuts tab. Like the other render tests, the views are drawn into bitmaps off screen,
+/// and nothing is shown.
 @MainActor
 @Suite("General tab")
 struct GeneralTabTests {
@@ -110,6 +111,41 @@ struct GeneralTabTests {
             #expect(hasContent(rejected), "the tab is blank with a rejected resize step in \(name) appearance")
             #expect(png(rejected) != png(clean), "the rejected resize step shows nothing in \(name) appearance")
         }
+    }
+
+    @Test("a window-level error shows above the version, in light and dark appearance")
+    func windowError() throws {
+        for (name, dark) in Self.appearances {
+            let backend = InMemorySettingsBackend(config: Config(bindings: []))
+            let model = SettingsModel(backend: backend, loginItem: FakeLoginItem(), language: FakeLanguage()) { _ in
+                nil
+            }
+            let clean = try render(model, dark: dark)
+            backend.failure = "the disk is full"
+            #expect(!model.setAnimation(.slow))
+            #expect(model.errorTarget == .window)
+            let rejected = try render(model, dark: dark)
+            #expect(hasContent(rejected), "the tab is blank with a window error in \(name) appearance")
+            #expect(png(rejected) != png(clean), "the window error shows nothing in \(name) appearance")
+        }
+    }
+
+    @Test("a refused save of the window animation names the window until the next accepted change")
+    func refusedAnimationNamesTheWindow() {
+        let backend = InMemorySettingsBackend(config: Config(bindings: []))
+        let model = SettingsModel(backend: backend, loginItem: FakeLoginItem(), language: FakeLanguage()) { _ in nil }
+        #expect(model.errorTarget == nil)
+
+        backend.failure = "the disk is full"
+        #expect(!model.setAnimation(.slow))
+        #expect(model.errorTarget == .window)
+        #expect(model.error != nil)
+        #expect(model.animation == .fast)
+
+        backend.failure = nil
+        #expect(model.setAnimation(.slow))
+        #expect(model.errorTarget == nil)
+        #expect(model.error == nil)
     }
 
     @Test("rows first and columns first render with their own picture selected, in light and dark appearance")
