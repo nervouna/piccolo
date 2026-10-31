@@ -29,10 +29,18 @@ public final class SettingsWindowController: NSObject, NSWindowDelegate, NSToolb
     private var ownFrameChanges = 0
     /// Whether the next time the window becomes key it is being opened, so that no field keeps the focus.
     private var clearsFocusWhenKey = false
-    /// The frame the window is animating to, if it is.
-    private var animationTarget: CGRect?
+    /// The resize animation under way, if any: the frame it goes to, and a number that tells it from the
+    /// ones before and after it.
+    private var animation: (target: CGRect, id: Int)?
+    private var animationCount = 0
     /// Whether the window animates to the size of a tab. A test turns it off, so that it need not wait.
     var animatesFrameChanges = true
+    /// Whether the person asked the system for less motion, in which case the window does not animate. A
+    /// test sets it, so that the machine's setting does not matter.
+    var reducesMotion: () -> Bool = { NSWorkspace.shared.accessibilityDisplayShouldReduceMotion }
+    /// Called, once, when the controller is not changing the window's frame any more: the last resize
+    /// animation it started has reported that it is over. A test waits for it, in place of a clock.
+    var onResizeEnd: (() -> Void)?
     private var keyMonitor: Any?
     private var deactivationObserver: (any NSObjectProtocol)?
     private var activationObserver: (any NSObjectProtocol)?
@@ -306,36 +314,60 @@ public final class SettingsWindowController: NSObject, NSWindowDelegate, NSToolb
         setFrame(frame, animated: animated)
     }
 
-    private func generalFittingHeightChanged() {
+    /// Whether the controller is changing the window's frame itself: a resize animation it started has
+    /// not reported that it is over.
+    var isResizing: Bool {
+        ownFrameChanges > 0
+    }
+
+    func generalFittingHeightChanged() {
         guard content?.tab == .general else { return }
         fitWindow(animated: window?.isVisible ?? false)
     }
 
+    /// Gives the window `frame`, animated when it can be. The last frame asked for is the one the window ends
+    /// at, whether an earlier animation is still under way or not.
+    ///
+    /// An animation under way is only left alone when it goes to `frame` already. Otherwise it is replaced,
+    /// by a new animation or, when the frame is not to be animated, by one that takes no time: a frame set
+    /// with `NSWindow.setFrame` does not stop it, it would carry on and overwrite the frame. The window's
+    /// frame says nothing about an animation under way (it moves on a later turn of the run loop, and may
+    /// be where the new frame is when that arrives): the frame the animation goes to is what counts.
     private func setFrame(_ frame: CGRect, animated: Bool) {
         guard let window else { return }
-        if let target = animationTarget, Self.isSame(target, frame) { return }
-        guard !Self.isSame(frame, window.frame) else { return }
-        ownFrameChanges += 1
-        guard animated, animatesFrameChanges, window.isVisible,
-            !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
-        else {
-            animationTarget = nil
+        if let animation {
+            if Self.isSame(animation.target, frame) { return }
+        } else if Self.isSame(frame, window.frame) {
+            return
+        }
+        let animates = animated && animatesFrameChanges && window.isVisible && !reducesMotion()
+        guard animates || animation != nil else {
+            ownFrameChanges += 1
             window.setFrame(frame, display: window.isVisible)
             ownFrameChanges -= 1
             return
         }
-        animationTarget = frame
+        animationCount += 1
+        let id = animationCount
+        animation = (frame, id)
+        ownFrameChanges += 1
         NSAnimationContext.runAnimationGroup(
             { context in
-                context.duration = window.animationResizeTime(frame)
+                context.duration = animates ? window.animationResizeTime(frame) : 0
                 context.allowsImplicitAnimation = true
                 window.animator().setFrame(frame, display: true)
             },
             completionHandler: { [weak self] in
                 MainActor.assumeIsolated {
                     guard let self else { return }
+                    // The report of an animation that was replaced says nothing about the one that replaced
+                    // it: each ends its own, whichever comes first.
                     self.ownFrameChanges -= 1
-                    if let target = self.animationTarget, Self.isSame(target, frame) { self.animationTarget = nil }
+                    if self.animation?.id == id { self.animation = nil }
+                    if self.ownFrameChanges == 0, let onResizeEnd = self.onResizeEnd {
+                        self.onResizeEnd = nil
+                        onResizeEnd()
+                    }
                 }
             })
     }
