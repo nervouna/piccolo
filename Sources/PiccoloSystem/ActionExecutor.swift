@@ -14,6 +14,8 @@ public enum ActionOutcome: Equatable, Sendable {
     case arranged(ArrangeOutcome)
     /// `moveDivider` moved a divider of a group, or found nothing to move.
     case dividerMove(DividerMoveOutcome)
+    /// `swapWindow` exchanged the focused window with its neighbour, or found nothing to swap.
+    case swap(SwapOutcome)
 }
 
 /// Why an action could not be run, besides ``ActionPlanningError`` and ``WindowError``, which
@@ -53,12 +55,12 @@ public struct ActionExecutor: Sendable {
     var animator: WindowAnimator?
 
     /// - Parameters:
-    ///   - arrangement: Where `arrangeGrid` finds the windows to arrange, and `moveDivider` the
-    ///     windows of a group. The default has none, so that `arrangeGrid` has nothing to do.
-    ///   - groups: Where `arrangeGrid` records the groups it makes and `moveDivider` finds them. A
-    ///     copy of the executor shares it.
-    ///   - records: Where single-window actions, arrangements and divider moves note the windows they
-    ///     changed, and `restoreWindow` and the cycling presets read them. A copy of the executor
+    ///   - arrangement: Where `arrangeGrid` finds the windows to arrange, and `moveDivider` and
+    ///     `swapWindow` the windows of a group. The default has none, so that `arrangeGrid` has nothing to do.
+    ///   - groups: Where `arrangeGrid` records the groups it makes and `moveDivider` and `swapWindow`
+    ///     find them. A copy of the executor shares it.
+    ///   - records: Where single-window actions, arrangements, divider moves and swaps note the windows
+    ///     they changed, and `restoreWindow` and the cycling presets read them. A copy of the executor
     ///     shares it.
     ///   - animator: What animates the windows when the settings ask for it. The default has none, so
     ///     that an executor built without one places every window at once, like ``live`` does with
@@ -106,12 +108,12 @@ public struct ActionExecutor: Sendable {
     }
 
     /// Runs `action` on the focused window; `arrangeGrid` runs on the windows on screen, and
-    /// `moveDivider` on the group of the focused window.
+    /// `moveDivider` and `swapWindow` on the group of the focused window.
     ///
     /// - Parameters:
     ///   - onlyPid: Restricts the windows `arrangeGrid` may move to those of this process, and
-    ///     `moveDivider` too: a group with a window of another process is dissolved instead of
-    ///     moved. The other actions ignore it: they only touch the focused window.
+    ///     `moveDivider` and `swapWindow` too: a group with a window of another process is dissolved
+    ///     instead of moved. The other actions ignore it: they only touch the focused window.
     ///   - settings: The settings of the config in effect. `moveDivider` uses its `resizeStep`,
     ///     `arrangeGrid` its `gridFillOrder`, and every action its `animation`: the windows glide to
     ///     their new frames over its duration and are then placed exactly as without animation (see
@@ -119,8 +121,8 @@ public struct ActionExecutor: Sendable {
     /// - Throws: ``ActionExecutionError`` for a `resizeStep` that is not a positive number, before
     ///   anything is touched; ``ActionPlanningError`` for an action that cannot be planned;
     ///   ``ArrangePlannerError`` for a grid that cannot be arranged; ``WindowError`` when a window
-    ///   cannot be found, read or changed. A window of an arrangement or a divider move that cannot
-    ///   be changed is not an error: it is reported in the outcome, and the other windows are still
+    ///   cannot be found, read or changed. A window of an arrangement, a divider move or a swap that
+    ///   cannot be changed is not an error: it is reported in the outcome, and the other windows are still
     ///   moved.
     public func run(
         _ action: Action, onlyPid: pid_t? = nil, settings: ActionSettings = .default
@@ -130,6 +132,8 @@ public struct ActionExecutor: Sendable {
             return try arrange(grid, onlyPid: onlyPid, settings: settings)
         case .moveDivider(let direction):
             return try moveDivider(direction, onlyPid: onlyPid, settings: settings)
+        case .swapWindow(let direction):
+            return try swapWindow(direction, onlyPid: onlyPid, settings: settings)
         case .placeWindow, .moveToDisplay, .restoreWindow:
             break
         }

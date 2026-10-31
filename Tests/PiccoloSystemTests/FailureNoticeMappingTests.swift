@@ -12,6 +12,7 @@ struct FailureNoticeMappingTests {
     private static let nextDisplay = Action.moveToDisplay(.next)
     private static let grid = Action.arrangeGrid(GridSpec(count: 4, rows: 2, columns: 2))
     private static let divider = Action.moveDivider(.right)
+    private static let swap = Action.swapWindow(.left)
 
     private static func arrangedWindow(failing: Bool) -> ArrangedWindow {
         ArrangedWindow(
@@ -62,6 +63,7 @@ struct FailureNoticeMappingTests {
         #expect(FailureNotice(outcome: .nothingToDo, for: Self.grid) == .nothingToArrange)
         #expect(FailureNotice(outcome: .nothingToDo, for: Self.leftHalf) == nil)
         #expect(FailureNotice(outcome: .nothingToDo, for: Self.divider) == nil)
+        #expect(FailureNotice(outcome: .nothingToDo, for: Self.swap) == nil)
         #expect(FailureNotice(outcome: .nothingToDo, for: .restoreWindow) == .nothingToRestore)
         #expect(FailureNotice(outcome: .placed(target: .zero, achieved: .zero), for: .restoreWindow) == nil)
     }
@@ -97,10 +99,33 @@ struct FailureNoticeMappingTests {
         #expect(notice(.cannotMove) == .cannotMove)
     }
 
+    @Test("a swap: a notice only when a window failed")
+    func swapped() {
+        let good = ActionOutcome.swap(.swapped(display: 0, windows: [Self.arrangedWindow(failing: false)]))
+        let bad = ActionOutcome.swap(
+            .swapped(display: 0, windows: [Self.arrangedWindow(failing: false), Self.arrangedWindow(failing: true)]))
+        #expect(FailureNotice(outcome: good, for: Self.swap) == nil)
+        #expect(FailureNotice(outcome: bad, for: Self.swap) == .windowNotChangeable)
+    }
+
+    @Test("the reasons a swap did nothing")
+    func swapReasons() {
+        let id = WindowID(rawValue: 7)
+        func notice(_ reason: SwapOutcome.Reason) -> FailureNotice? {
+            FailureNotice(outcome: .swap(.nothingToDo(reason)), for: Self.swap)
+        }
+        #expect(notice(.noFocusedWindow) == .noWindow)
+        #expect(notice(.noGroup) == .noGroup)
+        #expect(notice(.dissolved(.missing(id))) == .dissolved)
+        #expect(notice(.dissolved(.moved(id))) == .dissolved)
+        #expect(notice(.noNeighbour) == .noNeighbour)
+    }
+
     @Test("the notices have stable names")
     func names() {
         #expect(FailureNotice.noGroup.rawValue == "noGroup")
-        #expect(FailureNotice.allCases.count == 11)
-        #expect(Set(FailureNotice.allCases.map(\.rawValue)).count == 11)
+        #expect(FailureNotice.noNeighbour.rawValue == "noNeighbour")
+        #expect(FailureNotice.allCases.count == 12)
+        #expect(Set(FailureNotice.allCases.map(\.rawValue)).count == 12)
     }
 }

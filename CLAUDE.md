@@ -11,7 +11,7 @@ The repository is public. Write every commit, issue and PR in English, with no s
 3. Place the focused window at a target frame: built-in presets (halves, thirds, quarters, center, maximize, ...) and user-defined rectangles expressed as fractions of the screen's visible frame. Pressing Left, Right, Top or Bottom Half again cycles the window through 1/2, 2/3 and 1/3 of the display. A Restore Window action puts a window back where it was before Piccolo moved it (one level, in memory, for windows Piccolo moved only).
 4. Move the focused window to the next or previous display, or to the display to its left, right, above or below, keeping its relative frame.
 5. Arrange the N most recently focused windows in a grid. Each shortcut is bound to one fixed combination (e.g. "last 4 in 2×2"). Candidates are windows on the current display and current Space; minimized and full-screen windows are excluded.
-6. Linked resize: after Piccolo arranged windows side by side, stacked or in a grid, a shortcut moves a divider by a fixed step and the neighbouring windows follow, leaving no gaps or overlaps. Only groups created by Piccolo are linked. Groups are validated lazily: when a linked-resize shortcut fires and any member is no longer at its expected frame, the group is dissolved.
+6. Linked resize: after Piccolo arranged windows side by side, stacked or in a grid, a shortcut moves a divider by a fixed step and the neighbouring windows follow, leaving no gaps or overlaps. Only groups created by Piccolo are linked. Groups are validated lazily: when a linked-resize shortcut fires and any member is no longer at its expected frame, the group is dissolved. Swap Window works on the same groups: it exchanges the focused window with its neighbour on the side of the key, the two windows trade cells, and the layout and the group stay.
 
 Non-goals: drag-to-snap with the mouse, automatic tiling of new windows, moving windows across Spaces, overriding system-reserved shortcuts, modifier-only shortcuts, Mac App Store distribution.
 
@@ -66,8 +66,8 @@ Developed with the global `orchestrate` skill: the owner files issues and makes 
 
   | Change touches | Filter |
   |---|---|
-  | Frames and actions: `PiccoloCore/Geometry`, `Actions`, `Layout`, `LinkedResize`, `Arrange`, `Animation`, `History`; `ActionExecutor`, `FrameSetter`, `ArrangeExecution`, `LinkedResizeExecution`, `WindowRecordStore`, `PiccoloSystem/Animation` | `(SingleWindowActions\|ArrangeGrid\|ColumnFirst\|LinkedResize\|CycleRestore\|WindowGap\|WindowAnimationAcceptance)` |
-  | Shortcuts and holding them: `PiccoloCore/Shortcuts`, `PiccoloSystem/Hotkeys`, `PiccoloSystem/Preview`, `App/ConfigController.swift` | `(ConfigHotkeys\|DestinationPreviewAcceptance\|FailureNoticeAcceptance\|OnboardingAcceptance)` |
+  | Frames and actions: `PiccoloCore/Geometry`, `Actions`, `Layout`, `LinkedResize`, `Arrange`, `Animation`, `History`; `ActionExecutor`, `FrameSetter`, `ArrangeExecution`, `LinkedResizeExecution`, `SwapExecution`, `WindowRecordStore`, `App/DebugArrangeCommands.swift`, `PiccoloSystem/Animation` | `(SingleWindowActions\|ArrangeGrid\|ColumnFirst\|LinkedResize\|SwapWindow\|CycleRestore\|WindowGap\|WindowAnimationAcceptance)` |
+  | Shortcuts and holding them: `PiccoloCore/Shortcuts`, `PiccoloSystem/Hotkeys`, `PiccoloSystem/Preview`, `PiccoloSystem/Destinations`, `App/ConfigController.swift` | `(ConfigHotkeys\|DestinationPreviewAcceptance\|FailureNoticeAcceptance\|OnboardingAcceptance)` |
   | Config schema and settings: `PiccoloCore/Config`, `ActionSettings` | `(ConfigHotkeys\|SettingsWindow)`, plus the frames row when an action reads the new setting |
   | Settings window: `PiccoloUI/Model`, `Views`, `Window/SettingsWindowController.swift`, `App/SettingsController.swift`, `App/DebugSettingsCommands.swift` | `(SettingsWindow\|SettingsInFront)` |
   | Failure notice: `Notice`, `NoticePanel`, `FailureNoticeText`, `App/NoticeController.swift` | `FailureNoticeAcceptance` |

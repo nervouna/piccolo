@@ -35,6 +35,8 @@ keyboard symbols (⌃ ⌥ ⇧ ⌘) and the name "Piccolo" as they are in every l
 | Restore | Restore | 恢复 | 回復 | 復元 | Restaurer | Restaurar | Restaurar | Wiederherstellen | AppKit Revisions (Restore) | The button of the confirmation. |
 | Restore Window | Restore Window | 恢复窗口 | 回復視窗 | ウインドウを復元 | Restaurer la fenêtre | Restaurar ventana | Restaurar janela | Fenster wiederherstellen | Piccolo (Restore + Window rows) | The action that puts a window back where Piccolo found it. |
 | Nothing to restore | Nothing to restore | 没有可恢复的内容 | 沒有可回復的內容 | 復元するものがありません | Rien à restaurer | Nada que restaurar | Nada para restaurar | Nichts wiederherzustellen | Piccolo (Restore row) | The notice of Restore Window when there is no earlier position. |
+| Swap Window | Swap Window | 交换窗口 | 交換視窗 | ウインドウを入れ替え | Permuter la fenêtre | Intercambiar ventana | Trocar janela | Fenster tauschen | NotesShared (Swap row with previous row), PhotoPrintProduct (Swap Photo) and Calculator (Swap) for the verb; the Window row for the noun. zh-Hant: Calculator's 切換 is "switch", so Notes' and Photo's 交換 is used | The action that exchanges the focused window with its neighbour. The four summaries name the neighbour with the Left, Right, Above and Below rows: "Swap Window Left" is 与左侧窗口交换, 與左側視窗交換, 左のウインドウと入れ替え, Permuter avec la fenêtre à gauche, Intercambiar con la ventana de la izquierda, Trocar com a janela à esquerda and Mit Fenster links tauschen. |
+| No window in that direction | No window in that direction | 该方向没有窗口 | 該方向沒有視窗 | その方向にウインドウがありません | Aucune fenêtre dans cette direction | No hay ventana en esa dirección | Nenhuma janela nessa direção | Kein Fenster in dieser Richtung | Piccolo (the sentence of "No display in that direction" with the Window row) | The notice of Swap Window when there is no window on that side. |
 | Grid | Grid | 网格 | 網格 | グリッド | grille | cuadrícula | grade | Raster | Piccolo | The layout of rows and columns. Apple's "grid" is the gridlines. |
 | Rows | Rows | 行数 | 列數 | 行数 | lignes | filas | linhas | Zeilen | Piccolo | Also "Rows first" (fill order). |
 | Columns | Columns | 列数 | 欄數 | 列数 | colonnes | columnas | colunas | Spalten | Piccolo | Also "Columns first". Grid columns, as in a table: Taiwan writes rows 列 and columns 欄, Japanese rows 行 and columns 列. Finder's 直欄 and カラム name its column view, not a count. |
@@ -87,6 +89,9 @@ files, all under `/System`:
 - `Terminal`: `Applications/Utilities/Terminal.app/Contents/Resources/keyDescriptions.loctable`
 - `Finder`: `Library/CoreServices/Finder.app/Contents/Resources/<lang>.lproj/LocalizableMerged.strings`
 - `loginwindow`: `Library/CoreServices/loginwindow.app/Contents/Resources/loginwindow.loctable`
+- `Calculator`: `Applications/Calculator.app/Contents/Resources/Localizable.loctable`
+- `NotesShared`: `Library/PrivateFrameworks/NotesShared.framework/Versions/A/Resources/Localizable.loctable`
+- `PhotoPrintProduct`: `Library/PrivateFrameworks/PhotoPrintProduct.framework/Versions/A/Resources/Localizable.loctable`
 
 The name in brackets is the key or the English text the translation was read from.
 `Piccolo` means no table has the term: the translation is ours and is kept consistent by this file.

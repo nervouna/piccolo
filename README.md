@@ -21,6 +21,7 @@ What works:
 - Moving the focused window to the next or previous display, or to the display on its left, right, above or below.
 - Arranging the most recently focused windows in a grid.
 - Linked resize: after Arrange Grid, Move Divider moves a divider and the neighbouring windows follow, with no gap and no overlap (see [Move Divider](#move-divider)).
+- Swap Window: in a group that Arrange Grid placed, the focused window trades places with its neighbour on the side of the key (see [Swap Window](#swap-window)).
 - A preview while you hold a shortcut: a highlight shows where the windows will go (see [Destination preview](#destination-preview)).
 - The Settings window, for editing bindings and recording shortcuts.
 - Launching at login.
@@ -64,12 +65,12 @@ The guide is a small floating panel in the top-right corner of the display with 
 
 ### Shortcuts tab
 
-- **Sections.** The list has one section per kind of action, in the order Place Window, Restore Window, Move to Display, Arrange Grid and Move Divider. Inside a section the bindings keep the order of the config file. A kind with no binding has no section. The list takes the height the window leaves after the editor.
+- **Sections.** The list has one section per kind of action, in the order Place Window, Restore Window, Move to Display, Arrange Grid, Move Divider and Swap Window. Inside a section the bindings keep the order of the config file. A kind with no binding has no section. The list takes the height the window leaves after the editor.
 - **Search.** The field above the list keeps the bindings whose description or shortcut contains what you type, ignoring case and accents, for example `left` or `⌃⌥←`. Sections left empty are hidden, and "No shortcuts match" shows when nothing fits. The selection stays when the selected binding is still shown and moves to the first shown binding otherwise. The search is not saved.
 - **Inactive shortcuts.** A warning sign before the shortcut button means the shortcut is not active, because macOS refused it or Piccolo cannot register it. The problems at the bottom of the window say why. While you record a shortcut every shortcut is off, and no row is marked.
 - **Add and remove.** The + button adds a binding. It places the window in the left half and has no shortcut yet. If the search would hide it, the search is cleared, and the new binding is selected and scrolled into view. The − button removes the selected binding.
 - **Restore Default Shortcuts…** replaces every binding with the [default shortcuts](#default-shortcuts) after you confirm. The resize step, the window animation, the window gap, the arranging order and the destination preview stay. A copy of the config file is kept next to it first.
-- **Action.** The Action menu offers five kinds: Place Window, Restore Window, Move to Display, Arrange Grid and Move Divider. Choosing a kind resets the binding to that kind's default: Left Half, Restore Window, Next Display, 4 windows in 2 × 2, or Move Divider Left. The parameters of the kind follow. For Place Window and Arrange Grid, a preview of the frame or cells is drawn beside the editor.
+- **Action.** The Action menu offers six kinds: Place Window, Restore Window, Move to Display, Arrange Grid, Move Divider and Swap Window. Choosing a kind resets the binding to that kind's default: Left Half, Restore Window, Next Display, 4 windows in 2 × 2, Move Divider Left, or Swap Window Left. The parameters of the kind follow. For Place Window and Arrange Grid, a preview of the frame or cells is drawn beside the editor.
 - **Recording a shortcut.** Click the button on the right of a binding. It reads "Record Shortcut" when the binding has none, and shows the shortcut, such as ⌃⌥F13, when it has one. Click it, then press the keys. Press Escape to cancel. Press Delete or Forward Delete on its own to clear the shortcut.
 - **Rules.** A shortcut needs ⌘, ⌥ or ⌃, or it must be a function key (F1 to F20). Shift on its own does not count, so ⇧A is refused. A shortcut that another binding already has is refused too, and the message names the other binding by its action. A refused shortcut shows a message at the bottom of the window and nothing is saved. Recording ends after any key press, so press the keys again to retry.
 - **Saving.** Every accepted change is written to the config file straight away. There is no save button.
@@ -81,7 +82,7 @@ The guide is a small floating panel in the top-right corner of the display with 
 
 - **Language** is the language of Piccolo's menu and Settings window: System default or one of the [supported languages](#languages). A change applies after Piccolo restarts, which the Restart Now button under the picker does.
 - **Launch at login** starts Piccolo when you log in. When macOS is waiting for you to allow it, the tab says so and offers a button to open Login Items in System Settings.
-- **Window animation** is how long a window takes to move to its new place: Off, Fast (0.15 s, the default), Medium (0.25 s) or Slow (0.4 s). It applies to every action, including Arrange Grid and Move Divider.
+- **Window animation** is how long a window takes to move to its new place: Off, Fast (0.15 s, the default), Medium (0.25 s) or Slow (0.4 s). It applies to every action, including Arrange Grid, Move Divider and Swap Window.
 - **Window gap** is the space, in points, that Piccolo leaves between the windows it places side by side and between those windows and the edges of the visible frame. The default is 0, which changes nothing. Whole numbers from 0 to 64 are accepted, typed or with the arrows. See [Window gap](#window-gap).
 - **Arranging windows: Fill order** decides where the windows go when they do not fill the grid. With 3 windows in a 2 × 2 grid, Rows first (the default) puts two windows on top and one across the bottom; Columns first puts two on the left and one down the right side.
 - **Show destination while a shortcut is held** shows where the windows will go while you hold a shortcut. Release it to move them, or press Escape to cancel. The default is on. When it is off, windows move as soon as the shortcut is pressed.
@@ -92,7 +93,7 @@ The guide is a small floating panel in the top-right corner of the display with 
 
 ### Destination preview
 
-Hold a shortcut and Piccolo shows where the windows will go: a highlight in your accent colour, one rectangle for the window of a placement or a move to another display, one for each window of an arrangement, and one for each window of a divider move. Release the shortcut and the windows move there. Press Escape while you still hold it to cancel: nothing moves, and the Escape does not reach the app in front.
+Hold a shortcut and Piccolo shows where the windows will go: a highlight in your accent colour, one rectangle for the window of a placement or a move to another display, one for each window of an arrangement, one for each window of a divider move, and one for each of the two windows of a swap (at the cell it would move into). Release the shortcut and the windows move there. Press Escape while you still hold it to cancel: nothing moves, and the Escape does not reach the app in front.
 
 A short tap, released within about 0.2 s, shows no highlight and runs the action when you release. The highlight never takes the focus away from the window you are working in, and it also shows over full-screen apps.
 
@@ -104,7 +105,7 @@ To turn the preview off, switch off **Show destination while a shortcut is held*
 
 ### Failure notice
 
-When a shortcut fires and nothing can happen, Piccolo says why: a short notice in the middle of the display that holds the focused window (or the display with the mouse when no window has the focus), for about a second. It appears when Accessibility is not granted, when no window is there to act on or Piccolo's own window is in front, when the window cannot be moved or resized, when there is no display in that direction, when Restore Window has nothing to restore, when there are no windows to arrange or the grid does not fit the display, and when a divider cannot move: the window is not in an arrangement made by Piccolo, the arrangement was changed since (arrange again), or the divider cannot go further. A placement that changes nothing, a press that cycles a half, and a run that worked, show nothing.
+When a shortcut fires and nothing can happen, Piccolo says why: a short notice in the middle of the display that holds the focused window (or the display with the mouse when no window has the focus), for about a second. It appears when Accessibility is not granted, when no window is there to act on or Piccolo's own window is in front, when the window cannot be moved or resized, when there is no display in that direction, when Restore Window has nothing to restore, when there are no windows to arrange or the grid does not fit the display, and when a divider cannot move or a window cannot swap: the window is not in an arrangement made by Piccolo, the arrangement was changed since (arrange again), the divider cannot go further, or there is no window to swap with in that direction. A placement that changes nothing, a press that cycles a half, and a run that worked, show nothing.
 
 The notice never takes the focus away from the window you are working in, and it also shows over full-screen apps. It is in the language of the interface. There is no setting to turn it off.
 
@@ -127,6 +128,7 @@ Each binding runs one action. The windows glide to their new frames over the tim
 | Move to Display (`moveToDisplay`) | `direction`: `next`, `previous`, `left`, `right`, `up` or `down` | Moves the focused window to the neighbouring display and keeps its relative frame. |
 | Arrange Grid (`arrangeGrid`) | `count`, `rows`, `columns` | Arranges the `count` most recently focused windows in a grid of `rows` by `columns` cells. |
 | Move Divider (`moveDivider`) | `direction`: `left`, `right`, `up` or `down` | Moves a divider between windows that Arrange Grid placed by one resize step, and the neighbouring windows follow. Does nothing for a window that is in no such group. |
+| Swap Window (`swapWindow`) | `direction`: `left`, `right`, `up` or `down` | Exchanges the focused window with its neighbour on that side in a group that Arrange Grid placed: the two windows trade cells. Does nothing for a window that is in no such group, or with no window on that side. |
 
 ### Place Window
 
@@ -156,12 +158,12 @@ Presets:
 
 #### Window gap
 
-With a window gap above 0 (General tab, or `gap` in the [config file](#config-file)), every frame that Piccolo places a window at leaves that many points between windows and to the screen edges, for presets, custom frames, the steps of pressing a half again, the cells of Arrange Grid and the cells that Move Divider moves. Each frame is worked out without the gap first, then every edge moves inwards: an edge on the edge of the visible frame by the gap, any other edge by half of it. Two windows side by side are therefore a gap apart, and a window is a gap from each screen edge it touches. With a gap of 12, Left Half is 12 pt from the left, top and bottom edges and ends 6 pt before the middle of the visible frame, and Maximize is 12 pt from every edge.
+With a window gap above 0 (General tab, or `gap` in the [config file](#config-file)), every frame that Piccolo places a window at leaves that many points between windows and to the screen edges, for presets, custom frames, the steps of pressing a half again, the cells of Arrange Grid and the cells that Move Divider and Swap Window move windows to. Each frame is worked out without the gap first, then every edge moves inwards: an edge on the edge of the visible frame by the gap, any other edge by half of it. Two windows side by side are therefore a gap apart, and a window is a gap from each screen edge it touches. With a gap of 12, Left Half is 12 pt from the left, top and bottom edges and ends 6 pt before the middle of the visible frame, and Maximize is 12 pt from every edge.
 
 - **Odd gaps.** Frames stay on whole points. With an odd gap the two halves of the space between neighbours differ by one point (a left or top edge moves in by the larger half), so the neighbours are still exactly the gap apart.
 - **Center** keeps the window's size, capped to the visible frame taken in by the gap on every side.
 - **Pressing a half again** compares the window with the gapped steps, so cycling works as without a gap.
-- **Arrange Grid and Move Divider.** The cells are gapped, and a divider move keeps the gap between the windows that follow it. A group uses the gap that is in effect when the key is pressed: windows arranged with one gap and moved after the gap changed are moved with the new gap, and the group is still recognised.
+- **Arrange Grid, Move Divider and Swap Window.** The cells are gapped, a divider move keeps the gap between the windows that follow it, and swapped windows take the gapped cells of each other. A group uses the gap that is in effect when the key is pressed: windows arranged with one gap and moved after the gap changed are moved with the new gap, and the group is still recognised.
 - **Move to Display** keeps the window's relative frame measured against each display's visible frame taken in by the gap on every side, so a gapped half on one display becomes a gapped half on the other (exactly so when the displays have the same size).
 - **Restore Window** puts the window back at its recorded frame, without a gap.
 - A cell of Arrange Grid that the gap makes less than 100 pt wide or high is refused, like any other cell that small.
@@ -172,7 +174,7 @@ Left Half, Right Half, Top Half and Bottom Half cycle. The first press places th
 
 ### Restore Window
 
-Restore Window puts the focused window back where it was before Piccolo moved it, with the animation of the other actions. Piccolo remembers, for every window it changed, the frame the window had before (its origin) and the frame it ended at. This covers Place Window, Move to Display, every window of an arrangement and every window a divider move changed.
+Restore Window puts the focused window back where it was before Piccolo moved it, with the animation of the other actions. Piccolo remembers, for every window it changed, the frame the window had before (its origin) and the frame it ended at. This covers Place Window, Move to Display, every window of an arrangement and every window a divider move or a swap changed.
 
 - **One level.** Only the frame before Piccolo's first change since you last moved the window yourself is kept. A restore forgets the window, so a second press has nothing to restore.
 - **After you moved it.** When you move or resize a window by hand after Piccolo placed it, the record is replaced: Restore Window then has nothing to restore, and the next Piccolo action takes the frame you left as the new origin.
@@ -211,6 +213,17 @@ Move Divider works on windows that Arrange Grid placed, and only on those. After
 - **Order.** The windows that get smaller are resized first and those that grow after, so that no window covers another while the divider moves.
 - **When a group dissolves.** There is one group per display, and arranging again on a display replaces its group. Groups are kept in memory only and are gone when Piccolo quits. A group is checked when you press a Move Divider key: when a window of the group has been closed, minimized or has left the screen, or an edge of one is more than 2 pt from where Piccolo left it (you moved or resized it), the group is dissolved and that press does nothing. Arrange the windows again to make a new group.
 
+### Swap Window
+
+Swap Window works on windows that Arrange Grid placed, like Move Divider, and only on those. The key acts on the group that holds the focused window: the focused window and its neighbour on the side of the key trade places. When the focused window is in no group, nothing happens.
+
+- **Which neighbour.** Left, Right, Up and Down pick the window next to the focused one on that side. When several windows border that side, for example three windows in 2 × 2 with the wide bottom window going Up, the one that shares the longest stretch of the edge wins, and on a tie the one that comes first in the order of the cells (row by row, or column by column with Columns first). Windows are never skipped over, and nothing wraps around: with no window on that side nothing happens.
+- **Sizes stay with the cells.** The layout does not change. Each window takes the size of the cell it moves into: in `[A 60% | B 40%]` swapping gives `[B 60% | A 40%]`. The other windows of the group do not move, the group stays linked, and Move Divider keeps working on it.
+- **The focus stays.** The focused window keeps the focus and moves with its new cell, and no window is raised, so pressing the same key again carries it on across the group.
+- **Windows that refuse a size.** A window that cannot take the size of its new cell ends up at the size it accepts, the divider is recorded where the window ended up, and its neighbours fill the rest, as for Move Divider.
+- **Order and animation.** The two windows glide together over the [window animation](#general-tab), and pass each other on the way, so they overlap while they move. The one that gets smaller is then placed first.
+- **When it does nothing.** The notice "No window in that direction" shows when there is no window on that side. A window that is in no group, or a group that was dissolved because a window of it was closed or moved (more than 2 pt from where Piccolo left it), shows the same notices as Move Divider.
+
 ## Default shortcuts
 
 Piccolo starts with these shortcuts, so the window actions work right after installation. At launch, when there is no config file, Piccolo writes them to `~/Library/Application Support/Piccolo/config.json` and loads them. It never writes over an existing file, also not one with no bindings. Deleting the file brings the defaults back at the next launch. To restore them at any time, choose Restore Default Shortcuts… on the Shortcuts tab of Settings. Restoring replaces every binding and keeps the resize step. When there is a config file, a copy of it is kept next to it first, as `config.backup-<yyyyMMdd-HHmmss>.json`.
@@ -245,8 +258,12 @@ Piccolo starts with these shortcuts, so the window actions work right after inst
 | Move Divider Right | ⌃⌥⇧→ |
 | Move Divider Up | ⌃⌥⇧↑ |
 | Move Divider Down | ⌃⌥⇧↓ |
+| Swap Window Left | ⌃⌥⇧⌘← |
+| Swap Window Right | ⌃⌥⇧⌘→ |
+| Swap Window Up | ⌃⌥⇧⌘↑ |
+| Swap Window Down | ⌃⌥⇧⌘↓ |
 
-(⌃ is Control, ⌥ is Option, ⇧ is Shift and ⌘ is Command.) The four Move Divider shortcuts move the dividers of windows that Arrange Grid placed, see [Move Divider](#move-divider).
+(⌃ is Control, ⌥ is Option, ⇧ is Shift and ⌘ is Command.) The four Move Divider shortcuts move the dividers of windows that Arrange Grid placed, see [Move Divider](#move-divider), and the four Swap Window shortcuts exchange a window of such a group with its neighbour, see [Swap Window](#swap-window). That makes 32 shortcuts.
 
 A shortcut that another app already holds, for example another window manager with the same shortcuts, is refused by the system. Piccolo does not register it and reports the refusal in the config problems: the menu counts them, the Settings window lists them and the system log has the details.
 
@@ -256,7 +273,7 @@ The config file is `~/Library/Application Support/Piccolo/config.json`. At launc
 
 Piccolo reads the file at launch and when you choose Reload Config. It does not watch the file, so after you edit it by hand, choose Reload Config.
 
-This example has one binding of each action kind except Restore Window, which is written `{ "type": "restoreWindow" }` and has no parameters:
+This example has one binding of each action kind except Restore Window and Swap Window. Restore Window is written `{ "type": "restoreWindow" }` and has no parameters, and Swap Window `{ "type": "swapWindow", "direction": "left" }`:
 
 ```json
 {
@@ -323,9 +340,9 @@ The keys can appear in any order. These are the keys of the file:
 | `bindings` | array | Required; may be empty. The bindings, in the order of the Settings list. |
 | `id` | UUID string | Required in each binding. Identifies the binding; each binding needs its own. |
 | `action` | object | Required in each binding. Its `type` selects the kind, and the other keys depend on the kind. |
-| `type` | `"placeWindow"`, `"moveToDisplay"`, `"arrangeGrid"` or `"moveDivider"` | The kind of action. Any other value is rejected. |
+| `type` | `"placeWindow"`, `"restoreWindow"`, `"moveToDisplay"`, `"arrangeGrid"`, `"moveDivider"` or `"swapWindow"` | The kind of action. Any other value is rejected. |
 | `frame` | object | For `placeWindow`. Exactly one of `preset`, a preset name from the table under Place Window, or `custom`, an object with `x`, `y`, `width` and `height` as described under Place Window. |
-| `direction` | `"next"`, `"previous"`, `"left"`, `"right"`, `"up"` or `"down"` for `moveToDisplay`; `"left"`, `"right"`, `"up"` or `"down"` for `moveDivider` | Where the window or the divider goes. |
+| `direction` | `"next"`, `"previous"`, `"left"`, `"right"`, `"up"` or `"down"` for `moveToDisplay`; `"left"`, `"right"`, `"up"` or `"down"` for `moveDivider` and `swapWindow` | Where the window or the divider goes, or the side of the neighbour a swap trades places with. |
 | `count`, `rows`, `columns` | integers | For `arrangeGrid`. Each is at least 1, and `count` is at most `rows` × `columns`. |
 | `shortcut` | object | Optional. The key press that runs the binding. Leave the key out for a binding without a shortcut. |
 | `keyCode` | integer | Required in `shortcut`. The macOS virtual key code, the `kVK_` value in Carbon's `Events.h`, at least 0. For example `123` is the left arrow, `8` is C and `105` is F13. Settings records the code for you. |

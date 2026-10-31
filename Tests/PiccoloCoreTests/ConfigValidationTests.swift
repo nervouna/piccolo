@@ -176,6 +176,9 @@ struct ConfigValidationTests {
     func actionValidity() {
         #expect((try? Action.placeWindow(.preset(.center)).validate()) != nil)
         #expect((try? Action.moveDivider(.up).validate()) != nil)
+        for direction in Direction.allCases {
+            #expect((try? Action.swapWindow(direction).validate()) != nil)
+        }
         #expect((try? Action.placeWindow(.custom(FractionalRect(x: 0, y: 0, width: 2, height: 1))).validate()) == nil)
         #expect((try? Action.arrangeGrid(GridSpec(count: 9, rows: 2, columns: 2)).validate()) == nil)
     }

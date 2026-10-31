@@ -2,7 +2,7 @@ import Foundation
 
 extension Config {
     /// The config a new install starts with: version 1, the default settings (resize step, window
-    /// animation, grid fill order, destination preview) and the 28 bindings below, in this order.
+    /// animation, grid fill order, destination preview) and the 32 bindings below, in this order.
     /// Each call makes new binding IDs, so two calls never share one.
     ///
     /// At launch, Piccolo writes this config to the default location when there is no file there
@@ -23,6 +23,7 @@ extension Config {
         let controlOption: Set<Modifier> = [.control, .option]
         let controlOptionCommand: Set<Modifier> = [.control, .option, .command]
         let controlOptionShift: Set<Modifier> = [.control, .option, .shift]
+        let controlOptionShiftCommand: Set<Modifier> = [.control, .option, .shift, .command]
 
         func binding(_ action: Action, _ keyCode: Int, _ modifiers: Set<Modifier>) -> KeyBinding {
             KeyBinding(id: UUID(), action: action, shortcut: Shortcut(keyCode: keyCode, modifiers: modifiers))
@@ -57,11 +58,16 @@ extension Config {
             binding(.arrangeGrid(GridSpec(count: 3, rows: 1, columns: 3)), DefaultKey.three, controlOptionShift),
             binding(.arrangeGrid(GridSpec(count: 4, rows: 2, columns: 2)), DefaultKey.four, controlOptionShift),
             binding(.arrangeGrid(GridSpec(count: 6, rows: 2, columns: 3)), DefaultKey.six, controlOptionShift),
-            // Linked resize. Not implemented yet: these bindings do nothing when pressed.
+            // Linked resize: move a divider of the group Piccolo arranged.
             binding(.moveDivider(.left), DefaultKey.leftArrow, controlOptionShift),
             binding(.moveDivider(.right), DefaultKey.rightArrow, controlOptionShift),
             binding(.moveDivider(.up), DefaultKey.upArrow, controlOptionShift),
             binding(.moveDivider(.down), DefaultKey.downArrow, controlOptionShift),
+            // Swap the focused window with its neighbour in the group Piccolo arranged.
+            binding(.swapWindow(.left), DefaultKey.leftArrow, controlOptionShiftCommand),
+            binding(.swapWindow(.right), DefaultKey.rightArrow, controlOptionShiftCommand),
+            binding(.swapWindow(.up), DefaultKey.upArrow, controlOptionShiftCommand),
+            binding(.swapWindow(.down), DefaultKey.downArrow, controlOptionShiftCommand),
         ]
     }
 }

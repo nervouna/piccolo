@@ -304,6 +304,13 @@ struct OtherActionPlanTests {
         }
     }
 
+    @Test("swapWindow is not a single-window action", arguments: Direction.allCases)
+    func swapWindow(direction: Direction) {
+        #expect(throws: ActionPlanningError.notSingleWindowAction) {
+            try ActionPlanner.plan(.swapWindow(direction), windowFrame: Rig.onPrimary, displays: Rig.both)
+        }
+    }
+
     @Test("errors read as plain sentences")
     func descriptions() {
         #expect(ActionPlanningError.notSingleWindowAction.errorDescription == "not a single-window action")

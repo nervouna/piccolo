@@ -257,7 +257,7 @@ struct ArrangementRecordTests {
         #expect(after[DeskRig.id(3)] == arranged[DeskRig.id(3)])
     }
 
-    @Test("planning a divider move and an arrangement leaves the records alone")
+    @Test("planning a divider move, a swap and an arrangement leaves the records alone")
     func previewIsReadOnly() throws {
         let desk = Desk()
         desk.openWindows(3)
@@ -265,6 +265,7 @@ struct ArrangementRecordTests {
         let records = desk.executor.windowRecords.map(\.record)
 
         _ = try desk.executor.destinations(for: .moveDivider(.right), settings: ActionSettings(resizeStep: 0.05))
+        _ = try desk.executor.destinations(for: .swapWindow(.right))
         _ = try desk.executor.destinations(for: .arrangeGrid(GridSpec(count: 2, rows: 1, columns: 2)))
 
         #expect(desk.executor.windowRecords.map(\.record) == records)

@@ -203,6 +203,31 @@ final class Desk: @unchecked Sendable {
         return moved
     }
 
+    /// Presses a swap key. `settings` carries the gap and the animation; the defaults have neither.
+    func swap(
+        _ direction: Direction, settings: ActionSettings = ActionSettings(), onlyPid: pid_t? = nil
+    ) throws -> SwapOutcome {
+        let outcome = try executor.run(.swapWindow(direction), onlyPid: onlyPid, settings: settings)
+        guard case .swap(let result) = outcome else {
+            throw DeskFailure("expected a swap, got \(outcome)")
+        }
+        return result
+    }
+
+    /// Presses a swap key and expects the windows to have traded cells.
+    ///
+    /// - Returns: the display and every window of the group in cell order, after the swap.
+    @discardableResult
+    func swapped(
+        _ direction: Direction, settings: ActionSettings = ActionSettings(), onlyPid: pid_t? = nil
+    ) throws -> (display: Int, windows: [ArrangedWindow]) {
+        let outcome = try swap(direction, settings: settings, onlyPid: onlyPid)
+        guard case .swapped(let display, let windows) = outcome else {
+            throw DeskFailure("expected the windows to swap, got \(outcome)")
+        }
+        return (display, windows)
+    }
+
     // MARK: Overlaps
 
     /// From now on, the windows are checked for overlaps each time the executor goes on from one

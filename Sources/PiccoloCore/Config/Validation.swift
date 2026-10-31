@@ -72,7 +72,7 @@ extension Shortcut {
 extension Action {
     func validate() throws(ValidationError) {
         switch self {
-        case .placeWindow(.preset), .moveToDisplay, .moveDivider, .restoreWindow:
+        case .placeWindow(.preset), .moveToDisplay, .moveDivider, .swapWindow, .restoreWindow:
             return
         case .placeWindow(.custom(let rect)):
             try rect.validate()

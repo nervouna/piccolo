@@ -20,8 +20,9 @@ struct DefaultShortcutsTests {
     private static let controlOption: Set<Modifier> = [.control, .option]
     private static let controlOptionCommand: Set<Modifier> = [.control, .option, .command]
     private static let controlOptionShift: Set<Modifier> = [.control, .option, .shift]
+    private static let controlOptionShiftCommand: Set<Modifier> = [.control, .option, .shift, .command]
 
-    /// The table of the issue, in order: Left Half first, Move Divider Down last.
+    /// The table of the issue, in order: Left Half first, Swap Window Down last.
     private static let table: [Row] = [
         Row(action: .placeWindow(.preset(.leftHalf)), keyCode: 123, modifiers: controlOption),  // ⌃⌥←
         Row(action: .placeWindow(.preset(.rightHalf)), keyCode: 124, modifiers: controlOption),  // ⌃⌥→
@@ -59,6 +60,10 @@ struct DefaultShortcutsTests {
         Row(action: .moveDivider(.right), keyCode: 124, modifiers: controlOptionShift),  // ⌃⌥⇧→
         Row(action: .moveDivider(.up), keyCode: 126, modifiers: controlOptionShift),  // ⌃⌥⇧↑
         Row(action: .moveDivider(.down), keyCode: 125, modifiers: controlOptionShift),  // ⌃⌥⇧↓
+        Row(action: .swapWindow(.left), keyCode: 123, modifiers: controlOptionShiftCommand),  // ⌃⌥⇧⌘←
+        Row(action: .swapWindow(.right), keyCode: 124, modifiers: controlOptionShiftCommand),  // ⌃⌥⇧⌘→
+        Row(action: .swapWindow(.up), keyCode: 126, modifiers: controlOptionShiftCommand),  // ⌃⌥⇧⌘↑
+        Row(action: .swapWindow(.down), keyCode: 125, modifiers: controlOptionShiftCommand),  // ⌃⌥⇧⌘↓
     ]
 
     /// The rows of a config, as the table describes them.
@@ -84,11 +89,11 @@ struct DefaultShortcutsTests {
         #expect(Config.defaultShortcuts.destinationPreview == true)
     }
 
-    @Test("the defaults are exactly the 28 bindings of the table, in order, each with a shortcut")
+    @Test("the defaults are exactly the 32 bindings of the table, in order, each with a shortcut")
     func exactTable() {
         let config = Config.defaultShortcuts
-        #expect(config.bindings.count == 28)
-        #expect(Self.table.count == 28)
+        #expect(config.bindings.count == 32)
+        #expect(Self.table.count == 32)
         #expect(rows(config) == Self.table, "the defaults are \(rows(config))")
     }
 
@@ -108,11 +113,11 @@ struct DefaultShortcutsTests {
     func distinct() {
         let config = Config.defaultShortcuts
         let shortcuts = config.bindings.compactMap(\.shortcut)
-        #expect(Set(shortcuts.map { "\($0.keyCode) \($0.modifiers.map(\.rawValue).sorted())" }).count == 28)
-        #expect(Set(config.bindings.map(\.id)).count == 28)
+        #expect(Set(shortcuts.map { "\($0.keyCode) \($0.modifiers.map(\.rawValue).sorted())" }).count == 32)
+        #expect(Set(config.bindings.map(\.id)).count == 32)
     }
 
-    @Test("all 28 defaults are accepted by the shortcut plan, with no issues")
+    @Test("all 32 defaults are accepted by the shortcut plan, with no issues")
     func planAcceptsAll() {
         let config = Config.defaultShortcuts
         let plan = ShortcutPlan.resolve(config.bindings)

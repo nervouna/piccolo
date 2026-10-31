@@ -81,6 +81,16 @@ struct ActionSummaryTests {
         #expect(ActionSummary.text(for: .moveDivider(direction)) == text)
     }
 
+    @Test("every swap direction", arguments: [
+        (Direction.left, "Swap Window Left"),
+        (.right, "Swap Window Right"),
+        (.up, "Swap Window Up"),
+        (.down, "Swap Window Down"),
+    ] as [(Direction, String)])
+    func swaps(_ direction: Direction, _ text: String) {
+        #expect(ActionSummary.text(for: .swapWindow(direction)) == text)
+    }
+
     @Test("percentages")
     func percentages() {
         #expect(ActionSummary.percent(0) == "0%")
@@ -101,8 +111,8 @@ struct ActionSummaryTests {
 
     @Test("every action kind has a title and a default action of its own kind")
     func kinds() {
-        #expect(ActionKind.allCases.count == 5)
-        #expect(Set(ActionKind.allCases.map(\.title)).count == 5)
+        #expect(ActionKind.allCases.count == 6)
+        #expect(Set(ActionKind.allCases.map(\.title)).count == 6)
         for kind in ActionKind.allCases {
             #expect(ActionKind(kind.defaultAction) == kind)
         }
@@ -118,5 +128,14 @@ struct ActionSummaryTests {
         #expect(ActionSummary.text(for: .restoreWindow, bundle: AppLanguage.en.textBundle!) == "Restore Window")
         #expect(ActionKind.restoreWindow.title(bundle: AppLanguage.en.textBundle!) == "Restore Window")
         #expect(ActionPreview.rects(for: .restoreWindow) == nil)
+    }
+
+    @Test("Swap Window is a kind of its own, with a direction that defaults to left")
+    func swapWindow() throws {
+        #expect(ActionKind(.swapWindow(.down)) == .swapWindow)
+        #expect(ActionKind.swapWindow.defaultAction == .swapWindow(.left))
+        #expect(ActionKind.swapWindow.configName == "swapWindow")
+        #expect(ActionKind.swapWindow.title(bundle: AppLanguage.en.textBundle!) == "Swap Window")
+        #expect(ActionPreview.rects(for: .swapWindow(.left)) == nil)
     }
 }

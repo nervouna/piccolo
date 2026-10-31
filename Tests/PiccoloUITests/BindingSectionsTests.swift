@@ -23,15 +23,16 @@ struct BindingSectionsTests {
 
     @Test("sections follow the order of the kinds, and bindings keep the file order inside")
     func orderOfKinds() {
+        let swap = binding(.swapWindow(.left))
         let divider = binding(.moveDivider(.left))
         let grid = binding(.arrangeGrid(GridSpec(count: 4, rows: 2, columns: 2)))
         let right = binding(.placeWindow(.preset(.rightHalf)))
         let display = binding(.moveToDisplay(.next))
         let left = binding(.placeWindow(.preset(.leftHalf)))
 
-        let sections = make([divider, grid, right, display, left])
+        let sections = make([swap, divider, grid, right, display, left])
 
-        #expect(sections.map(\.kind) == [.placeWindow, .moveToDisplay, .arrangeGrid, .moveDivider])
+        #expect(sections.map(\.kind) == [.placeWindow, .moveToDisplay, .arrangeGrid, .moveDivider, .swapWindow])
         #expect(sections[0].bindings.map(\.id) == [right.id, left.id])
         #expect(sections[1].bindings.map(\.id) == [display.id])
     }
@@ -93,6 +94,8 @@ struct BindingSectionsTests {
 
     @Test("the kinds have the names the config file writes")
     func configNames() {
-        #expect(ActionKind.allCases.map(\.configName) == ["placeWindow", "restoreWindow", "moveToDisplay", "arrangeGrid", "moveDivider"])
+        #expect(ActionKind.allCases.map(\.configName) == [
+            "placeWindow", "restoreWindow", "moveToDisplay", "arrangeGrid", "moveDivider", "swapWindow",
+        ])
     }
 }

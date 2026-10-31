@@ -6,8 +6,8 @@ import PiccoloCore
 public struct Destination: Equatable, Sendable {
     /// In canonical coordinates.
     public var frame: CGRect
-    /// The window the frame is for. Known for an arrangement and a divider move, which act on windows
-    /// other than the focused one; `nil` for the focused window of a single-window action.
+    /// The window the frame is for. Known for an arrangement, a divider move and a swap, which act on
+    /// windows other than the focused one; `nil` for the focused window of a single-window action.
     public var window: WindowID?
 
     public init(frame: CGRect, window: WindowID? = nil) {
@@ -29,6 +29,9 @@ extension ActionExecutor {
     /// - `moveDivider`: the frame of every window of the focused window's group after the move, in cell
     ///   order, each with its window. None when there is no group, when the group no longer holds (the
     ///   run dissolves it, this does not) or when the divider cannot move.
+    /// - `swapWindow`: the two windows that would trade cells, in cell order, each with its new cell (the
+    ///   cell of the other one, with the window gap). None when there is no group, when the group no
+    ///   longer holds (the run dissolves it, this does not) or when there is no neighbour on that side.
     ///
     /// Like a run, it reads the focused window and the windows on screen, which can take a while, so it
     /// belongs off the main thread, on the queue the actions run on. The parameters mean what they
@@ -53,6 +56,15 @@ extension ActionExecutor {
             case .move(let planning):
                 let frames = planning.group.targetFrames(for: planning.layout, gap: settings.gap)
                 return zip(planning.group.windows, frames).map { Destination(frame: $1, window: $0) }
+            }
+
+        case .swapWindow(let direction):
+            switch try planSwap(direction, onlyPid: onlyPid) {
+            case .nothingToDo:
+                return []
+            case .swap(let planning):
+                let frames = planning.group.targetFrames(for: planning.group.layout, gap: settings.gap)
+                return planning.cells.map { Destination(frame: frames[$0], window: planning.group.windows[$0]) }
             }
 
         case .placeWindow, .moveToDisplay, .restoreWindow:

@@ -17,6 +17,7 @@ public enum FailureNoticeText {
         case .dissolved: String(localized: "The windows have changed. Arrange again", bundle: bundle)
         case .cannotMove: String(localized: "The divider cannot move further", bundle: bundle)
         case .nothingToRestore: String(localized: "Nothing to restore", bundle: bundle)
+        case .noNeighbour: String(localized: "No window in that direction", bundle: bundle)
         }
     }
 
@@ -28,7 +29,7 @@ public enum FailureNoticeText {
         case .windowNotChangeable: "exclamationmark.triangle"
         case .noOtherDisplay: "display"
         case .nothingToArrange, .gridDoesNotFit: "rectangle.grid.2x2"
-        case .noGroup, .dissolved, .cannotMove: "rectangle.split.2x1"
+        case .noGroup, .dissolved, .cannotMove, .noNeighbour: "rectangle.split.2x1"
         case .nothingToRestore: "arrow.uturn.backward"
         }
     }

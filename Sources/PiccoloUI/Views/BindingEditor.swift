@@ -70,13 +70,26 @@ struct BindingEditor: View {
         case .arrangeGrid(let grid):
             gridParameters(grid)
         case .moveDivider(let direction):
-            Picker(selection: dividerDirection(direction)) {
-                ForEach(Direction.allCases, id: \.self) { direction in
-                    Text(ActionSummary.name(of: direction)).tag(direction)
-                }
-            } label: {
-                Text(localized: "Direction")
+            directionPicker(direction) { .moveDivider($0) }
+        case .swapWindow(let direction):
+            directionPicker(direction) { .swapWindow($0) }
+        }
+    }
+
+    /// The picker of the direction of Move Divider and Swap Window: `action` makes the new action.
+    private func directionPicker(
+        _ current: Direction, action: @escaping (Direction) -> Action
+    ) -> some View {
+        Picker(
+            selection: Binding(
+                get: { current },
+                set: { model.updateAction(binding.id, to: action($0)) })
+        ) {
+            ForEach(Direction.allCases, id: \.self) { direction in
+                Text(ActionSummary.name(of: direction)).tag(direction)
             }
+        } label: {
+            Text(localized: "Direction")
         }
     }
 
@@ -84,12 +97,6 @@ struct BindingEditor: View {
         Binding(
             get: { current },
             set: { model.updateAction(binding.id, to: .moveToDisplay($0)) })
-    }
-
-    private func dividerDirection(_ current: Direction) -> Binding<Direction> {
-        Binding(
-            get: { current },
-            set: { model.updateAction(binding.id, to: .moveDivider($0)) })
     }
 
     // MARK: Place window

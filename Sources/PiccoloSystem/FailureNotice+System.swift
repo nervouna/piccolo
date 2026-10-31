@@ -36,7 +36,7 @@ extension FailureNotice {
             case .moveToDisplay: self = .noOtherDisplay
             case .arrangeGrid: self = .nothingToArrange
             case .restoreWindow: self = .nothingToRestore
-            case .placeWindow, .moveDivider: return nil
+            case .placeWindow, .moveDivider, .swapWindow: return nil
             }
         case .arranged(let arranged):
             guard arranged.windows.contains(where: \.failed) else { return nil }
@@ -50,6 +50,16 @@ extension FailureNotice {
             case .noGroup: self = .noGroup
             case .dissolved: self = .dissolved
             case .cannotMove: self = .cannotMove
+            }
+        case .swap(.swapped(_, let windows)):
+            guard windows.contains(where: \.failed) else { return nil }
+            self = .windowNotChangeable
+        case .swap(.nothingToDo(let reason)):
+            switch reason {
+            case .noFocusedWindow: self = .noWindow
+            case .noGroup: self = .noGroup
+            case .dissolved: self = .dissolved
+            case .noNeighbour: self = .noNeighbour
             }
         }
     }

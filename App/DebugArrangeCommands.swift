@@ -25,8 +25,15 @@ extension DebugControlServer {
     ///   [...]}` as for `arrangeGrid`, in cell order, or `{"nothingToDo": true, "reason": "noFocusedWindow" |
     ///   "noGroup" | "dissolved" | "cannotMove", "message": text}`, where `dissolved` adds `"window"` (the
     ///   number of the first window that broke the group) and `"cause"` (`"missing"` or `"moved"`).
+    ///   A `swapWindow` action exchanges the focused window with its neighbour on that side in its group,
+    ///   as its shortcut would; `onlyPid` restricts it as it does `moveDivider`. The result is
+    ///   `{"swapped": true, "display": index, "windows": [...]}` as for `moveDivider`, every window of
+    ///   the group in cell order after the swap, or `{"nothingToDo": true, "reason": "noFocusedWindow" |
+    ///   "noGroup" | "dissolved" | "noNeighbour", "message": text}`, where `dissolved` adds `"window"`
+    ///   and `"cause"` as for `moveDivider`.
     /// - `focus.history`: `{"windows": [window numbers]}`, most recently focused first.
-    /// - `groups.list`: the groups of windows Piccolo arranged and still tracks, one per display:
+    /// - `groups.list`: the groups of windows Piccolo arranged and still tracks, one per display (after a
+    ///   swap the windows are listed in their exchanged order):
     ///   `[{"display": index, "visibleFrame": rect, "layout": {"rows": [{"height", "widths": [...]}]},
     ///   "windows": [{"window": number, "frame": rect}]}]`, the windows in cell order with the frames
     ///   recorded for them. A row layout (rows first) is written as `{"rows": [...]}` and its cells are
@@ -98,29 +105,61 @@ extension DebugControlServer {
             ]
         case .dividerMove(.nothingToDo(let reason)):
             return json(for: reason)
+        case .swap(.swapped(let display, let windows)):
+            return [
+                "swapped": .bool(true),
+                "display": .int(display),
+                "windows": .array(windows.map(json(for:))),
+            ]
+        case .swap(.nothingToDo(let reason)):
+            return json(for: reason)
         }
     }
 
     private nonisolated static func json(for reason: DividerMoveOutcome.Reason) -> JSONValue {
-        var entry: [String: JSONValue] = [
-            "nothingToDo": .bool(true),
-            "message": .string(reason.message),
-        ]
         switch reason {
         case .noFocusedWindow:
-            entry["reason"] = .string("noFocusedWindow")
+            return nothingToDo(reason: "noFocusedWindow", message: reason.message)
         case .noGroup:
-            entry["reason"] = .string("noGroup")
-        case .dissolved(.missing(let window)):
-            entry["reason"] = .string("dissolved")
+            return nothingToDo(reason: "noGroup", message: reason.message)
+        case .dissolved(let breakage):
+            return dissolved(breakage, message: reason.message)
+        case .cannotMove:
+            return nothingToDo(reason: "cannotMove", message: reason.message)
+        }
+    }
+
+    private nonisolated static func json(for reason: SwapOutcome.Reason) -> JSONValue {
+        switch reason {
+        case .noFocusedWindow:
+            return nothingToDo(reason: "noFocusedWindow", message: reason.message)
+        case .noGroup:
+            return nothingToDo(reason: "noGroup", message: reason.message)
+        case .dissolved(let breakage):
+            return dissolved(breakage, message: reason.message)
+        case .noNeighbour:
+            return nothingToDo(reason: "noNeighbour", message: reason.message)
+        }
+    }
+
+    private nonisolated static func nothingToDo(reason: String, message: String) -> JSONValue {
+        ["nothingToDo": .bool(true), "reason": .string(reason), "message": .string(message)]
+    }
+
+    /// The answer for a group that no longer held: the cause (`missing` or `moved`) and the window.
+    private nonisolated static func dissolved(_ breakage: LayoutGroup.Breakage, message: String) -> JSONValue {
+        var entry: [String: JSONValue] = [
+            "nothingToDo": .bool(true),
+            "reason": .string("dissolved"),
+            "message": .string(message),
+        ]
+        switch breakage {
+        case .missing(let window):
             entry["cause"] = .string("missing")
             entry["window"] = .int(Int(window.rawValue))
-        case .dissolved(.moved(let window)):
-            entry["reason"] = .string("dissolved")
+        case .moved(let window):
             entry["cause"] = .string("moved")
             entry["window"] = .int(Int(window.rawValue))
-        case .cannotMove:
-            entry["reason"] = .string("cannotMove")
         }
         return .object(entry)
     }

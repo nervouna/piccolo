@@ -21,14 +21,16 @@ public enum FailureNotice: String, CaseIterable, Equatable, Sendable {
     case nothingToArrange
     /// The grid does not fit the display.
     case gridDoesNotFit
-    /// `moveDivider` on a window that is not in an arrangement made by Piccolo.
+    /// `moveDivider` or `swapWindow` on a window that is not in an arrangement made by Piccolo.
     case noGroup
-    /// `moveDivider` on a group that no longer held, and was dissolved.
+    /// `moveDivider` or `swapWindow` on a group that no longer held, and was dissolved.
     case dissolved
     /// `moveDivider` where the divider cannot move further.
     case cannotMove
     /// `restoreWindow` on a window Piccolo did not move, or that has been moved since.
     case nothingToRestore
+    /// `swapWindow` with no window of the group on that side.
+    case noNeighbour
 
     /// The notice for a grid that cannot be planned. Every ``ArrangePlannerError`` means that the
     /// arrangement does not fit.
