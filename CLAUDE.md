@@ -37,10 +37,16 @@ Non-goals: drag-to-snap with the mouse, automatic tiling of new windows, moving 
 |---|---|
 | The config file, `ActionSettings`, the window gap, default shortcuts | [docs/config.md](docs/config.md) |
 | Hotkeys, holding a shortcut, the destination preview, overlay panels | [docs/shortcuts-and-preview.md](docs/shortcuts-and-preview.md) |
-| Applying frames, animation, linked resize, column-first grids, cycling and Restore Window, the failure notice, onboarding, the Settings window, the language setting and restart | [docs/features.md](docs/features.md) |
-| Any interface text | [docs/localization.md](docs/localization.md) |
+| Applying frames, animation, the edge bounce | [docs/features.md › Applying frames and animation](docs/features.md#applying-frames-and-animation) |
+| Linked resize, Swap Window, column-first grids | [docs/features.md › Linked resize](docs/features.md#linked-resize-swap-window-and-column-first-grids) |
+| Cycling halves, Restore Window, the window records | [docs/features.md › Cycling](docs/features.md#cycling-restore-window-and-the-window-records) |
+| The failure notice | [docs/features.md › Failure notice](docs/features.md#failure-notice) |
+| Onboarding | [docs/features.md › Onboarding guide](docs/features.md#onboarding-guide) |
+| The Settings window | [docs/features.md › Settings window](docs/features.md#settings-window) |
+| The language setting and restart | [docs/features.md › Language](docs/features.md#language-setting-and-restart) |
+| Any interface text, a merge conflict in a String Catalog | [docs/localization.md](docs/localization.md) |
 | The debug control channel, `piccoloctl` | [docs/control-channel.md](docs/control-channel.md) |
-| Acceptance tests, the fixture, focus and restart problems | [docs/acceptance.md](docs/acceptance.md) |
+| Choosing an acceptance filter, opening or reviewing a PR, acceptance tests, the fixture, focus and restart problems, UI captures | [docs/acceptance.md](docs/acceptance.md) |
 | Signing, notarization, releases | [docs/releasing.md](docs/releasing.md) |
 | The app icon or the menu bar glyph | [design/README.md](design/README.md) |
 | What the user sees (actions, defaults, config keys) | [README.md](README.md) |
@@ -51,7 +57,7 @@ Non-goals: drag-to-snap with the mouse, automatic tiling of new windows, moving 
 - `swift test --filter <regex>` matches type and function names (`followsTheModel`), not the `@Test("…")` display string.
 - `scripts/build.sh [debug|release]` builds `build/Piccolo.app` with xcodebuild. A Debug build also builds `build/PiccoloFixture.app`; a Release build (and so `release.sh`) never builds or ships the fixture.
 - `scripts/install.sh [debug|release]` (default `release`) builds, replaces `/Applications/Piccolo.app` and relaunches it. Only a Debug build hosts the control server.
-- `scripts/accept.sh [filter]` runs the desktop acceptance tests (see "Workflow" below and [docs/acceptance.md](docs/acceptance.md)).
+- `scripts/accept.sh [filter]` runs the desktop acceptance tests ([docs/acceptance.md](docs/acceptance.md)).
 - `scripts/release.sh [--skip-notarize]` builds a notarized release archive ([docs/releasing.md](docs/releasing.md)).
 - `swift run piccoloctl app <command> [--params '<json>']` drives a running Debug Piccolo; `piccoloctl fixture <command>` the fixture.
 - Signing and notarization settings are never committed. Scripts source `${XDG_CONFIG_HOME:-$HOME/.config}/piccolo/signing.env` when it exists and fall back to ad-hoc signing otherwise.
@@ -60,30 +66,9 @@ Non-goals: drag-to-snap with the mouse, automatic tiling of new windows, moving 
 
 ## Workflow
 
-Developed with the global `orchestrate` skill: the owner files issues and makes product decisions; Claude writes each issue as a spec, Claude subagents implement it as a PR, Claude reviews, merges and releases. Milestones are GitHub milestones, each with a tracking issue. Piccolo's own rules:
+Developed with the global `orchestrate` skill. Piccolo's own rules:
 
-- Desktop acceptance (anything that moves real windows or installs the app) is a machine-wide shared resource: one run at a time. Run `scripts/accept.sh`, not its pieces: it holds the lock and always tears down.
-- Acceptance scope: a run covers what the change can break, not the whole suite by default. A full run takes the screen for over two minutes, so it is reserved for changes that can affect every test. `scripts/accept.sh` takes a regular expression matched against the test identifiers, so a suite's struct name selects it; the script prefixes it with `PiccoloAcceptanceTests.*`, so an alternation goes in parentheses, or its later branches also match unit tests of the same name. A change that touches several rows runs the union of their filters (`scripts/accept.sh '(SettingsWindow|SettingsInFront|WindowGap)'`).
-
-  | Change touches | Filter |
-  |---|---|
-  | Frames and actions: `PiccoloCore/Geometry`, `Actions`, `Layout`, `LinkedResize`, `Arrange`, `Animation`, `History`; `ActionExecutor`, `FrameSetter`, `ArrangeExecution`, `LinkedResizeExecution`, `SwapExecution`, `WindowRecordStore`, `App/DebugArrangeCommands.swift`, `PiccoloSystem/Animation` | `(SingleWindowActions\|ArrangeGrid\|ColumnFirst\|LinkedResize\|SwapWindow\|CycleRestore\|WindowGap\|WindowAnimationAcceptance)` |
-  | Edge bounce only: `PiccoloCore/Animation/EdgeBounce.swift` (narrower than the frames row's `Animation`) | `(SwapWindow\|WindowAnimationAcceptance)` |
-  | Shortcuts and holding them: `PiccoloCore/Shortcuts`, `PiccoloSystem/Hotkeys`, `PiccoloSystem/Preview`, `PiccoloSystem/Destinations`, `App/ConfigController.swift` | `(ConfigHotkeys\|DestinationPreviewAcceptance\|FailureNoticeAcceptance\|OnboardingAcceptance)` |
-  | Config schema and settings: `PiccoloCore/Config`, `ActionSettings` | `(ConfigHotkeys\|SettingsWindow)`, plus the frames row when an action reads the new setting |
-  | Settings window: `PiccoloCore/Keymap`, `PiccoloUI/Model`, `Views`, `Text/ActionPreview.swift`, `Text/KeymapSectionTitle.swift`, `Window/SettingsWindowController.swift`, `Window/SettingsContentController.swift`, `Window/SettingsWindowSizing.swift`, `Window/SettingsUndoKey.swift`, `Text/SettingsTabText.swift`, `App/SettingsController.swift`, `App/DebugSettingsCommands.swift`, `App/DebugSettingsWindowState.swift`, `Text/LayoutEditorText.swift` | `(SettingsWindow\|SettingsWindowChrome\|SettingsInFront\|KeymapSettings\|SettingsUndo)` |
-  | Failure notice: `Notice`, `NoticePanel`, `FailureNoticeText`, `FailureNotice+System.swift`, `App/NoticeController.swift` | `FailureNoticeAcceptance` |
-  | Onboarding: `PiccoloUI/Onboarding`, `App/OnboardingController.swift` | `OnboardingAcceptance` |
-  | Language and restart: `AppLanguage`, `LanguageDefaults`, `App/AppRestart.swift` | `Language` |
-  | Login item: `LoginItem` | `LaunchAtLogin` |
-  | Texts only (a catalog, `ActionSummary`, `ShortcutText`) | none: `swift test` (`CatalogTests`) covers them |
-  | Documentation only | none |
-
-  A full run (no filter) is for changes that every test depends on: `App/AppDelegate.swift`, `App/DebugControlServer.swift`, `PiccoloControl`, `Fixture/`, the shared acceptance helpers (`Tests/PiccoloAcceptanceTests/` files that are not a suite of their own), `FocusTracker`, `FocusedWindow`, `WindowCatalog`, `OnScreenWindows`, `Screens`, `AccessibilityWindow*`, `scripts/`, `Package.swift` and `Piccolo.xcodeproj`. A file that is in no row counts as a full run until the table names it; add it to the table in the same PR. A new suite adds its struct name to its row.
-- Who runs what. The implementer iterates with the filter of the suite they are writing, and before opening the PR runs the filter of every row the change touches once (a full run only when the table says so), and puts the `accept:` line and the filter in the PR. The reviewer does not re-run a run whose result cannot differ: when the PR head is the commit the implementer ran and `main` has not moved, the reviewer reads `build/accept-test.log` in the implementer's worktree (the filter, the test list, the summary) and the commit it was built from instead. The reviewer runs acceptance on the merged result only after merging `main` into the PR or after a rework, and then only the rows that the merge or the rework touches.
-- Release gate, pre-releases: [docs/releasing.md](docs/releasing.md). Reviewer UI captures and focus failures during a run: [docs/acceptance.md](docs/acceptance.md).
-- Parallel PRs that add catalog keys conflict in `Localizable.xcstrings` as adjacent insertions: keep both entries in key order, then check that the file parses as JSON and the key count is the sum.
-- Desktop runs leave a Debug build in `/Applications`. When the owner uses Piccolo day to day, end the session with `scripts/install.sh release` under the acceptance lock, and check that `~/Library/Application Support/Piccolo/config.json` and the stored language are untouched.
+- Desktop acceptance (anything that moves real windows or installs the app) is a machine-wide shared resource: one run at a time, always through `scripts/accept.sh`, which holds the lock and always tears down. A run covers what the change can break, not the whole suite: the filter for each kind of change, who runs what, and the reinstall at the end of a session are in [docs/acceptance.md › Scope](docs/acceptance.md#scope). Read it before opening or reviewing a PR.
 
 ## Rules for implementers
 
