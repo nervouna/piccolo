@@ -17,9 +17,10 @@
 # ${XDG_STATE_HOME:-$HOME/.local/state}/piccolo/accept.lock, shared by every checkout and
 # worktree; the system drops it when this script ends, however it ends.
 #
-# Teardown is unconditional (normal end, test failure, error, Ctrl-C, SIGTERM): fixture
-# windows are closed, the fixture is quit, the lock is released. The Debug build of
-# Piccolo stays installed and running.
+# Teardown is unconditional (normal end, test failure, error, Ctrl-C, SIGTERM): Piccolo is
+# handed back to the config at the default location (every test runs on a temporary
+# fresh-install config), fixture windows are closed, the fixture is quit, the lock is
+# released. The Debug build of Piccolo stays installed and running.
 #
 # The exit code is the test result: 0 only when the tests passed. One line on stdout
 # summarizes the run; progress goes to stderr.
@@ -136,6 +137,15 @@ stop_fixture() {
     wait_fixture_gone 20 || log "warning: a $FIXTURE_NAME process is still running"
 }
 
+# restore_config: hands the Debug Piccolo back to the config at the default location. Every test
+# loads a temporary fresh-install config (config.load) and the tests undo that themselves, but a run
+# that is interrupted or killed mid-test cannot. config.reload reads the default location only and
+# never writes to it.
+restore_config() {
+    [[ -n "$CTL" && -x "$CTL" ]] || return 0
+    "$CTL" app config.reload --timeout 5 >/dev/null 2>&1 9>&- || true
+}
+
 cleanup() {
     local rc=$?
     trap - EXIT INT TERM HUP
@@ -144,6 +154,7 @@ cleanup() {
         kill_tree "$CHILD_PID"
         wait "$CHILD_PID" 2>/dev/null
     fi
+    restore_config
     stop_fixture
     rm -f "$lock_info"
     exit "$rc"

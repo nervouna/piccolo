@@ -430,6 +430,9 @@ extension DesktopAcceptanceTests {
             let before = try? FileManager.default.contentsOfDirectory(atPath: defaultFolder.path).sorted()
             let existedBefore = FileManager.default.fileExists(atPath: defaultFile.path)
             let bytesBefore = try? Data(contentsOf: defaultFile)
+            // The test starts on the fresh-install config; that is what Piccolo goes back to.
+            let startedOn = try piccolo.configStatus()
+            #expect(startedOn.path != defaultFile.path, "the test starts on the config at the default location")
 
             try await withSettingsSession(inNewSubfolder: "session") { session in
                 try session.openSettings()
@@ -443,8 +446,10 @@ extension DesktopAcceptanceTests {
             }
 
             let status = try piccolo.configStatus()
-            #expect(status.path == defaultFile.path, "Piccolo reports the config path \(status.path)")
-            #expect(status.registered.isEmpty || existedBefore, "hotkeys are registered although there is no default config")
+            #expect(status.path == startedOn.path, "Piccolo reports the config path \(status.path), it started on \(startedOn.path)")
+            #expect(
+                status.registered == startedOn.registered,
+                "the hotkeys registered after the session differ from those registered before it")
             #expect(FileManager.default.fileExists(atPath: defaultFile.path) == existedBefore)
             let bytesAfter = try? Data(contentsOf: defaultFile)
             #expect(bytesAfter == bytesBefore, "the default config file changed")
