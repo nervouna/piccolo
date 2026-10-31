@@ -67,6 +67,22 @@ struct SettingsViewRenderTests {
         return bitmap
     }
 
+    /// What the window shows once the layout has settled: renders again and again, 20 ms apart, until two in
+    /// a row are the same, and returns the last. The first layout of a tab can differ from the next one (a
+    /// scroll view's content is laid out against its scroller only on a later pass), so a single render is
+    /// not a fair picture of the tab. At most 5 s: a layout that never settles gives the last render.
+    private func settledContent(of window: NSWindow, dark: Bool = false) async throws -> NSBitmapImageRep {
+        let deadline = ContinuousClock.now.advanced(by: .seconds(5))
+        var previous = try renderContent(of: window, dark: dark)
+        while ContinuousClock.now < deadline {
+            try await Task.sleep(for: .milliseconds(20))
+            let next = try renderContent(of: window, dark: dark)
+            if png(next) == png(previous) { return next }
+            previous = next
+        }
+        return previous
+    }
+
     /// Waits, on the main actor, until `reached` holds and the window's frame has stayed the same for three
     /// polls in a row: a poll every 20 ms, and at most 5 s. The window follows the model's tab on a later
     /// turn of the main queue and resizes in an animation, which when the machine is busy can take longer
@@ -139,9 +155,19 @@ struct SettingsViewRenderTests {
         for (name, dark) in [("light", false), ("dark", true)] {
             let model = model(all, issues: ["bindings[4] shortcut was refused: taken by the system"])
             let (controller, window) = makeWindow(model)
+            try await waitUntilSettled(window) { controller.content?.tab == .shortcuts }
+            let shortcutsFrame = window.frame
             for tab in SettingsTab.allCases {
                 model.tab = tab
-                try await waitUntilSettled(window) { controller.content?.tab == tab }
+                // The tab is shown before its window has the size it needs: wait for that size too.
+                switch tab {
+                case .shortcuts:
+                    try await waitUntilSettled(window) {
+                        controller.content?.tab == .shortcuts && window.frame == shortcutsFrame
+                    }
+                case .general:
+                    try await waitUntilSettled(window) { isGeneralFitted(controller, window) }
+                }
                 let bitmap = try renderContent(of: window, dark: dark)
                 #expect(hasContent(bitmap), "the \(tab) tab is blank in \(name) appearance")
                 keep(bitmap, as: "window-\(tab)-\(name)")
@@ -156,16 +182,19 @@ struct SettingsViewRenderTests {
         let (controller, window) = makeWindow(model)
         defer { withExtendedLifetime(controller) {} }
         try await waitUntilSettled(window) { controller.content?.tab == .shortcuts }
-        let shortcuts = try renderContent(of: window)
+        let shortcutsFrame = window.frame
+        let shortcuts = try await settledContent(of: window)
 
         model.tab = .general
         try await waitUntilSettled(window) { isGeneralFitted(controller, window) }
-        let general = try renderContent(of: window)
+        let general = try await settledContent(of: window)
         #expect(png(shortcuts) != png(general), "the window looks the same on the General tab as on the Shortcuts tab")
 
         model.tab = .shortcuts
-        try await waitUntilSettled(window) { controller.content?.tab == .shortcuts }
-        let again = try renderContent(of: window)
+        try await waitUntilSettled(window) {
+            controller.content?.tab == .shortcuts && window.frame == shortcutsFrame
+        }
+        let again = try await settledContent(of: window)
         #expect(png(again) == png(shortcuts), "going back to the Shortcuts tab did not bring the same window back")
     }
 

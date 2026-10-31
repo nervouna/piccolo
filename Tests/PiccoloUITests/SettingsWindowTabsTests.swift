@@ -213,7 +213,7 @@ struct SettingsWindowTabsTests {
         model.setLanguage(.zhHans)
         #expect(model.restartRequired)
         try await waitUntilSettled(window) {
-            contentSize(of: window).height > plain + 20 && isGeneralFitted(controller, window)
+            content.generalFittingHeight > plain + 20 && isGeneralFitted(controller, window) && content.contentFits
         }
         let withRestart = contentSize(of: window).height
         #expect(withRestart > plain + 20, "the window is \(withRestart) pt high with the restart row, \(plain) without")
@@ -223,7 +223,7 @@ struct SettingsWindowTabsTests {
 
         model.setLanguage(.en)
         try await waitUntilSettled(window) {
-            abs(contentSize(of: window).height - plain) < 1 && isGeneralFitted(controller, window)
+            abs(contentSize(of: window).height - plain) < 1
         }
         #expect(abs(contentSize(of: window).height - plain) < 1, "the window did not shrink back")
     }
