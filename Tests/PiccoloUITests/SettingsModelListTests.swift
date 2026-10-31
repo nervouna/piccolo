@@ -18,78 +18,46 @@ struct SettingsModelListTests {
         return (model, backend)
     }
 
-    @Test("the model lists the bindings in sections, and keeps the file order in the config")
-    func sections() {
+    private let leftRow = KeymapRowID.builtIn(.placeWindow(.preset(.leftHalf)))
+    private let nextRow = KeymapRowID.builtIn(.moveToDisplay(.next))
+
+    @Test("the model keeps the file order in the config, and starts with no search and every section")
+    func fileOrder() {
         let (model, _) = make()
-        #expect(model.sections.map(\.kind) == [.placeWindow, .moveToDisplay])
         #expect(model.bindings.map(\.id) == [UIFixture.idA, UIFixture.idB])
         #expect(model.search == "")
+        #expect(model.keymap.map(\.section) == KeymapSection.allCases)
     }
 
-    @Test("a search keeps the selection while the selected binding is shown")
-    func searchKeepsSelection() {
+    @Test("a search narrows the keymap to the rows that match, and saves nothing")
+    func searchNarrowsTheKeymap() {
         let (model, backend) = make()
-        model.selectedBindingID = UIFixture.idB
 
         model.setSearch("display")
 
-        #expect(model.selectedBindingID == UIFixture.idB)
-        #expect(model.isVisible(UIFixture.idB))
-        #expect(!model.isVisible(UIFixture.idA))
+        #expect(model.search == "display")
+        #expect(model.keymap.flatMap(\.rows).map(\.id).contains(nextRow))
+        #expect(!model.keymap.flatMap(\.rows).map(\.id).contains(leftRow))
+        #expect(model.keymap.map(\.section) == [.displays])
         #expect(backend.saved.isEmpty)
     }
 
-    @Test("a search that hides the selected binding selects the first shown one")
-    func searchMovesSelection() {
-        let (model, _) = make()
-        #expect(model.selectedBindingID == UIFixture.idA)
-
-        model.setSearch("display")
-
-        #expect(model.selectedBindingID == UIFixture.idB)
-    }
-
-    @Test("a search nothing matches selects nothing, and clearing it selects the first binding")
+    @Test("a search nothing matches leaves no section, and clearing it brings every section back")
     func searchWithoutMatch() {
         let (model, _) = make()
 
         model.setSearch("zzz")
-        #expect(model.sections.isEmpty)
-        #expect(model.selectedBindingID == nil)
+        #expect(model.keymap.isEmpty)
 
         model.setSearch("")
-        #expect(model.selectedBindingID == UIFixture.idA)
-        #expect(model.sections.flatMap(\.bindings).count == 2)
+        #expect(model.keymap.map(\.section) == KeymapSection.allCases)
     }
 
-    @Test("the search matches the shortcut text of the layout")
+    @Test("the search matches the shortcut text of a row")
     func searchByShortcut() {
         let (model, _) = make()
         model.setSearch("⌃⌥⇧⌘F13")
-        #expect(model.sections.flatMap(\.bindings).map(\.id) == [UIFixture.idA])
-    }
-
-    @Test("adding a binding clears a search that would hide it, and selects it")
-    func addingClearsSearch() throws {
-        let (model, _) = make()
-        model.setSearch("display")
-
-        let id = try #require(model.addBinding())
-
-        #expect(model.search == "")
-        #expect(model.selectedBindingID == id)
-        #expect(model.isVisible(id))
-    }
-
-    @Test("adding a binding leaves a search that still shows it")
-    func addingKeepsMatchingSearch() throws {
-        let (model, _) = make()
-        model.setSearch("left")
-
-        let id = try #require(model.addBinding())
-
-        #expect(model.search == "left")
-        #expect(model.selectedBindingID == id)
+        #expect(model.keymap.flatMap(\.rows).map(\.id) == [leftRow])
     }
 
     @Test("the inactive shortcuts come from the backend, on load, after a save and after a reload")
@@ -100,7 +68,7 @@ struct SettingsModelListTests {
         #expect(model.inactiveBindingIDs == [UIFixture.idA])
 
         backend.inactive = [UIFixture.idB]
-        model.setShortcut(UIFixture.idB, to: UIFixture.f14)
+        model.setGap(8)
         #expect(model.inactiveBindingIDs == [UIFixture.idB])
 
         backend.inactive = []
@@ -115,7 +83,7 @@ struct SettingsModelListTests {
 
         // With every hotkey suspended the backend would report them all as not registered.
         backend.inactive = [UIFixture.idA, UIFixture.idB]
-        model.beginRecording(UIFixture.idB)
+        model.beginRecording(nextRow)
         #expect(model.inactiveBindingIDs.isEmpty)
 
         backend.inactive = [UIFixture.idA]

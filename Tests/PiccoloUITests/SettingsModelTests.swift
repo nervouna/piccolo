@@ -21,7 +21,7 @@ struct SettingsModelTests {
 
     // MARK: Initial state
 
-    @Test("the model starts with the backend's bindings, resize step and issues, and the first binding selected")
+    @Test("the model starts with the backend's bindings, resize step and issues")
     func initialState() {
         let config = Config(resizeStep: 0.1, bindings: UIFixture.twoBindings().bindings)
         let (model, _) = make(config, issues: ["bindings[3] skipped: duplicate id"])
@@ -29,8 +29,8 @@ struct SettingsModelTests {
         #expect(model.bindings == config.bindings)
         #expect(model.resizeStep == 0.1)
         #expect(model.issues == ["bindings[3] skipped: duplicate id"])
-        #expect(model.selectedBindingID == UIFixture.idA)
-        #expect(model.recordingBindingID == nil)
+        #expect(model.recordingRow == nil)
+        #expect(!model.isRecording)
         #expect(model.error == nil)
     }
 
@@ -44,50 +44,15 @@ struct SettingsModelTests {
         model.tab = .general
 
         #expect(model.tab == .general)
-        // Showing a tab edits nothing: it saves nothing and leaves the selection alone.
+        // Showing a tab edits nothing.
         #expect(backend.saved.isEmpty)
-        #expect(model.selectedBindingID == UIFixture.idA)
-    }
-
-    @Test("an empty config selects nothing")
-    func emptyConfig() {
-        let (model, _) = make(.default)
-        #expect(model.bindings.isEmpty)
-        #expect(model.selectedBindingID == nil)
-    }
-
-    // MARK: Adding
-
-    @Test("add appends a Left Half binding without a shortcut, selects it and saves")
-    func addBinding() throws {
-        let (model, backend) = make()
-
-        let id = try #require(model.addBinding())
-
-        #expect(model.bindings.count == 3)
-        let added = try #require(model.binding(id))
-        #expect(added.action == .placeWindow(.preset(.leftHalf)))
-        #expect(added.shortcut == nil)
-        #expect(model.bindings.last?.id == id)
-        #expect(model.selectedBindingID == id)
-        #expect(backend.saved.last == model.config)
-        #expect(backend.saved.count == 1)
-        #expect(model.error == nil)
-    }
-
-    @Test("add to an empty config works")
-    func addToEmpty() throws {
-        let (model, backend) = make(.default)
-        let id = try #require(model.addBinding())
-        #expect(model.bindings.map(\.id) == [id])
-        #expect(backend.config.bindings.map(\.id) == [id])
     }
 
     @Test("issues are refreshed from the backend's answer to every save")
     func issuesAreRefreshed() {
         let (model, backend) = make(issues: ["old problem"])
         backend.issuesAfterSave = ["bindings[2] shortcut was refused"]
-        model.addBinding()
+        model.setGap(8)
         #expect(model.issues == ["bindings[2] shortcut was refused"])
 
         backend.issuesAfterSave = []
@@ -95,51 +60,24 @@ struct SettingsModelTests {
         #expect(model.issues.isEmpty)
     }
 
-    @Test("a binding the backend cannot save is not added, and the error says why")
-    func addFailsToSave() {
-        let (model, backend) = make()
-        backend.failure = "the disk is full"
-        let before = model.config
-
-        #expect(model.addBinding() == nil)
-
-        #expect(model.config == before)
-        #expect(model.selectedBindingID == UIFixture.idA)
-        #expect(backend.saved.isEmpty)
-        #expect(model.error?.contains("the disk is full") == true)
-    }
-
     // MARK: Removing
 
-    @Test("remove deletes the binding, saves, and selects its neighbour")
+    @Test("remove deletes the binding and saves")
     func removeBinding() {
         let (model, backend) = make()
-        model.selectedBindingID = UIFixture.idA
 
         #expect(model.removeBinding(UIFixture.idA))
 
         #expect(model.bindings.map(\.id) == [UIFixture.idB])
-        #expect(model.selectedBindingID == UIFixture.idB)
         #expect(backend.saved.last?.bindings.map(\.id) == [UIFixture.idB])
     }
 
-    @Test("removing the last binding selects the one before it, removing the only one selects nothing")
-    func removeSelection() {
+    @Test("removing the last binding leaves an empty config")
+    func removeAll() {
         let (model, _) = make()
-        model.selectedBindingID = UIFixture.idB
         model.removeBinding(UIFixture.idB)
-        #expect(model.selectedBindingID == UIFixture.idA)
         model.removeBinding(UIFixture.idA)
-        #expect(model.selectedBindingID == nil)
         #expect(model.bindings.isEmpty)
-    }
-
-    @Test("removing a binding that is not selected keeps the selection")
-    func removeUnselected() {
-        let (model, _) = make()
-        model.selectedBindingID = UIFixture.idA
-        model.removeBinding(UIFixture.idB)
-        #expect(model.selectedBindingID == UIFixture.idA)
     }
 
     @Test("removing an unknown binding is rejected and saves nothing")
@@ -169,7 +107,7 @@ struct SettingsModelTests {
     func updateActionToSwap() {
         let (model, backend) = make()
 
-        #expect(model.updateAction(UIFixture.idA, to: ActionKind.swapWindow.defaultAction))
+        #expect(model.updateAction(UIFixture.idA, to: .swapWindow(.left)))
         #expect(model.binding(UIFixture.idA)?.action == .swapWindow(.left))
         #expect(model.updateAction(UIFixture.idA, to: .swapWindow(.down)))
 
@@ -299,74 +237,6 @@ struct SettingsModelTests {
 
     // MARK: Shortcuts
 
-    @Test("setting a shortcut saves it")
-    func setShortcut() {
-        let (model, backend) = make()
-        #expect(model.setShortcut(UIFixture.idB, to: UIFixture.f14))
-        #expect(model.binding(UIFixture.idB)?.shortcut == UIFixture.f14)
-        #expect(backend.saved.last == model.config)
-    }
-
-    @Test("clearing a shortcut saves the binding without one")
-    func clearShortcut() {
-        let (model, backend) = make()
-        #expect(model.setShortcut(UIFixture.idA, to: nil))
-        #expect(model.binding(UIFixture.idA)?.shortcut == nil)
-        #expect(backend.saved.last?.bindings.first?.shortcut == nil)
-    }
-
-    @Test("a function key needs no modifier, control with a letter is fine")
-    func registrableShortcuts() {
-        let (model, _) = make()
-        #expect(model.setShortcut(UIFixture.idB, to: Shortcut(keyCode: FunctionKey.f5, modifiers: [])))
-        #expect(model.setShortcut(UIFixture.idB, to: UIFixture.controlA))
-    }
-
-    @Test(
-        "a shortcut that cannot be registered is rejected, and the message shows it",
-        arguments: [
-            (Shortcut(keyCode: 0, modifiers: []), "A cannot be a global shortcut"),
-            (Shortcut(keyCode: 0, modifiers: [.shift]), "⇧A cannot be a global shortcut"),
-            (Shortcut(keyCode: 11, modifiers: []), "B cannot be a global shortcut"),
-        ] as [(Shortcut, String)]
-    )
-    func notRegistrable(_ shortcut: Shortcut, _ message: String) {
-        let (model, backend) = make()
-
-        #expect(!model.setShortcut(UIFixture.idB, to: shortcut))
-
-        #expect(model.binding(UIFixture.idB)?.shortcut == nil)
-        #expect(backend.saved.isEmpty)
-        #expect(model.error?.contains(message) == true, "the error is \(model.error ?? "nil")")
-    }
-
-    @Test("a shortcut another binding uses is rejected, and the message names that binding's action")
-    func duplicateShortcut() {
-        let (model, backend) = make()
-
-        #expect(!model.setShortcut(UIFixture.idB, to: UIFixture.f13))
-
-        #expect(model.binding(UIFixture.idB)?.shortcut == nil)
-        #expect(backend.saved.isEmpty)
-        #expect(model.error?.contains("Left Half") == true, "the error is \(model.error ?? "nil")")
-        #expect(model.error?.contains("⌃⌥⇧⌘F13") == true, "the error is \(model.error ?? "nil")")
-    }
-
-    @Test("the shortcut a binding already has is accepted for it without a save")
-    func sameShortcutAgain() {
-        let (model, backend) = make()
-        #expect(model.setShortcut(UIFixture.idA, to: UIFixture.f13))
-        #expect(backend.saved.isEmpty)
-    }
-
-    @Test("a shortcut for an unknown binding is rejected")
-    func shortcutForUnknown() {
-        let (model, backend) = make()
-        #expect(!model.setShortcut(UUID(), to: UIFixture.f14))
-        #expect(model.error != nil)
-        #expect(backend.saved.isEmpty)
-    }
-
     @Test("shortcut text on the model uses the injected keyboard layout")
     func shortcutText() {
         let (model, _) = make()
@@ -411,7 +281,6 @@ struct SettingsModelTests {
         backend.failure = "the config file was written by a newer version"
         let before = model.config
 
-        #expect(!model.setShortcut(UIFixture.idB, to: UIFixture.f14))
         #expect(!model.updateAction(UIFixture.idA, to: .moveToDisplay(.previous)))
         #expect(!model.setResizeStep(0.1))
         #expect(!model.removeBinding(UIFixture.idA))
@@ -422,39 +291,13 @@ struct SettingsModelTests {
 
     // MARK: Recording
 
-    @Test("beginRecording suspends the hotkeys and records the binding; cancelRecording restores them")
-    func beginAndCancel() {
+    @Test("a key press when nothing is recording is not taken")
+    func recordWithoutRecording() {
         let (model, backend) = make()
-
-        #expect(model.beginRecording(UIFixture.idB))
-        #expect(model.recordingBindingID == UIFixture.idB)
-        #expect(model.selectedBindingID == UIFixture.idB)
-        #expect(backend.isSuspended)
-
-        model.cancelRecording()
-        #expect(model.recordingBindingID == nil)
-        #expect(!backend.isSuspended)
+        #expect(!model.record(UIFixture.f14))
+        #expect(model.binding(UIFixture.idA)?.shortcut == UIFixture.f13)
         #expect(backend.saved.isEmpty)
-    }
-
-    @Test("beginRecording for an unknown binding is rejected and suspends nothing")
-    func beginUnknown() {
-        let (model, backend) = make()
-        #expect(!model.beginRecording(UUID()))
-        #expect(model.recordingBindingID == nil)
         #expect(backend.suspendRequests.isEmpty)
-        #expect(model.error != nil)
-    }
-
-    @Test("recording another binding moves the recording and keeps the hotkeys suspended")
-    func moveRecording() {
-        let (model, backend) = make()
-        model.beginRecording(UIFixture.idA)
-        model.beginRecording(UIFixture.idB)
-        #expect(model.recordingBindingID == UIFixture.idB)
-        #expect(backend.isSuspended)
-        model.cancelRecording()
-        #expect(!backend.isSuspended)
     }
 
     @Test("cancelRecording is safe when nothing is recording, and always asks for the hotkeys back")
@@ -462,7 +305,7 @@ struct SettingsModelTests {
         let (model, backend) = make()
         model.cancelRecording()
         model.cancelRecording()
-        #expect(model.recordingBindingID == nil)
+        #expect(!model.isRecording)
         #expect(backend.suspendRequests == [false, false])
         #expect(!backend.isSuspended)
     }
@@ -470,12 +313,12 @@ struct SettingsModelTests {
     @Test("a key press becomes the shortcut; it is saved while the hotkeys are suspended, then they come back")
     func recordKey() {
         let (model, backend) = make()
-        model.beginRecording(UIFixture.idB)
+        model.beginRecording(.builtIn(.moveToDisplay(.next)))
 
         #expect(model.record(UIFixture.f14))
 
         #expect(model.binding(UIFixture.idB)?.shortcut == UIFixture.f14)
-        #expect(model.recordingBindingID == nil)
+        #expect(!model.isRecording)
         #expect(backend.suspendedAtSave == [true])
         #expect(!backend.isSuspended)
         #expect(backend.suspendRequests == [true, false])
@@ -486,7 +329,7 @@ struct SettingsModelTests {
     func issuesAfterRecording() {
         let (model, backend) = make()
         backend.issuesAfterResume = ["bindings[1] shortcut was refused: taken by the system"]
-        model.beginRecording(UIFixture.idB)
+        model.beginRecording(.builtIn(.moveToDisplay(.next)))
 
         model.record(UIFixture.f14)
 
@@ -501,104 +344,87 @@ struct SettingsModelTests {
         model.record(UIFixture.f14)
         #expect(model.pressesTaken == 0)
 
-        model.beginRecording(UIFixture.idB)
+        let next = KeymapRowID.builtIn(.moveToDisplay(.next))
+        model.beginRecording(next)
         model.record(UIFixture.f14)
-        model.beginRecording(UIFixture.idB)
+        model.beginRecording(next)
         model.record(Shortcut(keyCode: 53, modifiers: []))
         #expect(model.pressesTaken == 2)
-    }
-
-    @Test("Escape alone cancels without a change")
-    func recordEscape() {
-        let (model, backend) = make()
-        model.beginRecording(UIFixture.idA)
-
-        #expect(model.record(Shortcut(keyCode: 53, modifiers: [])))
-
-        #expect(model.binding(UIFixture.idA)?.shortcut == UIFixture.f13)
-        #expect(model.recordingBindingID == nil)
-        #expect(!backend.isSuspended)
-        #expect(backend.saved.isEmpty)
-    }
-
-    @Test("Delete alone clears the shortcut", arguments: [51, 117])
-    func recordDelete(_ keyCode: Int) {
-        let (model, backend) = make()
-        model.beginRecording(UIFixture.idA)
-
-        #expect(model.record(Shortcut(keyCode: keyCode, modifiers: [])))
-
-        #expect(model.binding(UIFixture.idA)?.shortcut == nil)
-        #expect(model.recordingBindingID == nil)
-        #expect(!backend.isSuspended)
-        #expect(backend.saved.last?.bindings.first?.shortcut == nil)
     }
 
     @Test("Escape and Delete with a modifier are shortcuts like any other")
     func escapeAndDeleteWithModifier() {
         let (model, _) = make()
-        model.beginRecording(UIFixture.idB)
+        let next = KeymapRowID.builtIn(.moveToDisplay(.next))
+        model.beginRecording(next)
         model.record(Shortcut(keyCode: 53, modifiers: [.command]))
         #expect(model.binding(UIFixture.idB)?.shortcut == Shortcut(keyCode: 53, modifiers: [.command]))
 
-        model.beginRecording(UIFixture.idB)
+        model.beginRecording(next)
         model.record(Shortcut(keyCode: 51, modifiers: [.control]))
         #expect(model.binding(UIFixture.idB)?.shortcut == Shortcut(keyCode: 51, modifiers: [.control]))
     }
 
-    @Test("a key press nobody can use ends the recording with the error, and restores the hotkeys")
-    func recordRejectedKey() {
-        let (model, backend) = make()
-        model.beginRecording(UIFixture.idB)
-
-        #expect(model.record(UIFixture.f13))
-
-        #expect(model.binding(UIFixture.idB)?.shortcut == nil)
-        #expect(model.recordingBindingID == nil)
-        #expect(!backend.isSuspended)
-        #expect(model.error?.contains("Left Half") == true)
-        #expect(backend.saved.isEmpty)
-    }
-
-    @Test("a plain letter ends the recording with an error")
-    func recordPlainLetter() {
-        let (model, backend) = make()
-        model.beginRecording(UIFixture.idB)
-
-        model.record(Shortcut(keyCode: 0, modifiers: []))
-
-        #expect(model.binding(UIFixture.idB)?.shortcut == nil)
-        #expect(model.recordingBindingID == nil)
-        #expect(!backend.isSuspended)
-        #expect(model.error != nil)
-    }
-
-    @Test("a key press when nothing is recording is not taken")
-    func recordWithoutRecording() {
-        let (model, backend) = make()
-        #expect(!model.record(UIFixture.f14))
-        #expect(model.binding(UIFixture.idA)?.shortcut == UIFixture.f13)
-        #expect(backend.saved.isEmpty)
-        #expect(backend.suspendRequests.isEmpty)
-    }
-
-    @Test("beginRecording clears the error of the last change")
-    func beginClearsError() {
+    @Test("a function key needs no modifier, control with a letter is fine")
+    func registrableShortcuts() {
         let (model, _) = make()
-        model.removeBinding(UUID())
-        #expect(model.error != nil)
-        model.beginRecording(UIFixture.idA)
+        let next = KeymapRowID.builtIn(.moveToDisplay(.next))
+        model.beginRecording(next)
+        model.record(Shortcut(keyCode: FunctionKey.f5, modifiers: []))
+        #expect(model.binding(UIFixture.idB)?.shortcut == Shortcut(keyCode: FunctionKey.f5, modifiers: []))
+        #expect(model.error == nil)
+
+        model.beginRecording(next)
+        model.record(UIFixture.controlA)
+        #expect(model.binding(UIFixture.idB)?.shortcut == UIFixture.controlA)
         #expect(model.error == nil)
     }
 
-    @Test("removing the binding that is recording ends the recording and restores the hotkeys")
-    func removeWhileRecording() {
+    @Test(
+        "a shortcut that cannot be registered is rejected with the reason, and nothing is saved",
+        arguments: [
+            (Shortcut(keyCode: 0, modifiers: []), "A cannot be a global shortcut"),
+            (Shortcut(keyCode: 0, modifiers: [.shift]), "⇧A cannot be a global shortcut"),
+            (Shortcut(keyCode: 11, modifiers: []), "B cannot be a global shortcut"),
+        ] as [(Shortcut, String)]
+    )
+    func notRegistrable(_ shortcut: Shortcut, _ message: String) {
         let (model, backend) = make()
-        model.beginRecording(UIFixture.idB)
+        model.beginRecording(.builtIn(.moveToDisplay(.next)))
 
-        #expect(model.removeBinding(UIFixture.idB))
+        model.record(shortcut)
 
-        #expect(model.recordingBindingID == nil)
+        #expect(model.binding(UIFixture.idB)?.shortcut == nil)
+        #expect(backend.saved.isEmpty)
+        #expect(model.error?.contains(message) == true, "the error is \(model.error ?? "nil")")
+    }
+
+    @Test("a shortcut another binding uses is held as a conflict, and the sentence names that binding's action")
+    func duplicateShortcut() throws {
+        let (model, backend) = make()
+        model.beginRecording(.builtIn(.moveToDisplay(.next)))
+
+        model.record(UIFixture.f13)
+
+        #expect(model.binding(UIFixture.idB)?.shortcut == nil)
+        #expect(backend.saved.isEmpty)
+        let conflict = try #require(model.pendingConflict)
+        let owner = try #require(model.binding(conflict.ownerBindingID))
+        let sentence = SettingsMessages.alreadyUsed(
+            model.shortcutText(for: conflict.shortcut), by: model.summary(of: owner))
+        #expect(sentence.contains("Left Half"), "the sentence is \(sentence)")
+        #expect(sentence.contains("⌃⌥⇧⌘F13"), "the sentence is \(sentence)")
+    }
+
+    @Test("removing the binding of a row that is recording ends the recording and restores the hotkeys")
+    func removeWhileRecording() {
+        let grid = KeyBinding(id: UIFixture.idC, action: .arrangeGrid(GridSpec(count: 4, rows: 2, columns: 2)))
+        let (model, backend) = make(Config(bindings: [grid]))
+        model.beginRecording(.layout(UIFixture.idC))
+
+        #expect(model.removeBinding(UIFixture.idC))
+
+        #expect(!model.isRecording)
         #expect(!backend.isSuspended)
         #expect(backend.suspendedAtSave == [true])
     }
@@ -606,23 +432,25 @@ struct SettingsModelTests {
     @Test("removing another binding while recording keeps recording")
     func removeOtherWhileRecording() {
         let (model, backend) = make()
-        model.beginRecording(UIFixture.idB)
+        let next = KeymapRowID.builtIn(.moveToDisplay(.next))
+        model.beginRecording(next)
 
         #expect(model.removeBinding(UIFixture.idA))
 
-        #expect(model.recordingBindingID == UIFixture.idB)
+        #expect(model.recordingRow == next)
         #expect(backend.isSuspended)
     }
 
     @Test("a removal that cannot be saved leaves the recording as it was")
     func failedRemoveWhileRecording() {
-        let (model, backend) = make()
-        model.beginRecording(UIFixture.idB)
+        let grid = KeyBinding(id: UIFixture.idC, action: .arrangeGrid(GridSpec(count: 4, rows: 2, columns: 2)))
+        let (model, backend) = make(Config(bindings: [grid]))
+        model.beginRecording(.layout(UIFixture.idC))
         backend.failure = "no space"
 
-        #expect(!model.removeBinding(UIFixture.idB))
+        #expect(!model.removeBinding(UIFixture.idC))
 
-        #expect(model.recordingBindingID == UIFixture.idB)
+        #expect(model.recordingRow == .layout(UIFixture.idC))
         #expect(backend.isSuspended)
     }
 
@@ -642,37 +470,6 @@ struct SettingsModelTests {
         #expect(model.config == replaced)
         #expect(model.issues == ["bindings[1] skipped: broken"])
         #expect(model.error == nil)
-        #expect(model.selectedBindingID == UIFixture.idC)
-    }
-
-    @Test("an external change that loses the recording binding ends the recording and restores the hotkeys")
-    func externalChangeEndsRecording() {
-        let (model, backend) = make()
-        model.beginRecording(UIFixture.idB)
-
-        backend.replaceFromOutside(Config(bindings: [KeyBinding(id: UIFixture.idC, action: .moveToDisplay(.next))]))
-
-        #expect(model.recordingBindingID == nil)
-        #expect(!backend.isSuspended)
-    }
-
-    @Test("an external change that keeps the recording binding keeps recording")
-    func externalChangeKeepsRecording() {
-        let (model, backend) = make()
-        model.beginRecording(UIFixture.idB)
-
-        backend.replaceFromOutside(UIFixture.twoBindings())
-
-        #expect(model.recordingBindingID == UIFixture.idB)
-        #expect(backend.isSuspended)
-    }
-
-    @Test("reload keeps a selection that still exists")
-    func reloadKeepsSelection() {
-        let (model, backend) = make()
-        model.selectedBindingID = UIFixture.idB
-        backend.replaceFromOutside(UIFixture.twoBindings())
-        #expect(model.selectedBindingID == UIFixture.idB)
     }
 
     // MARK: Restoring the default shortcuts
@@ -692,7 +489,6 @@ struct SettingsModelTests {
         #expect(backend.config.resizeStep == 0.2)
         #expect(backend.config.bindings.count == 32)
         #expect(model.error == nil)
-        #expect(model.selectedBindingID == model.bindings.first?.id)
     }
 
     @Test("the restored bindings have IDs that the replaced ones did not have")
@@ -769,15 +565,15 @@ struct SettingsModelTests {
         #expect(model.error?.contains("the disk is full") == true)
     }
 
-    @Test("a restore ends a recording, since its binding is gone, and gives the hotkeys back")
+    @Test("a restore ends a recording and gives the hotkeys back")
     func restoreEndsRecording() {
         let (model, backend) = make()
-        model.beginRecording(UIFixture.idB)
+        model.beginRecording(.builtIn(.moveToDisplay(.next)))
         #expect(backend.isSuspended)
 
         #expect(model.restoreDefaultShortcuts())
 
-        #expect(model.recordingBindingID == nil)
+        #expect(!model.isRecording)
         #expect(!backend.isSuspended)
         // The new bindings were saved while the hotkeys were suspended, and then registered.
         #expect(backend.suspendedAtSave.last == true)

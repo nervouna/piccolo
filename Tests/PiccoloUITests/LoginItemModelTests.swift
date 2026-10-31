@@ -226,7 +226,7 @@ struct LoginItemModelTests {
         model.setLaunchAtLogin(true)
 
         // A rejected config change does not touch the login item's message...
-        model.setShortcut(UIFixture.idB, to: UIFixture.f13)
+        model.setResizeStep(0.9)
         #expect(model.error != nil)
         #expect(model.loginItemError != nil)
 

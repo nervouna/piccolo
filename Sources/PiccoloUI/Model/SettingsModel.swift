@@ -4,7 +4,7 @@ import PiccoloCore
 
 /// What the Settings window shows and edits: the bindings, the settings of the config (resize step,
 /// window animation, grid fill order, destination preview), the problems with the config, which
-/// binding is selected and which is recording a shortcut, whether Piccolo launches at login
+/// row of the keymap is recording a shortcut, whether Piccolo launches at login
 /// (not part of the config: the system keeps it, see ``LoginItemBackend``) and the language of the
 /// interface (not part of the config either: macOS keeps it per app, see ``LanguageBackend``).
 ///
@@ -13,11 +13,11 @@ import PiccoloCore
 /// is not saved. A rejected change (the model's own rules, or a backend that cannot save) leaves
 /// everything as it was and sets ``error``; the next accepted change clears it.
 ///
-/// While a binding or a row of the keymap is recording a shortcut the backend's global hotkeys are
-/// suspended, so that an existing shortcut can be pressed to record it again. Every way recording can
-/// end (a key, a cancel, the removal of the binding, a reload that lost it) restores them, except a
-/// shortcut that cannot be a global one, after which a row goes on recording; whoever owns the window
-/// calls ``cancelRecording()`` when the window closes or the app is deactivated.
+/// While a row of the keymap is recording a shortcut the backend's global hotkeys are suspended, so that
+/// an existing shortcut can be pressed to record it again. Every way recording can end (a key, a
+/// cancel, the removal of the binding, a reload that lost it) restores them, except a shortcut that
+/// cannot be a global one, after which the row goes on recording; whoever owns the window calls
+/// ``cancelRecording()`` when the window closes or the app is deactivated.
 ///
 /// The keymap (``keymap``) is the row-centred view of the bindings that the Shortcuts tab shows; the
 /// methods that take a ``KeymapRowID`` are in `SettingsModel+Keymap.swift`.
@@ -47,14 +47,9 @@ public final class SettingsModel {
     /// What the search field holds. Only the Shortcuts tab uses it; it is saved nowhere. Change it with
     /// ``setSearch(_:)``.
     public private(set) var search = ""
-    /// The binding the editor shows. The list binds to it.
-    public var selectedBindingID: UUID?
     /// The tab the window shows. The tab control binds to it, so that whatever sets it (a click, the
     /// debug control channel) changes what the window shows.
     public var tab: SettingsTab = .shortcuts
-    /// The binding that is waiting for a key press, if any. Recording by binding is the way of the list
-    /// view; the keymap records by row (``recordingRow``). Only one of the two is ever set.
-    public internal(set) var recordingBindingID: UUID?
     /// The row of the keymap that is waiting for a key press, if any.
     public internal(set) var recordingRow: KeymapRowID?
     /// The shortcut a row was recorded with that another binding already has, until it is replaced
@@ -120,7 +115,6 @@ public final class SettingsModel {
         gap = snapshot.config.gap
         issues = snapshot.issues
         reportedInactiveBindingIDs = snapshot.inactiveBindingIDs
-        selectedBindingID = snapshot.config.bindings.first?.id
         backend.onExternalChange = { [weak self] in
             self?.reload()
         }
@@ -153,25 +147,15 @@ public final class SettingsModel {
         ShortcutText.string(for: shortcut, character: characterForKeyCode)
     }
 
-    /// The sections of the list under the current search, in the language of the running app.
-    public var sections: [BindingSection] {
-        BindingSections.make(bindings: bindings, query: search, characterForKeyCode: characterForKeyCode)
-    }
-
-    /// Whether the list shows the binding under the current search.
-    public func isVisible(_ id: UUID) -> Bool {
-        sections.contains { section in section.bindings.contains { $0.id == id } }
-    }
-
     /// The bindings with a shortcut that is not active. While a shortcut is being recorded every global
     /// hotkey is suspended, which is no fault of the bindings, so none is marked then.
     public var inactiveBindingIDs: Set<UUID> {
         isRecording ? [] : reportedInactiveBindingIDs
     }
 
-    /// Whether a row or a binding is waiting for a key press.
+    /// Whether a row is waiting for a key press.
     public var isRecording: Bool {
-        recordingRow != nil || recordingBindingID != nil
+        recordingRow != nil
     }
 
     /// The sections of the keymap under the current search, in the language of the running app.
@@ -181,36 +165,14 @@ public final class SettingsModel {
 
     // MARK: Searching
 
-    /// Sets the search query. The selection stays when the selected binding is still shown;
-    /// otherwise it moves to the first shown binding, or to none when nothing is shown.
+    /// Sets the search query, which filters ``keymap``.
     public func setSearch(_ text: String) {
         search = text
-        let shown = sections.flatMap(\.bindings)
-        if let selected = selectedBindingID, shown.contains(where: { $0.id == selected }) {
-            return
-        }
-        selectedBindingID = shown.first?.id
     }
 
     // MARK: Editing
 
-    /// Adds a binding that places the window in the left half and has no shortcut, and selects it.
-    /// Answers its ID, or `nil` when it could not be saved.
-    @discardableResult
-    public func addBinding() -> UUID? {
-        let binding = KeyBinding(action: .newBindingDefault)
-        var candidate = config
-        candidate.bindings.append(binding)
-        guard commit(candidate) else { return nil }
-        // A search that would hide the new binding is cleared.
-        if !isVisible(binding.id) {
-            search = ""
-        }
-        selectedBindingID = binding.id
-        return binding.id
-    }
-
-    /// Removes a binding. If it was recording, recording ends and the hotkeys come back.
+    /// Removes a binding. If its row was recording, recording ends and the hotkeys come back.
     @discardableResult
     public func removeBinding(_ id: UUID) -> Bool {
         guard let index = bindings.firstIndex(where: { $0.id == id }) else {
@@ -218,15 +180,7 @@ public final class SettingsModel {
         }
         var candidate = config
         candidate.bindings.remove(at: index)
-        guard commit(candidate) else { return false }
-        if recordingBindingID == id {
-            cancelRecording()
-        }
-        if selectedBindingID == id {
-            // The binding that took its place, or the one before when it was the last.
-            selectedBindingID = bindings.isEmpty ? nil : bindings[min(index, bindings.count - 1)].id
-        }
-        return true
+        return commit(candidate)
     }
 
     /// Replaces what a binding does.
@@ -238,31 +192,6 @@ public final class SettingsModel {
         var candidate = config
         candidate.bindings[index].action = action
         return commit(candidate)
-    }
-
-    /// Sets the shortcut of a binding, or clears it with `nil`.
-    ///
-    /// A shortcut is rejected when it cannot be registered as a global hotkey (see
-    /// `Shortcut.isRegistrable`) and when another binding already has it.
-    @discardableResult
-    public func setShortcut(_ id: UUID, to shortcut: Shortcut?) -> Bool {
-        guard let index = bindings.firstIndex(where: { $0.id == id }) else {
-            return reject(SettingsMessages.bindingGone())
-        }
-        let target = SettingsErrorTarget.row(KeymapRowID(bindings[index]))
-        if let shortcut {
-            guard shortcut.isRegistrable else {
-                return reject(SettingsMessages.notRegistrable(shortcutText(for: shortcut)), target: target)
-            }
-            if let other = bindings.first(where: { $0.id != id && $0.shortcut == shortcut }) {
-                return reject(
-                    SettingsMessages.alreadyUsed(shortcutText(for: shortcut), by: summary(of: other)),
-                    target: target)
-            }
-        }
-        var candidate = config
-        candidate.bindings[index].shortcut = shortcut
-        return commit(candidate, rejection: target)
     }
 
     /// Sets the linked-resize step, as a fraction of the screen: more than 0 and at most 0.5.
@@ -327,8 +256,7 @@ public final class SettingsModel {
     /// Replaces every binding with `Config.defaultShortcuts` and keeps the settings (resize step, window
     /// animation, grid fill order, destination preview, window gap). The config file in use is copied next to itself
     /// first, when there is one (see ``SettingsBackend``), so the current shortcuts can be recovered. A
-    /// recording ends, since its binding is gone and the hotkeys come back with the new bindings, and the
-    /// list selects the first binding.
+    /// recording ends, since its binding is gone and the hotkeys come back with the new bindings.
     ///
     /// This does not ask: the window asks first (see ``askToRestoreDefaults()``). Answers whether the
     /// bindings were replaced; when they were not, ``error`` says why and nothing changed.
@@ -435,27 +363,9 @@ public final class SettingsModel {
 
     // MARK: Recording
 
-    /// Starts recording a shortcut for a binding and suspends the global hotkeys. Recording a
-    /// binding that is already recording changes nothing; recording another one moves the
-    /// recording there.
-    @discardableResult
-    public func beginRecording(_ id: UUID) -> Bool {
-        guard binding(id) != nil else {
-            return reject(SettingsMessages.bindingGone())
-        }
-        resetError()
-        pendingConflict = nil
-        selectedBindingID = id
-        recordingRow = nil
-        recordingBindingID = id
-        backend.setShortcutsSuspended(true)
-        return true
-    }
-
     /// Ends recording without a change and restores the global hotkeys. Safe to call at any
     /// time, also when nothing is recording.
     public func cancelRecording() {
-        recordingBindingID = nil
         recordingRow = nil
         backend.setShortcutsSuspended(false)
         // Registering the shortcuts again can turn up problems the system reports only then
@@ -466,38 +376,20 @@ public final class SettingsModel {
         reportedInactiveBindingIDs = snapshot.inactiveBindingIDs
     }
 
-    /// Offers a key press to the row or binding that is recording. Does nothing and answers `false`
-    /// when nothing is recording.
-    ///
-    /// For a binding: Escape alone cancels, Delete alone clears the shortcut, anything else becomes
-    /// the shortcut if the model accepts it. Recording ends in every case: a rejected shortcut shows
-    /// its message in ``error``, and the person starts again. For a row, see
-    /// ``beginRecording(_:)-(KeymapRowID)``.
+    /// Offers a key press to the row that is recording. Does nothing and answers `false` when nothing
+    /// is recording. What a press does is described at `recordForRow(_:_:)`.
     @discardableResult
     public func record(_ press: Shortcut) -> Bool {
-        if let row = recordingRow {
-            recordForRow(row, press)
-            return true
-        }
-        guard let id = recordingBindingID else { return false }
-        pressesTaken += 1
-        if press.modifiers.isEmpty && press.keyCode == ShortcutText.escapeKeyCode {
-            cancelRecording()
-        } else if press.modifiers.isEmpty && ShortcutText.deleteKeyCodes.contains(press.keyCode) {
-            setShortcut(id, to: nil)
-            cancelRecording()
-        } else {
-            setShortcut(id, to: press)
-            cancelRecording()
-        }
+        guard let row = recordingRow else { return false }
+        recordForRow(row, press)
         return true
     }
 
     // MARK: External changes
 
     /// Takes the config in effect from the backend again, because it was replaced under the
-    /// model (a reload from the menu, another file loaded). A recording of a binding that is
-    /// gone ends.
+    /// model (a reload from the menu, another file loaded). A recording of a row whose binding is
+    /// gone ends, and so does a request for the sheet of a binding that is gone.
     public func reload() {
         let snapshot = backend.current()
         bindings = snapshot.config.bindings
@@ -511,10 +403,8 @@ public final class SettingsModel {
         resetError()
         pendingConflict = nil
         endRecordingIfTargetIsGone()
-        if let selected = selectedBindingID, binding(selected) == nil {
-            selectedBindingID = bindings.first?.id
-        } else if selectedBindingID == nil {
-            selectedBindingID = bindings.first?.id
+        if case .edit(let id) = layoutEditor, binding(id) == nil {
+            layoutEditor = nil
         }
     }
 
@@ -567,12 +457,10 @@ public final class SettingsModel {
         errorTarget = nil
     }
 
-    /// Ends the recording of a binding that is no longer in the config, or of a row of a layout that is not.
-    /// The built-in rows are always there.
+    /// Ends the recording of a row of a layout whose binding is no longer in the config. The built-in rows
+    /// are always there.
     private func endRecordingIfTargetIsGone() {
-        if let recording = recordingBindingID, binding(recording) == nil {
-            cancelRecording()
-        } else if let row = recordingRow, Keymap.row(row, in: bindings) == nil {
+        if let row = recordingRow, Keymap.row(row, in: bindings) == nil {
             cancelRecording()
         }
     }

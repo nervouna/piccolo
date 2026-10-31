@@ -166,29 +166,6 @@ final class SettingsSession {
         }
     }
 
-    /// `settings.record` once Piccolo is frontmost with the Settings window key. A refusal for
-    /// that reason leaves nothing behind (no key was posted), so it is tried again, handing
-    /// Piccolo to LaunchServices in between, until `timeout`; any other failure ends the wait.
-    func record(_ id: UUID, _ shortcut: Shortcut, timeout: TimeInterval = 20) async throws -> SettingsState {
-        try await bringPiccoloForward()
-        let piccolo = self.piccolo
-        return try await eventually(
-            "settings.record of \(shortcut) on \(id) to be accepted", timeout: timeout, interval: 0.25
-        ) {
-            let response = try piccolo.settingsRecordRaw(id, shortcut)
-            if response.ok {
-                return .satisfied(try piccolo.decodeState(response.result ?? .null, of: "settings.record"))
-            }
-            let message = response.error ?? "no reason given"
-            guard message.contains("frontmost") || message.contains("key window") else {
-                throw AcceptanceFailure("settings.record was refused: \(message)")
-            }
-            // Not in front yet: try to bring it forward again, then look again.
-            if let bundle = try? piccolo.bundlePath() { try? Shell.open([bundle]) }
-            return .unsatisfied(message)
-        }
-    }
-
     // MARK: Cleaning up
 
     /// Ends a recording and closes Settings, whatever state they are in. Never throws, so that
@@ -242,10 +219,10 @@ func withSettingsSession<Result>(
         }
         session.cleanUp()
         let state = try piccolo.settingsState()
-        guard !state.isOpen, state.recordingBindingID == nil else {
+        guard !state.isOpen, state.recordingRow == nil else {
             await session.restartAfterFailure()
             throw AcceptanceFailure(
-                "after the test Settings is still open or recording (isOpen: \(state.isOpen), recording: \(String(describing: state.recordingBindingID)))"
+                "after the test Settings is still open or recording (isOpen: \(state.isOpen), recording: \(String(describing: state.recordingRow)))"
             )
         }
         try await PiccoloWindows.waitForNoWindow(pid: try piccolo.pid())

@@ -104,14 +104,27 @@ struct LocalizedTextTests {
         #expect(Direction.allCases.map { ActionSummary.name(of: $0, bundle: english) } == ["Left", "Right", "Up", "Down"])
     }
 
-    @Test("every kind of action has a name in Simplified Chinese")
-    func kinds() {
-        for kind in ActionKind.allCases {
-            let zh = kind.title(bundle: chinese)
+    @Test("every section of the keymap has a header in Simplified Chinese, and the add rows have a text")
+    func sectionTitles() {
+        for section in KeymapSection.allCases {
+            let zh = section.title(bundle: chinese)
             #expect(!zh.isEmpty)
-            #expect(zh != kind.title(bundle: english), "\(kind)")
+            #expect(zh != section.title(bundle: english), "\(section)")
         }
-        #expect(ActionKind.allCases.map { $0.title(bundle: chinese) } == ["放置窗口", "恢复窗口", "移到显示器", "网格排列", "移动分隔线", "交换窗口"])
+        #expect(
+            KeymapSection.allCases.map { $0.title(bundle: chinese) }
+                == ["半屏", "四等分", "三分之一", "其他", "显示器", "网格排列", "移动分隔线", "交换窗口", "自定义区域"])
+        #expect(
+            KeymapSection.allCases.map { $0.title(bundle: english) }
+                == [
+                    "Halves", "Quarters", "Thirds", "Other", "Displays", "Arrange Grid", "Move Divider", "Swap Window",
+                    "Custom Areas",
+                ])
+        #expect(KeymapSection.grids.addRowTitle(bundle: chinese) == "添加网格…")
+        #expect(KeymapSection.customAreas.addRowTitle(bundle: chinese) == "添加自定义区域…")
+        #expect(KeymapSection.grids.addRowTitle(bundle: english) == "Add Grid…")
+        #expect(KeymapSection.customAreas.addRowTitle(bundle: english) == "Add Custom Area…")
+        #expect(KeymapSection.allCases.filter { $0.addRowTitle(bundle: english) != nil } == [.grids, .customAreas])
     }
 
     @Test("the percentages are written the same in every language")
@@ -136,8 +149,9 @@ struct LocalizedTextTests {
             #expect(!text.isEmpty, "\(action) in \(language.rawValue)")
             #expect(!Self.hasUnfilledArgument(text), "\(action) in \(language.rawValue) reads \"\(text)\": an argument was not filled in")
         }
-        for kind in ActionKind.allCases {
-            #expect(!kind.title(bundle: bundle).isEmpty)
+        for section in KeymapSection.allCases {
+            #expect(!section.title(bundle: bundle).isEmpty, "\(section) in \(language.rawValue)")
+            #expect(section.addRowTitle(bundle: bundle)?.isEmpty != true, "\(section) in \(language.rawValue)")
         }
     }
 
@@ -249,6 +263,6 @@ struct LocalizedTextTests {
     @Test("the texts of the model follow the bundle of the running app: English in a test")
     func defaultIsTheRunningApp() {
         #expect(ActionSummary.text(for: .placeWindow(.preset(.leftHalf))) == "Left Half")
-        #expect(ActionKind.arrangeGrid.title == "Arrange Grid")
+        #expect(KeymapSection.grids.title() == "Arrange Grid")
     }
 }

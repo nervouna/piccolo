@@ -18,7 +18,7 @@ final class SettingsContentController: NSViewController {
     var onGeneralFittingHeightChange: (() -> Void)?
 
     init(model: SettingsModel, host: SettingsHost) {
-        shortcuts = NSHostingController(rootView: ShortcutsTab(model: model))
+        shortcuts = NSHostingController(rootView: ShortcutsTab(model: model, host: host))
         general = NSHostingController(
             rootView: GeneralPane(model: model, host: host, height: generalHeight))
         super.init(nibName: nil, bundle: nil)

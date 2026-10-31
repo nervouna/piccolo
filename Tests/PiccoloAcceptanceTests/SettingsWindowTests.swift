@@ -22,6 +22,10 @@ extension DesktopAcceptanceTests {
     struct SettingsWindow {
         private let piccolo = PiccoloClient()
 
+        /// The names of the rows of two built-in actions on the control channel (`KeymapRowID.name`).
+        private static let leftHalfRow = "placeWindow.leftHalf"
+        private static let rightHalfRow = "placeWindow.rightHalf"
+
         // MARK: 1. Open and close
 
         @Test("settings 1. settings.open puts a window of Piccolo on screen, settings.close removes it")
@@ -71,31 +75,33 @@ extension DesktopAcceptanceTests {
             }
         }
 
-        // MARK: 3. Add a binding
+        // MARK: 3. Add a layout
 
-        @Test("settings 3. a new binding is in the state, in the file (created with its folder), and counted by config.status")
-        func addBinding() async throws {
+        @Test("settings 3. a new custom area is in the state, in the file (created with its folder), and counted by config.status")
+        func addLayout() async throws {
             try await withSettingsSession(inNewSubfolder: "not-yet") { session in
                 #expect(
                     !FileManager.default.fileExists(atPath: session.url.deletingLastPathComponent().path),
                     "the config folder exists before the first save")
                 #expect(try piccolo.configStatus().bindingCount == 0)
+                let area = Action.placeWindow(.custom(FractionalRect(x: 0.25, y: 0, width: 0.5, height: 1)))
 
-                let state = try piccolo.settingsAddBinding()
+                let state = try piccolo.keymapAddLayout(area)
 
                 #expect(state.bindings.count == 1, "the state lists \(state.bindings.count) bindings")
                 let added = try #require(state.bindings.first)
-                #expect(added.action == .placeWindow(.preset(.leftHalf)))
+                #expect(added.action == area)
                 let texts = try InterfaceTexts.current(piccolo)
                 #expect(
-                    added.summary == texts.summary(of: .placeWindow(.preset(.leftHalf))),
+                    added.summary == texts.summary(of: area),
                     "the summary is \"\(added.summary)\" (\(texts.language.rawValue))")
                 #expect(added.shortcut == nil && added.shortcutText == nil)
-                #expect(state.error == nil, "adding a binding set the error \(state.error ?? "")")
+                #expect(state.error == nil, "adding a custom area set the error \(state.error ?? "")")
+                #expect(state.recordingRow == added.id.uuidString, "the new row does not record")
 
                 let inFile = try session.fileBindings()
                 #expect(inFile.count == 1 && inFile.first?.id == added.id, "the file holds \(inFile)")
-                #expect(inFile.first?.action == .placeWindow(.preset(.leftHalf)))
+                #expect(inFile.first?.action == area)
                 #expect(try piccolo.configStatus().bindingCount == 1)
                 #expect(try piccolo.configStatus().path == session.url.path)
             }
@@ -143,15 +149,17 @@ extension DesktopAcceptanceTests {
             let start = try fixtureWindowFrame()
 
             try await withSettingsSession { session in
-                let added = try piccolo.settingsAddBinding()
-                let id = try #require(added.bindings.first?.id)
                 try session.openSettings()
 
-                let state = try await session.record(id, TestShortcut.f14)
+                // Left Half has no binding: recording a shortcut for its row adds one.
+                let state = try await session.record(Self.leftHalfRow, TestShortcut.f14)
 
                 #expect(state.error == nil, "recording set the error \(state.error ?? "")")
-                #expect(state.recordingBindingID == nil, "the recording did not end")
+                #expect(state.recordingRow == nil, "the recording did not end")
+                #expect(state.bindings.count == 1, "the state lists \(state.bindings.count) bindings")
                 let binding = try #require(state.bindings.first)
+                let id = binding.id
+                #expect(binding.action == .placeWindow(.preset(.leftHalf)))
                 #expect(binding.shortcut == TestShortcut.f14, "the state shows \(String(describing: binding.shortcut))")
                 #expect(binding.shortcutText == "⌃⌥⇧⌘F14", "the shortcut text is \(binding.shortcutText ?? "nil")")
                 #expect(try session.fileBindings().first?.shortcut == TestShortcut.f14)
@@ -190,31 +198,29 @@ extension DesktopAcceptanceTests {
 
         // MARK: 6. A shortcut that is taken
 
-        @Test("settings 6. recording a shortcut another binding has is rejected, names that binding's action, and sets nothing")
+        @Test("settings 6. recording a shortcut another row has answers a conflict that names that row's action, and sets nothing")
         func recordTakenShortcut() async throws {
             let first = KeyBinding(action: .placeWindow(.preset(.rightHalf)), shortcut: TestShortcut.f14)
             try await withSettingsSession([first]) { session in
-                let added = try piccolo.settingsAddBinding()
-                let secondID = try #require(added.bindings.last?.id)
-                #expect(secondID != first.id)
                 try session.openSettings()
                 let before = try session.fileBytes()
 
-                let state = try await session.record(secondID, TestShortcut.f14)
+                let state = try await session.record(Self.leftHalfRow, TestShortcut.f14)
 
-                let message = try #require(state.error, "recording a taken shortcut did not set an error")
+                let conflict = try #require(state.conflict, "recording a taken shortcut did not answer a conflict")
                 let rightHalf = try InterfaceTexts.current(piccolo).summary(of: first.action)
                 #expect(
-                    message.contains(rightHalf),
-                    "the message does not name the first binding's action \"\(rightHalf)\": \"\(message)\"")
-                let second = try #require(state.bindings.first { $0.id == secondID })
-                #expect(second.shortcut == nil, "the second binding got the shortcut \(String(describing: second.shortcut))")
-                #expect(state.bindings.first { $0.id == first.id }?.shortcut == TestShortcut.f14)
-                #expect(state.recordingBindingID == nil)
-                #expect(try session.fileBindings().last?.shortcut == nil)
+                    conflict.ownerName == rightHalf,
+                    "the conflict does not name the first binding's action \"\(rightHalf)\": \"\(conflict.ownerName)\"")
+                #expect(conflict.ownerBindingID == first.id)
+                #expect(conflict.row == Self.leftHalfRow)
+                #expect(state.bindings.map(\.id) == [first.id], "the state lists \(state.bindings.map(\.id))")
+                #expect(state.bindings.first?.shortcut == TestShortcut.f14)
+                #expect(state.recordingRow == nil)
+                #expect(try session.fileBindings().map(\.id) == [first.id])
                 #expect(
                     try session.fileBytes() == before,
-                    "the rejected shortcut changed the file")
+                    "the shortcut that was refused changed the file")
                 // The first binding keeps its hotkey, and only that one is registered.
                 #expect(try session.registeredIDs() == [first.id])
             }
@@ -230,9 +236,9 @@ extension DesktopAcceptanceTests {
                 let before = try piccolo.configStatus().registered
                 #expect(before.map(\.id) == [a.id, b.id])
 
-                let recording = try piccolo.settingsBeginRecording(a.id)
+                let recording = try piccolo.keymapBeginRecording(Self.leftHalfRow)
 
-                #expect(recording.recordingBindingID == a.id)
+                #expect(recording.recordingRow == Self.leftHalfRow)
                 let suspended = try piccolo.configStatus()
                 #expect(
                     suspended.registered.isEmpty,
@@ -242,7 +248,7 @@ extension DesktopAcceptanceTests {
 
                 let cancelled = try piccolo.settingsCancelRecording()
 
-                #expect(cancelled.recordingBindingID == nil)
+                #expect(cancelled.recordingRow == nil)
                 let restored = try piccolo.configStatus().registered
                 #expect(restored == before, "after cancelling, config.status lists \(restored), expected \(before)")
             }
@@ -253,12 +259,12 @@ extension DesktopAcceptanceTests {
             let a = KeyBinding(action: .placeWindow(.preset(.leftHalf)), shortcut: TestShortcut.f13)
             try await withSettingsSession([a]) { session in
                 try session.openSettings()
-                try piccolo.settingsBeginRecording(a.id)
+                try piccolo.keymapBeginRecording(Self.leftHalfRow)
                 #expect(try piccolo.configStatus().registered.isEmpty)
 
                 let closed = try piccolo.settingsClose()
 
-                #expect(closed.recordingBindingID == nil, "the recording survived closing the window")
+                #expect(closed.recordingRow == nil, "the recording survived closing the window")
                 #expect(try session.registeredIDs() == [a.id], "the hotkeys were not restored")
             }
         }
@@ -267,28 +273,28 @@ extension DesktopAcceptanceTests {
         func closeEndsRecordingWithoutWindow() async throws {
             let a = KeyBinding(action: .placeWindow(.preset(.leftHalf)), shortcut: TestShortcut.f13)
             try await withSettingsSession([a]) { session in
-                try piccolo.settingsBeginRecording(a.id)
+                try piccolo.keymapBeginRecording(Self.leftHalfRow)
                 #expect(try !piccolo.settingsState().isOpen)
                 #expect(try piccolo.configStatus().registered.isEmpty)
 
                 try piccolo.settingsClose()
 
-                #expect(try piccolo.settingsState().recordingBindingID == nil)
+                #expect(try piccolo.settingsState().recordingRow == nil)
                 #expect(try session.registeredIDs() == [a.id])
             }
         }
 
-        @Test("settings 7d. removing the binding that is recording restores the hotkeys of the others")
+        @Test("settings 7d. removing the grid whose row is recording ends the recording and restores the hotkeys of the others")
         func removingRecordedBindingEndsRecording() async throws {
             let a = KeyBinding(action: .placeWindow(.preset(.leftHalf)), shortcut: TestShortcut.f13)
-            let b = KeyBinding(action: .placeWindow(.preset(.rightHalf)), shortcut: TestShortcut.f14)
+            let b = KeyBinding(action: .arrangeGrid(GridSpec(count: 4, rows: 2, columns: 2)), shortcut: TestShortcut.f14)
             try await withSettingsSession([a, b]) { session in
-                try piccolo.settingsBeginRecording(b.id)
+                try piccolo.keymapBeginRecording(b.id.uuidString)
                 #expect(try piccolo.configStatus().registered.isEmpty)
 
                 let state = try piccolo.settingsRemoveBinding(b.id)
 
-                #expect(state.recordingBindingID == nil, "the recording survived the removal of its binding")
+                #expect(state.recordingRow == nil, "the recording survived the removal of its binding")
                 #expect(state.bindings.map(\.id) == [a.id])
                 #expect(try session.registeredIDs() == [a.id], "the hotkeys were not restored")
                 #expect(try session.fileBindings().map(\.id) == [a.id])
@@ -302,7 +308,7 @@ extension DesktopAcceptanceTests {
             try await withSettingsSession([a]) { session in
                 try session.openSettings()
                 try await session.bringPiccoloForward()
-                try piccolo.settingsBeginRecording(a.id)
+                try piccolo.keymapBeginRecording(Self.leftHalfRow)
                 #expect(try piccolo.configStatus().registered.isEmpty)
 
                 // Another application comes to the front: Piccolo is deactivated.
@@ -315,9 +321,9 @@ extension DesktopAcceptanceTests {
                         () throws -> Observation<Void> in
                         let state = try piccolo.settingsState()
                         let registered = try session.registeredIDs()
-                        guard state.recordingBindingID == nil, registered == [a.id] else {
+                        guard state.recordingRow == nil, registered == [a.id] else {
                             return .unsatisfied(
-                                "recording: \(String(describing: state.recordingBindingID)), registered: \(registered)")
+                                "recording: \(String(describing: state.recordingRow)), registered: \(registered)")
                         }
                         return .satisfied(())
                     }
@@ -331,28 +337,29 @@ extension DesktopAcceptanceTests {
             try await withSettingsSession([a]) { session in
                 try session.openSettings()
 
-                let escaped = try await session.record(a.id, Shortcut(keyCode: 53, modifiers: []))
-                #expect(escaped.recordingBindingID == nil)
+                let escaped = try await session.record(Self.leftHalfRow, Shortcut(keyCode: 53, modifiers: []))
+                #expect(escaped.recordingRow == nil)
                 #expect(escaped.bindings.first?.shortcut == TestShortcut.f13, "Escape changed the shortcut")
                 #expect(try session.registeredIDs() == [a.id])
 
-                let deleted = try await session.record(a.id, Shortcut(keyCode: 51, modifiers: []))
-                #expect(deleted.recordingBindingID == nil)
-                #expect(deleted.bindings.first?.shortcut == nil, "Delete did not clear the shortcut")
-                #expect(try session.fileBindings().first?.shortcut == nil)
+                let deleted = try await session.record(Self.leftHalfRow, Shortcut(keyCode: 51, modifiers: []))
+                #expect(deleted.recordingRow == nil)
+                #expect(
+                    deleted.rows.first { $0.row == Self.leftHalfRow }?.shortcuts.isEmpty == true,
+                    "Delete did not clear the shortcut")
+                #expect(try session.fileBindings().allSatisfy { $0.shortcut == nil }, "the file still has the shortcut")
                 #expect(try session.registeredIDs().isEmpty)
             }
         }
 
         @Test("settings 7g. settings.record refuses unless Piccolo is frontmost with the Settings window key, and posts nothing")
         func recordRefusesWithoutFocus() async throws {
-            let a = KeyBinding(action: .placeWindow(.preset(.leftHalf)))
             let start = try fixtureWindowFrame()
-            try await withSettingsSession([a]) { session in
+            try await withSettingsSession { session in
                 // The Settings window is closed: there is no key window.
-                let closed = try piccolo.settingsRecordRaw(a.id, TestShortcut.f15)
+                let closed = try piccolo.keymapRecordRaw(Self.leftHalfRow, TestShortcut.f15)
                 #expect(!closed.ok, "settings.record was accepted with Settings closed")
-                #expect(try piccolo.settingsState().recordingBindingID == nil)
+                #expect(try piccolo.settingsState().recordingRow == nil)
 
                 // Settings is open but another application is frontmost.
                 try session.openSettings()
@@ -361,15 +368,15 @@ extension DesktopAcceptanceTests {
                     _ = try await Measure.waitForFrame(ofWindow: window.windowNumber, matching: start)
                     try await Focus.bring(window, of: fixture)
 
-                    let response = try piccolo.settingsRecordRaw(a.id, TestShortcut.f15)
+                    let response = try piccolo.keymapRecordRaw(Self.leftHalfRow, TestShortcut.f15)
                     #expect(!response.ok, "settings.record was accepted while the fixture was frontmost")
                     #expect(
                         response.error?.contains("frontmost") == true,
                         "the refusal is \"\(response.error ?? "nil")\"")
                 }
                 let state = try piccolo.settingsState()
-                #expect(state.recordingBindingID == nil)
-                #expect(state.bindings.first?.shortcut == nil, "a refused settings.record set a shortcut")
+                #expect(state.recordingRow == nil)
+                #expect(state.bindings.isEmpty, "a refused settings.record set a shortcut")
             }
         }
 
@@ -436,10 +443,10 @@ extension DesktopAcceptanceTests {
 
             try await withSettingsSession(inNewSubfolder: "session") { session in
                 try session.openSettings()
-                let id = try #require(try piccolo.settingsAddBinding().bindings.first?.id)
-                try piccolo.settingsUpdateAction(id, .moveToDisplay(.next))
+                let id = try #require(try piccolo.keymapAddLayout(.arrangeGrid(GridSpec(count: 2, rows: 1, columns: 2))).bindings.first?.id)
+                try piccolo.keymapUpdateLayout(id, .arrangeGrid(GridSpec(count: 3, rows: 1, columns: 3)))
                 try piccolo.settingsSetResizeStep(0.2)
-                try piccolo.settingsBeginRecording(id)
+                try piccolo.keymapBeginRecording(id.uuidString)
                 try piccolo.settingsCancelRecording()
                 try piccolo.settingsRemoveBinding(id)
                 #expect(try piccolo.configStatus().path == session.url.path)
@@ -458,10 +465,10 @@ extension DesktopAcceptanceTests {
             #expect(try !piccolo.settingsState().isOpen)
         }
 
-        // MARK: 11. Select a binding
+        // MARK: 11. Begin recording a row
 
-        @Test("settings 11. settings.select selects a binding in the open window, an unknown ID is refused, and nothing is saved")
-        func selectBinding() async throws {
+        @Test("settings 11. settings.beginRecording marks a row in the open window, a row that does not exist is refused, and nothing is saved")
+        func beginRecordingARow() async throws {
             let a = KeyBinding(action: .placeWindow(.preset(.leftHalf)), shortcut: TestShortcut.f13)
             let b = KeyBinding(action: .placeWindow(.preset(.rightHalf)), shortcut: TestShortcut.f14)
             try await withSettingsSession([a, b]) { session in
@@ -470,24 +477,31 @@ extension DesktopAcceptanceTests {
                 _ = try await PiccoloWindows.waitForWindow(pid: pid)
                 let before = try session.fileBytes()
 
-                // A window opens with the first binding selected.
-                let initial = try piccolo.settingsState()
-                #expect(initial.selectedBindingID == a.id, "the state shows \(String(describing: initial.selectedBindingID)) selected")
+                // A window opens with nothing recording.
+                let initial = try piccolo.keymapState()
+                #expect(initial.recordingRow == nil, "the state shows \(String(describing: initial.recordingRow)) recording")
 
-                let selected = try piccolo.settingsSelect(b.id)
-                #expect(selected.selectedBindingID == b.id, "settings.select answered \(String(describing: selected.selectedBindingID))")
-                #expect(try piccolo.settingsState().selectedBindingID == b.id)
+                let first = try piccolo.keymapBeginRecording(Self.leftHalfRow)
+                #expect(first.recordingRow == Self.leftHalfRow, "settings.beginRecording answered \(String(describing: first.recordingRow))")
+                #expect(first.rows.filter(\.recording).map(\.row) == [Self.leftHalfRow])
+                #expect(try piccolo.keymapState().recordingRow == Self.leftHalfRow)
 
-                let back = try piccolo.settingsSelect(a.id)
-                #expect(back.selectedBindingID == a.id)
+                // Another row takes the recording over.
+                let second = try piccolo.keymapBeginRecording(Self.rightHalfRow)
+                #expect(second.recordingRow == Self.rightHalfRow)
+                #expect(second.rows.filter(\.recording).map(\.row) == [Self.rightHalfRow])
 
-                // An ID no binding has is refused, and the selection stays.
-                let message = try piccolo.settingsSelectExpectingRefusal(UUID())
-                #expect(message.contains("no binding"), "the message is \"\(message)\"")
-                #expect(try piccolo.settingsState().selectedBindingID == a.id, "a refused settings.select changed the selection")
+                // A name no row can have and an ID no binding has are refused, and the recording stays.
+                let invalid = try piccolo.keymapBeginRecordingExpectingRefusal("placeWindow.nowhere")
+                #expect(invalid.contains("no row"), "the message is \"\(invalid)\"")
+                _ = try piccolo.keymapBeginRecordingExpectingRefusal(UUID().uuidString)
+                #expect(try piccolo.keymapState().recordingRow == Self.rightHalfRow, "a refused settings.beginRecording changed the recording")
 
-                // Selecting is a change of the view: the file, the hotkeys and the window are as they were.
-                #expect(try session.fileBytes() == before, "selecting a binding changed the file")
+                try piccolo.settingsCancelRecording()
+                #expect(try piccolo.keymapState().recordingRow == nil)
+
+                // Marking a row is a change of the view: the file, the hotkeys and the window are as they were.
+                #expect(try session.fileBytes() == before, "beginning a recording changed the file")
                 #expect(try session.registeredIDs() == [a.id, b.id])
                 #expect(try piccolo.settingsState().isOpen)
                 _ = try await PiccoloWindows.waitForWindow(pid: pid)
@@ -603,26 +617,36 @@ extension DesktopAcceptanceTests {
 
         // MARK: 15. Sections, search and inactive shortcuts
 
-        @Test("settings 15. the default shortcuts come in six sections, a search filters and selects, and registered shortcuts are active")
+        @Test("settings 15. the keymap has nine sections, a search filters the rows by name and by shortcut text, and registered shortcuts are active")
         func sectionsAndSearch() async throws {
             try await withSettingsSession { session in
                 let texts = try InterfaceTexts.current(piccolo)
                 let restored = try piccolo.settingsRestoreDefaults().state
                 let defaults = Config.defaultShortcuts.bindings
 
-                // Six sections whose counts are those of the defaults grouped by kind.
-                var expected: [String: Int] = [:]
-                for binding in defaults {
-                    expected[Self.sectionName(of: binding.action), default: 0] += 1
-                }
+                // A custom area makes the ninth section: the default shortcuts have none. Adding it starts a
+                // recording, which ends at once.
+                let area = Action.placeWindow(.custom(FractionalRect(x: 0.25, y: 0, width: 0.5, height: 1)))
+                try piccolo.keymapAddLayout(area)
+                try piccolo.settingsCancelRecording()
+                let state = try piccolo.keymapState()
+
+                // Nine sections, in order, with the rows of the 30 built-in actions and of each grid and area.
+                var order: [String] = []
                 var counts: [String: Int] = [:]
-                for binding in restored.bindings {
-                    counts[binding.section, default: 0] += 1
+                for row in state.rows {
+                    if order.last != row.section { order.append(row.section) }
+                    counts[row.section, default: 0] += 1
                 }
-                #expect(counts.count == 6, "settings.state reports sections \(counts.keys.sorted())")
-                #expect(counts == expected, "section counts are \(counts), the defaults give \(expected)")
-                #expect(restored.search == "", "the search is \"\(restored.search)\" after restoring")
-                #expect(restored.bindings.allSatisfy { $0.visible }, "some binding is not visible without a search")
+                #expect(order == KeymapSection.allCases.map(\.rawValue), "the sections are \(order)")
+                var expected: [String: Int] = [:]
+                for action in BuiltInActions.all {
+                    expected[KeymapSection(of: action).rawValue, default: 0] += 1
+                }
+                expected[KeymapSection.grids.rawValue] = defaults.filter { KeymapSection(of: $0.action) == .grids }.count
+                expected[KeymapSection.customAreas.rawValue] = 1
+                #expect(counts == expected, "row counts are \(counts), expected \(expected)")
+                #expect(state.search == "", "the search is \"\(state.search)\" after restoring")
 
                 // Every binding with a registered shortcut is active.
                 let registered = Set(try session.registeredIDs())
@@ -630,32 +654,29 @@ extension DesktopAcceptanceTests {
                 #expect(registered.count == defaults.count, "config.status registered \(registered.count) shortcuts")
                 #expect(inactive.isEmpty, "bindings with a registered shortcut report active: false: \(inactive)")
 
-                // The Left Half binding alone is visible and selected.
-                // (The restored bindings have IDs of their own, so it is found by its action.)
-                let left = try #require(
-                    restored.bindings.first { $0.action == .placeWindow(.preset(.leftHalf)) },
-                    "no Left Half in the restored bindings")
-                let searched = try piccolo.settingsSetSearch(texts.summary(of: left.action))
-                #expect(searched.search == texts.summary(of: left.action))
-                let shown = searched.bindings.filter(\.visible).map(\.id)
-                #expect(shown == [left.id], "the search left \(searched.bindings.filter(\.visible).map(\.summary)) visible")
-                #expect(searched.selectedBindingID == left.id, "the selection is \(String(describing: searched.selectedBindingID))")
+                // A search by name keeps the rows whose name has the query.
+                let name = texts.summary(of: .placeWindow(.preset(.leftHalf)))
+                let byName = try piccolo.settingsSetSearch(name)
+                #expect(byName.search == name)
+                let namedRows = try piccolo.keymapState().rows.map(\.row)
+                #expect(namedRows == [Self.leftHalfRow], "the search for \"\(name)\" left \(namedRows)")
 
-                // An empty query shows everything again.
-                let cleared = try piccolo.settingsSetSearch("")
-                #expect(cleared.bindings.allSatisfy { $0.visible }, "some binding is hidden after clearing the search")
-                #expect(cleared.selectedBindingID == left.id, "clearing the search moved the selection")
-            }
-        }
+                // A search by shortcut text keeps the rows whose shortcut has the query, the Left Half row among them.
+                let query = "⌃⌥←"
+                try piccolo.settingsSetSearch(query)
+                let byShortcut = try piccolo.keymapState().rows
+                let wanted = state.rows.filter { row in
+                    row.shortcuts.contains { $0.shortcutText.contains(query) } || row.name.contains(query)
+                }.map(\.row)
+                #expect(byShortcut.map(\.row) == wanted, "the search for \(query) left \(byShortcut.map(\.row)), expected \(wanted)")
+                #expect(byShortcut.map(\.row).contains(Self.leftHalfRow), "Left Half has the shortcut \(query)")
+                #expect(byShortcut.allSatisfy { !$0.shortcuts.isEmpty }, "a row without a shortcut matched \(query)")
 
-        private static func sectionName(of action: Action) -> String {
-            switch action {
-            case .placeWindow: "placeWindow"
-            case .restoreWindow: "restoreWindow"
-            case .moveToDisplay: "moveToDisplay"
-            case .arrangeGrid: "arrangeGrid"
-            case .moveDivider: "moveDivider"
-            case .swapWindow: "swapWindow"
+                // A query nothing matches leaves no row, and an empty query shows everything again.
+                #expect(try piccolo.settingsSetSearch("zzz").search == "zzz")
+                #expect(try piccolo.keymapState().rows.isEmpty)
+                try piccolo.settingsSetSearch("")
+                #expect(try piccolo.keymapState().rows.map(\.row) == state.rows.map(\.row), "clearing the search did not bring every row back")
             }
         }
 

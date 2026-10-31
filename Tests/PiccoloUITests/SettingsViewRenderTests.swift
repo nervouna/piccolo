@@ -67,9 +67,47 @@ struct SettingsViewRenderTests {
         return bitmap
     }
 
-    /// Lets the main queue run: the window follows the model's tab on a later turn.
-    private func settle() async throws {
-        try await Task.sleep(for: .milliseconds(300))
+    /// What the window shows once the layout has settled: renders again and again, 20 ms apart, until two in
+    /// a row are the same, and returns the last. The first layout of a tab can differ from the next one (a
+    /// scroll view's content is laid out against its scroller only on a later pass), so a single render is
+    /// not a fair picture of the tab. At most 5 s: a layout that never settles gives the last render.
+    private func settledContent(of window: NSWindow, dark: Bool = false) async throws -> NSBitmapImageRep {
+        let deadline = ContinuousClock.now.advanced(by: .seconds(5))
+        var previous = try renderContent(of: window, dark: dark)
+        while ContinuousClock.now < deadline {
+            try await Task.sleep(for: .milliseconds(20))
+            let next = try renderContent(of: window, dark: dark)
+            if png(next) == png(previous) { return next }
+            previous = next
+        }
+        return previous
+    }
+
+    /// Waits, on the main actor, until `reached` holds and the window's frame has stayed the same for three
+    /// polls in a row: a poll every 20 ms, and at most 5 s. The window follows the model's tab on a later
+    /// turn of the main queue and resizes in an animation, which when the machine is busy can take longer
+    /// than any fixed pause. A window that never gets there does not fail the wait: the expectations after
+    /// it do, and say what the window is.
+    private func waitUntilSettled(_ window: NSWindow, reached: () -> Bool) async throws {
+        let deadline = ContinuousClock.now.advanced(by: .seconds(5))
+        var previous: CGRect?
+        var steady = 0
+        while ContinuousClock.now < deadline {
+            let frame = window.frame
+            steady = (frame == previous && reached()) ? steady + 1 : 0
+            previous = frame
+            if steady == 3 { return }
+            try await Task.sleep(for: .milliseconds(20))
+        }
+    }
+
+    /// Whether the General tab is the one shown and the window is as tall as the tab asks to be. False until
+    /// the tab has been laid out and its height reported.
+    private func isGeneralFitted(_ controller: SettingsWindowController, _ window: NSWindow) -> Bool {
+        guard let content = controller.content, content.tab == .general else { return false }
+        let asked = content.generalFittingHeight
+        guard asked > 0 else { return false }
+        return abs(window.contentRect(forFrameRect: window.frame).size.height - asked) < 1
     }
 
     /// Whether the bitmap shows more than one colour, which a view that failed to draw does not.
@@ -117,9 +155,19 @@ struct SettingsViewRenderTests {
         for (name, dark) in [("light", false), ("dark", true)] {
             let model = model(all, issues: ["bindings[4] shortcut was refused: taken by the system"])
             let (controller, window) = makeWindow(model)
+            try await waitUntilSettled(window) { controller.content?.tab == .shortcuts }
+            let shortcutsFrame = window.frame
             for tab in SettingsTab.allCases {
                 model.tab = tab
-                try await settle()
+                // The tab is shown before its window has the size it needs: wait for that size too.
+                switch tab {
+                case .shortcuts:
+                    try await waitUntilSettled(window) {
+                        controller.content?.tab == .shortcuts && window.frame == shortcutsFrame
+                    }
+                case .general:
+                    try await waitUntilSettled(window) { isGeneralFitted(controller, window) }
+                }
                 let bitmap = try renderContent(of: window, dark: dark)
                 #expect(hasContent(bitmap), "the \(tab) tab is blank in \(name) appearance")
                 keep(bitmap, as: "window-\(tab)-\(name)")
@@ -128,64 +176,26 @@ struct SettingsViewRenderTests {
         }
     }
 
-    @Test("the window shows the tab and the selected binding the model names")
+    @Test("the window shows the tab the model names")
     func followsTheModel() async throws {
         let model = model([Self.leftHalf, Self.custom])
         let (controller, window) = makeWindow(model)
         defer { withExtendedLifetime(controller) {} }
-        try await settle()
-        let shortcuts = try renderContent(of: window)
+        try await waitUntilSettled(window) { controller.content?.tab == .shortcuts }
+        let shortcutsFrame = window.frame
+        let shortcuts = try await settledContent(of: window)
 
         model.tab = .general
-        try await settle()
-        let general = try renderContent(of: window)
+        try await waitUntilSettled(window) { isGeneralFitted(controller, window) }
+        let general = try await settledContent(of: window)
         #expect(png(shortcuts) != png(general), "the window looks the same on the General tab as on the Shortcuts tab")
 
         model.tab = .shortcuts
-        try await settle()
-        let again = try renderContent(of: window)
-        #expect(png(again) == png(shortcuts), "going back to the Shortcuts tab did not bring the same window back")
-
-        model.selectedBindingID = UIFixture.idA
-        let first = try renderContent(of: window)
-        model.selectedBindingID = UIFixture.idB
-        let second = try renderContent(of: window)
-        #expect(png(first) != png(second), "the window looks the same with the first and the second binding selected")
-    }
-
-    @Test("the Shortcuts tab renders each kind of action selected")
-    func eachAction() throws {
-        let bindings: [(String, KeyBinding)] = [
-            ("preset", Self.leftHalf), ("custom", Self.custom), ("grid", Self.grid),
-            ("display", Self.display), ("divider", Self.divider), ("swap", Self.swap),
-        ]
-        for (name, binding) in bindings {
-            let model = model([binding])
-            model.selectedBindingID = binding.id
-            let bitmap = try render(ShortcutsTab(model: model))
-            #expect(hasContent(bitmap), "the \(name) editor is blank")
-            keep(bitmap, as: "shortcuts-\(name)")
+        try await waitUntilSettled(window) {
+            controller.content?.tab == .shortcuts && window.frame == shortcutsFrame
         }
-    }
-
-    @Test("the Shortcuts tab renders when empty, while recording and with an error")
-    func otherStates() throws {
-        let empty = try render(ShortcutsTab(model: model([])))
-        #expect(hasContent(empty))
-        keep(empty, as: "shortcuts-empty")
-
-        let recording = model([Self.leftHalf, Self.custom])
-        recording.beginRecording(UIFixture.idB)
-        let recordingBitmap = try render(ShortcutsTab(model: recording))
-        #expect(hasContent(recordingBitmap))
-        keep(recordingBitmap, as: "shortcuts-recording")
-
-        let failing = model([Self.leftHalf, Self.custom])
-        failing.setShortcut(UIFixture.idB, to: UIFixture.f13)
-        #expect(failing.error != nil)
-        let errorBitmap = try render(ShortcutsTab(model: failing))
-        #expect(hasContent(errorBitmap))
-        keep(errorBitmap, as: "shortcuts-error")
+        let again = try await settledContent(of: window)
+        #expect(png(again) == png(shortcuts), "going back to the Shortcuts tab did not bring the same window back")
     }
 
     @Test("the General tab renders, with and without Accessibility")
@@ -249,7 +259,7 @@ struct SettingsViewRenderTests {
         for (name, model) in states {
             model.tab = .general
             let (controller, window) = makeWindow(model)
-            try await settle()
+            try await waitUntilSettled(window) { isGeneralFitted(controller, window) }
             let content = try #require(controller.content)
             let height = window.contentRect(forFrameRect: window.frame).size.height
             heights[name] = height

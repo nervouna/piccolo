@@ -152,7 +152,9 @@ struct SettingsWindowTabsTests {
     @Test("changing the tab forgets the error of the tab it was made on")
     func tabChangeClearsTheError() async throws {
         let (controller, model, window) = makeController()
-        model.setShortcut(UIFixture.idB, to: UIFixture.f13)
+        // A shortcut that cannot be a global one is refused, with its reason under the row.
+        model.beginRecording(.builtIn(.placeWindow(.preset(.rightHalf))))
+        model.record(Shortcut(keyCode: 0, modifiers: [.shift]))
         #expect(model.error != nil)
         model.tab = .general
         try await waitUntilSettled(window) { controller.content?.tab == .general }
@@ -211,7 +213,7 @@ struct SettingsWindowTabsTests {
         model.setLanguage(.zhHans)
         #expect(model.restartRequired)
         try await waitUntilSettled(window) {
-            contentSize(of: window).height > plain + 20 && isGeneralFitted(controller, window)
+            content.generalFittingHeight > plain + 20 && isGeneralFitted(controller, window) && content.contentFits
         }
         let withRestart = contentSize(of: window).height
         #expect(withRestart > plain + 20, "the window is \(withRestart) pt high with the restart row, \(plain) without")
@@ -221,7 +223,7 @@ struct SettingsWindowTabsTests {
 
         model.setLanguage(.en)
         try await waitUntilSettled(window) {
-            abs(contentSize(of: window).height - plain) < 1 && isGeneralFitted(controller, window)
+            abs(contentSize(of: window).height - plain) < 1
         }
         #expect(abs(contentSize(of: window).height - plain) < 1, "the window did not shrink back")
     }

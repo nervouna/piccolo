@@ -7,19 +7,19 @@ import PiccoloCore
 import PiccoloUI
 
 /// The Settings window commands of the Debug control channel: `settings.open`, `settings.close`,
-/// `settings.state`, the view state (`settings.select`, `settings.showTab`, `settings.setSearch`), the edits
-/// (`settings.addBinding`, `settings.removeBinding`, `settings.updateAction`,
+/// `settings.state`, the view state (`settings.showTab`, `settings.setSearch`), the edits
+/// (`settings.removeBinding`, `settings.updateAction`,
 /// `settings.setResizeStep`, `settings.setGap`, `settings.setAnimation`, `settings.setGridFillOrder`,
 /// `settings.setDestinationPreview`, `settings.setLanguage`, `settings.restoreDefaults`), the restart
-/// that applies a new language (`settings.restartNow`) and recording
-/// (`settings.beginRecording`, `settings.cancelRecording`, `settings.record`), the keymap
-/// (`settings.beginRecordingRow`, `settings.recordRow`, `settings.clearShortcut`, `settings.resolveConflict`,
-/// `settings.addLayout`, `settings.updateLayout`, `settings.editLayout`, `settings.dismissLayoutEditor`),
-/// and the login item (`loginItem.status`, `loginItem.set`).
+/// that applies a new language (`settings.restartNow`), recording a row of the keymap
+/// (`settings.beginRecording`, `settings.cancelRecording`, `settings.record`), the rest of the keymap
+/// (`settings.clearShortcut`, `settings.resolveConflict`, `settings.addLayout`, `settings.updateLayout`,
+/// `settings.editLayout`, `settings.dismissLayoutEditor`), and the login item (`loginItem.status`,
+/// `loginItem.set`).
 ///
 /// They drive the model the window uses, through the same methods and properties, so a rejected
 /// edit answers `ok: false` with the model's own message and the window follows what the commands
-/// do: the list's selection and the tab control are bound to the model. Like the rest of the
+/// do: the search field and the tab control are bound to the model. Like the rest of the
 /// control channel, this file is compiled out of Release builds.
 extension DebugControlServer {
     /// How long `settings.record` waits for the recorder to receive the key press it posted.
@@ -53,19 +53,6 @@ extension DebugControlServer {
             onMainActor { settingsState() }
         }
 
-        // Selects a binding in the list, as a click on its row does: the editor shows it.
-        router.register("settings.select") { params in
-            let id = try params.decode(IDParams.self).id
-            return try onMainActor {
-                let model = SettingsController.shared.model
-                guard model.binding(id) != nil else {
-                    throw ControlCommandError.failed("there is no binding with the ID \(id.uuidString)")
-                }
-                model.selectedBindingID = id
-                return settingsState()
-            }
-        }
-
         // Switches the tab, as a click on the tab control does. Works with the window closed too:
         // it then opens on that tab.
         router.register("settings.showTab") { params in
@@ -80,20 +67,11 @@ extension DebugControlServer {
             }
         }
 
-        // Sets the search query, as typing in the search field does: the list filters, and the selection
-        // stays or moves to the first shown binding.
+        // Sets the search query, as typing in the search field does: the keymap filters.
         router.register("settings.setSearch") { params in
             let text = try params.decode(TextParams.self).text
             return onMainActor {
                 SettingsController.shared.model.setSearch(text)
-                return settingsState()
-            }
-        }
-
-        router.register("settings.addBinding") { _ in
-            try onMainActor {
-                let model = SettingsController.shared.model
-                guard model.addBinding() != nil else { throw rejection(of: model) }
                 return settingsState()
             }
         }
@@ -239,13 +217,14 @@ extension DebugControlServer {
             }
         }
 
-        // Starts recording without a key press: the global hotkeys are suspended until
-        // `settings.cancelRecording`, a recorded key, or the window closing.
+        // Starts recording on a row, as a click on its shortcut button does, without a key press: the global
+        // hotkeys are suspended until `settings.cancelRecording`, a recorded key, or the window closing. A row is
+        // named as `settings.state` names it (`KeymapRowID.name`).
         router.register("settings.beginRecording") { params in
-            let id = try params.decode(IDParams.self).id
+            let row = try rowID(named: try params.decode(RowParams.self).row)
             return try onMainActor {
                 let model = SettingsController.shared.model
-                guard model.beginRecording(id) else { throw rejection(of: model) }
+                guard model.beginRecording(row) else { throw rejection(of: model) }
                 return settingsState()
             }
         }
@@ -257,34 +236,13 @@ extension DebugControlServer {
             }
         }
 
-        // Records a shortcut the way a person does: starts recording on the binding, then presses
-        // the keys with real keyboard events (see `hotkey.simulate`) that reach the Settings
-        // window. The events go to whatever application is frontmost, so the command refuses
-        // unless Piccolo is the active application and the Settings window is its key window.
+        // Records a shortcut the way a person does: begins recording on the row, then presses the keys with real
+        // keyboard events (see `hotkey.simulate`) that reach the Settings window. The events go to whatever
+        // application is frontmost, so the command refuses unless Piccolo is the active application and the
+        // Settings window is its key window. A shortcut the model rejects, a conflict and a shortcut that cannot
+        // be a global one come back in the state (`error`, `errorTarget`, `conflict`), not as `ok: false`.
         router.register("settings.record") { params in
             let request = try params.decode(RecordParams.self)
-            let press = Shortcut(keyCode: request.keyCode, modifiers: Set(request.modifiers))
-            return try recordByKeyPress(press) { $0.beginRecording(request.id) }
-        }
-
-        // The keymap's commands. A row is named as `settings.state` names it (`KeymapRowID.name`).
-
-        // Starts recording on a row, as a click on its shortcut button does.
-        router.register("settings.beginRecordingRow") { params in
-            let row = try rowID(named: try params.decode(RowParams.self).row)
-            return try onMainActor {
-                let model = SettingsController.shared.model
-                guard model.beginRecording(row) else { throw rejection(of: model) }
-                return settingsState()
-            }
-        }
-
-        // `settings.record` for a row: begins recording on it and posts one key press with real keyboard
-        // events, with the same refusals. A shortcut the model rejects, a conflict and a shortcut that
-        // cannot be a global one come back in the state (`error`, `errorTarget`, `conflict`), not as
-        // `ok: false`.
-        router.register("settings.recordRow") { params in
-            let request = try params.decode(RecordRowParams.self)
             let row = try rowID(named: request.row)
             let press = Shortcut(keyCode: request.keyCode, modifiers: Set(request.modifiers))
             return try recordByKeyPress(press) { $0.beginRecording(row) }
@@ -477,8 +435,6 @@ extension DebugControlServer {
                         "id": .string(binding.id.uuidString),
                         "action": (try? JSONValue(encoding: binding.action)) ?? .null,
                         "summary": .string(model.summary(of: binding)),
-                        "section": .string(ActionKind(binding.action).configName),
-                        "visible": .bool(model.isVisible(binding.id)),
                         "active": .bool(!model.inactiveBindingIDs.contains(binding.id)),
                     ]
                     if let shortcut = binding.shortcut {
@@ -504,14 +460,8 @@ extension DebugControlServer {
             "restartRequired": .bool(model.restartRequired),
         ]
         state.merge(settingsWindowState()) { _, new in new }
-        if let selected = model.selectedBindingID {
-            state["selectedBindingID"] = .string(selected.uuidString)
-        }
         if let error = model.error {
             state["error"] = .string(error)
-        }
-        if let recording = model.recordingBindingID {
-            state["recordingBindingID"] = .string(recording.uuidString)
         }
         if let restartError = model.restartError {
             state["restartError"] = .string(restartError)
@@ -629,17 +579,11 @@ extension DebugControlServer {
         var action: Action
     }
 
-    private struct RecordParams: Decodable {
-        var id: UUID
-        var keyCode: Int
-        var modifiers: [Modifier]
-    }
-
     private struct RowParams: Decodable {
         var row: String
     }
 
-    private struct RecordRowParams: Decodable {
+    private struct RecordParams: Decodable {
         var row: String
         var keyCode: Int
         var modifiers: [Modifier]
