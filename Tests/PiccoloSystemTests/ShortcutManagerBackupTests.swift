@@ -256,6 +256,6 @@ struct ShortcutManagerBackupTests {
         let copies = try fixture.backupNames()
         #expect(copies.count == 1)
         #expect(try fixture.bytes(ofBackup: try #require(copies.first)) == original)
-        #expect(try ConfigStore(url: fixture.configURL).load().config.animation == .fast)
+        #expect(try ConfigStore(url: fixture.configURL).load().config.animation == .medium)
     }
 }

@@ -250,7 +250,7 @@ extension DesktopAcceptanceTests {
                 for: .preset(.leftHalf), visibleFrame: screens[0].visibleFrame, currentFrame: start)
 
             try await withConfigDirectory { config in
-                let url = try config.write(Config(destinationPreview: false, bindings: [leftHalf]))
+                let url = try config.write(Config.frameTest(destinationPreview: false, bindings: [leftHalf]))
                 try piccolo.loadConfig(at: url)
                 try await withFixture { fixture in
                     let window = try await openFocused(fixture, id: "off", frame: start)

@@ -15,7 +15,7 @@ struct WindowGapExecutionTests {
     func arrangeAndMove() throws {
         let desk = Desk()
         desk.openWindows(2)
-        let settings = ActionSettings(resizeStep: 0.05, gap: 12)
+        let settings = ActionSettings.pinned(resizeStep: 0.05, gap: 12)
 
         _ = try desk.executor.run(.arrangeGrid(GridSpec(count: 2, rows: 1, columns: 2)), settings: settings)
         let arranged = try desk.frames(2)
@@ -38,10 +38,10 @@ struct WindowGapExecutionTests {
         let desk = Desk()
         desk.openWindows(2)
         _ = try desk.executor.run(
-            .arrangeGrid(GridSpec(count: 2, rows: 1, columns: 2)), settings: ActionSettings(gap: 12))
+            .arrangeGrid(GridSpec(count: 2, rows: 1, columns: 2)), settings: ActionSettings.pinned(gap: 12))
         desk.focused = 1
 
-        let outcome = try desk.executor.run(.moveDivider(.right), settings: ActionSettings(resizeStep: 0.05, gap: 20))
+        let outcome = try desk.executor.run(.moveDivider(.right), settings: ActionSettings.pinned(resizeStep: 0.05, gap: 20))
 
         guard case .dividerMove(.moved) = outcome else {
             Issue.record("the group should hold and move, got \(outcome)")
@@ -55,7 +55,7 @@ struct WindowGapExecutionTests {
     func destinations() throws {
         let desk = Desk()
         desk.openWindows(2)
-        let settings = ActionSettings(gap: 12)
+        let settings = ActionSettings.pinned(gap: 12)
 
         let arrangement = try desk.executor.destinations(
             for: .arrangeGrid(GridSpec(count: 2, rows: 1, columns: 2)), settings: settings)
@@ -70,7 +70,7 @@ struct WindowGapExecutionTests {
     func cycling() throws {
         let desk = Desk()
         desk.openWindows(1)
-        let settings = ActionSettings(gap: 12)
+        let settings = ActionSettings.pinned(gap: 12)
         var targets: [CGRect] = []
         for _ in 0..<4 {
             guard case .placed(let target, _) = try desk.executor.run(.placeWindow(.preset(.leftHalf)), settings: settings)

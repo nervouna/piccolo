@@ -43,10 +43,10 @@ struct RestoreActionCodingTests {
         #expect(throws: Never.self) { try Action.restoreWindow.validate() }
     }
 
-    @Test("the defaults bind it to control + option + Delete, in 32 bindings")
+    @Test("the defaults bind it to control + option + Delete, in 33 bindings")
     func defaultBinding() throws {
         let bindings = Config.defaultShortcuts.bindings
-        #expect(bindings.count == 32)
+        #expect(bindings.count == 33)
         let restore = try #require(bindings.first { $0.action == .restoreWindow })
         #expect(restore.shortcut == Shortcut(keyCode: 51, modifiers: [.control, .option]))
     }

@@ -14,7 +14,7 @@ extension Desk {
     ) throws -> ArrangeOutcome {
         let outcome = try executor.run(
             .arrangeGrid(GridSpec(count: count, rows: rows, columns: columns)), onlyPid: onlyPid,
-            settings: ActionSettings(gridFillOrder: fillOrder))
+            settings: ActionSettings.pinned(gridFillOrder: fillOrder))
         guard case .arranged(let arranged) = outcome else {
             throw DeskFailure("expected an arrangement, got \(outcome)")
         }
@@ -71,7 +71,7 @@ struct ArrangeColumnFirstTests {
         ])
     }
 
-    @Test("rows first, set or by default, is what it always was")
+    @Test("rows first, set explicitly, is what it always was, and columns first is the default")
     func rowsFirstIsUnchanged() throws {
         let rowsFirst = [
             CGRect(x: 0, y: 40, width: 600, height: 400),
@@ -84,10 +84,18 @@ struct ArrangeColumnFirstTests {
         #expect(try explicit.frames(3) == rowsFirst)
         #expect(explicit.executor.linkedGroups.first?.group.layout.orientation == .rows)
 
+        // Without a fill order in the settings (and no gap, to compare the frames), the grid fills columns first.
         let defaulted = Desk()
         defaulted.openWindows(3)
-        try defaulted.arrange(count: 3, rows: 2, columns: 2)
-        #expect(try defaulted.frames(3) == rowsFirst)
+        _ = try defaulted.executor.run(
+            .arrangeGrid(GridSpec(count: 3, rows: 2, columns: 2)), settings: ActionSettings(gap: 0))
+        #expect(
+            try defaulted.frames(3) == [
+                CGRect(x: 0, y: 40, width: 600, height: 400),
+                CGRect(x: 0, y: 440, width: 600, height: 400),
+                CGRect(x: 600, y: 40, width: 600, height: 800),
+            ])
+        #expect(defaulted.executor.linkedGroups.first?.group.layout.orientation == .columns)
     }
 
     @Test("the group records the column layout, the windows in column-major cell order and the frames")

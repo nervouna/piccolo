@@ -38,7 +38,7 @@ extension DesktopAcceptanceTests {
             try await withOnboardingSeenRestored {
                 try await withConfigDirectory { config in
                     try piccolo.loadConfig(
-                        at: try config.write(Config(destinationPreview: true, bindings: [leftHalf, arrange])))
+                        at: try config.write(Config.frameTest(destinationPreview: true, bindings: [leftHalf, arrange])))
                     try await withFixture { fixture in
                         // The guide starts closed, whatever an earlier run left.
                         try piccolo.onboardingClose()

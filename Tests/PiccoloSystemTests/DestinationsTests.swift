@@ -29,7 +29,7 @@ struct DestinationsTests {
         let before = try desk.frames(1)
         let mark = desk.log.count
 
-        let destinations = try desk.executor.destinations(for: .placeWindow(.preset(.leftHalf)))
+        let destinations = try desk.executor.destinations(for: .placeWindow(.preset(.leftHalf)), settings: .pinned())
 
         let expected = FrameResolver.frame(
             for: .preset(.leftHalf), visibleFrame: visible, currentFrame: before[0])
@@ -44,8 +44,8 @@ struct DestinationsTests {
         let desk = Desk()
         desk.openWindows(1)
 
-        let destinations = try desk.executor.destinations(for: .placeWindow(.preset(preset)))
-        let outcome = try desk.executor.run(.placeWindow(.preset(preset)))
+        let destinations = try desk.executor.destinations(for: .placeWindow(.preset(preset)), settings: .pinned())
+        let outcome = try desk.executor.run(.placeWindow(.preset(preset)), settings: .pinned())
 
         guard case .placed(let target, _) = outcome else {
             Issue.record("the run answered \(outcome)")
@@ -61,7 +61,7 @@ struct DestinationsTests {
         let start = try two.frame(of: 1)
         let mark = two.log.count
 
-        let destinations = try two.executor.destinations(for: .moveToDisplay(.next))
+        let destinations = try two.executor.destinations(for: .moveToDisplay(.next), settings: .pinned())
 
         let expected = DisplayLayout.frame(moving: start, from: DeskRig.primary, to: DeskRig.secondary)
         #expect(destinations == [Destination(frame: expected, window: nil)])
@@ -70,7 +70,7 @@ struct DestinationsTests {
 
         let one = Desk()
         one.openWindows(1)
-        #expect(try one.executor.destinations(for: .moveToDisplay(.next)).isEmpty)
+        #expect(try one.executor.destinations(for: .moveToDisplay(.next), settings: .pinned()).isEmpty)
     }
 
     @Test("planning errors are thrown, and nothing moves: no focused window, a custom frame off the screen")
@@ -81,13 +81,13 @@ struct DestinationsTests {
 
         desk.focused = nil
         #expect(throws: WindowError.noFocusedWindow) {
-            try desk.executor.destinations(for: .placeWindow(.preset(.leftHalf)))
+            try desk.executor.destinations(for: .placeWindow(.preset(.leftHalf)), settings: .pinned())
         }
 
         desk.focused = 1
         let offScreen = FrameSpec.custom(FractionalRect(x: 0.8, y: 0, width: 0.5, height: 1))
         #expect(throws: ActionPlanningError.self) {
-            try desk.executor.destinations(for: .placeWindow(offScreen))
+            try desk.executor.destinations(for: .placeWindow(offScreen), settings: .pinned())
         }
         #expect(desk.calls(since: mark).isEmpty)
     }
@@ -102,7 +102,7 @@ struct DestinationsTests {
         let mark = desk.log.count
         let grid = GridSpec(count: 3, rows: 2, columns: 2)
 
-        let destinations = try desk.executor.destinations(for: .arrangeGrid(grid))
+        let destinations = try desk.executor.destinations(for: .arrangeGrid(grid), settings: .pinned())
 
         let expected = cells(TileLayout.grid(windowCount: 3, rows: 2, columns: 2, fillOrder: .rows))
         #expect(destinations.map(\.frame) == expected)
@@ -119,7 +119,7 @@ struct DestinationsTests {
         let grid = GridSpec(count: 3, rows: 2, columns: 2)
 
         let columns = try desk.executor.destinations(
-            for: .arrangeGrid(grid), settings: ActionSettings(gridFillOrder: .columns))
+            for: .arrangeGrid(grid), settings: ActionSettings.pinned(gridFillOrder: .columns))
 
         let expected = cells(TileLayout.grid(windowCount: 3, rows: 2, columns: 2, fillOrder: .columns))
         #expect(columns.map(\.frame) == expected)
@@ -135,7 +135,7 @@ struct DestinationsTests {
         runner.openWindows(4)
         let grid = GridSpec(count: 4, rows: 2, columns: 2)
 
-        let destinations = try planner.executor.destinations(for: .arrangeGrid(grid))
+        let destinations = try planner.executor.destinations(for: .arrangeGrid(grid), settings: .pinned())
         let arranged = try runner.arrange(count: 4, rows: 2, columns: 2)
 
         #expect(destinations.map(\.frame) == arranged.windows.map(\.target))
@@ -151,7 +151,7 @@ struct DestinationsTests {
         desk.focusOrder = [1, 2]
 
         let destinations = try desk.executor.destinations(
-            for: .arrangeGrid(GridSpec(count: 2, rows: 1, columns: 2)), onlyPid: 100)
+            for: .arrangeGrid(GridSpec(count: 2, rows: 1, columns: 2)), onlyPid: 100, settings: .pinned())
 
         #expect(destinations.map(\.window) == [id(1)])
         #expect(desk.catalogRequests == [100])
@@ -160,7 +160,7 @@ struct DestinationsTests {
     @Test("arrangeGrid with no window to arrange answers nothing")
     func arrangeGridNothing() throws {
         let desk = Desk()
-        #expect(try desk.executor.destinations(for: .arrangeGrid(GridSpec(count: 2, rows: 1, columns: 2))).isEmpty)
+        #expect(try desk.executor.destinations(for: .arrangeGrid(GridSpec(count: 2, rows: 1, columns: 2)), settings: .pinned()).isEmpty)
     }
 
     @Test("arrangeGrid with a grid that cannot be arranged throws, as the run does")
@@ -168,7 +168,7 @@ struct DestinationsTests {
         let desk = Desk()
         desk.openWindows(2)
         #expect(throws: ArrangePlannerError.self) {
-            try desk.executor.destinations(for: .arrangeGrid(GridSpec(count: 9, rows: 1, columns: 1)))
+            try desk.executor.destinations(for: .arrangeGrid(GridSpec(count: 9, rows: 1, columns: 1)), settings: .pinned())
         }
     }
 
@@ -180,7 +180,7 @@ struct DestinationsTests {
         let groups = desk.executor.linkedGroups
         let mark = desk.log.count
 
-        _ = try desk.executor.destinations(for: .arrangeGrid(GridSpec(count: 2, rows: 2, columns: 1)))
+        _ = try desk.executor.destinations(for: .arrangeGrid(GridSpec(count: 2, rows: 2, columns: 1)), settings: .pinned())
 
         #expect(desk.executor.linkedGroups == groups)
         #expect(desk.calls(since: mark).isEmpty)
@@ -198,7 +198,7 @@ struct DestinationsTests {
         let mark = desk.log.count
 
         let destinations = try desk.executor.destinations(
-            for: .moveDivider(.right), settings: ActionSettings(resizeStep: DeskRig.step))
+            for: .moveDivider(.right), settings: ActionSettings.pinned(resizeStep: DeskRig.step))
 
         let expected = cells(
             TileLayout(rows: [TileLayout.Row(height: 1, widths: [0.5 + DeskRig.step, 0.5 - DeskRig.step])]))
@@ -216,7 +216,7 @@ struct DestinationsTests {
         try desk.arrange(count: 4, rows: 2, columns: 2)
 
         let destinations = try desk.executor.destinations(
-            for: .moveDivider(.down), settings: ActionSettings(resizeStep: DeskRig.step))
+            for: .moveDivider(.down), settings: ActionSettings.pinned(resizeStep: DeskRig.step))
         let moved = try desk.moved(.down)
 
         #expect(destinations.map(\.frame) == moved.windows.map(\.target))
@@ -227,11 +227,11 @@ struct DestinationsTests {
     func moveDividerNoGroup() throws {
         let desk = Desk()
         desk.openWindows(2)
-        #expect(try desk.executor.destinations(for: .moveDivider(.right)).isEmpty)
+        #expect(try desk.executor.destinations(for: .moveDivider(.right), settings: .pinned()).isEmpty)
 
         try desk.arrange(count: 2, rows: 1, columns: 2)
         desk.focused = nil
-        #expect(try desk.executor.destinations(for: .moveDivider(.right)).isEmpty)
+        #expect(try desk.executor.destinations(for: .moveDivider(.right), settings: .pinned()).isEmpty)
     }
 
     @Test("moveDivider with a divider that cannot move that way answers nothing")
@@ -242,7 +242,7 @@ struct DestinationsTests {
         let mark = desk.log.count
 
         // A single row has no horizontal divider.
-        #expect(try desk.executor.destinations(for: .moveDivider(.up)).isEmpty)
+        #expect(try desk.executor.destinations(for: .moveDivider(.up), settings: .pinned()).isEmpty)
         #expect(desk.calls(since: mark).isEmpty)
         #expect(desk.executor.linkedGroups.count == 1)
     }
@@ -256,7 +256,7 @@ struct DestinationsTests {
         let groups = desk.executor.linkedGroups
         let mark = desk.log.count
 
-        #expect(try desk.executor.destinations(for: .moveDivider(.right)).isEmpty)
+        #expect(try desk.executor.destinations(for: .moveDivider(.right), settings: .pinned()).isEmpty)
 
         #expect(desk.executor.linkedGroups == groups, "the plan must leave the broken group for the real run")
         #expect(desk.calls(since: mark).isEmpty)
@@ -273,7 +273,7 @@ struct DestinationsTests {
         desk.close(3)
         let groups = desk.executor.linkedGroups
 
-        #expect(try desk.executor.destinations(for: .moveDivider(.left)).isEmpty)
+        #expect(try desk.executor.destinations(for: .moveDivider(.left), settings: .pinned()).isEmpty)
         #expect(desk.executor.linkedGroups == groups)
     }
 
@@ -287,7 +287,7 @@ struct DestinationsTests {
         try desk.arrange(count: 2, rows: 1, columns: 2)
         let groups = desk.executor.linkedGroups
 
-        #expect(try desk.executor.destinations(for: .moveDivider(.right), onlyPid: 100).isEmpty)
+        #expect(try desk.executor.destinations(for: .moveDivider(.right), onlyPid: 100, settings: .pinned()).isEmpty)
         #expect(desk.executor.linkedGroups == groups)
     }
 
@@ -297,7 +297,7 @@ struct DestinationsTests {
         desk.openWindows(2)
         try desk.arrange(count: 2, rows: 1, columns: 2)
         #expect(throws: ActionExecutionError.invalidResizeStep(0)) {
-            try desk.executor.destinations(for: .moveDivider(.right), settings: ActionSettings(resizeStep: 0))
+            try desk.executor.destinations(for: .moveDivider(.right), settings: ActionSettings.pinned(resizeStep: 0))
         }
     }
 
@@ -314,7 +314,7 @@ struct DestinationsTests {
         let records = desk.executor.windowRecords.map(\.record)
         let mark = desk.log.count
 
-        let destinations = try desk.executor.destinations(for: .swapWindow(.right))
+        let destinations = try desk.executor.destinations(for: .swapWindow(.right), settings: .pinned())
 
         // Window 2 would take window 3's cell and window 3 window 2's. Window 1 is not part of it.
         #expect(destinations == [
@@ -333,7 +333,7 @@ struct DestinationsTests {
         desk.openWindows(4)
         try desk.arrange(count: 4, rows: 2, columns: 2)
 
-        let destinations = try desk.executor.destinations(for: .swapWindow(.down))
+        let destinations = try desk.executor.destinations(for: .swapWindow(.down), settings: .pinned())
         let swapped = try desk.swapped(.down)
 
         #expect(destinations.count == 2)
@@ -351,7 +351,7 @@ struct DestinationsTests {
         try desk.arrange(count: 2, rows: 1, columns: 2)
         desk.focused = 2
 
-        let destinations = try desk.executor.destinations(for: .swapWindow(.left), settings: ActionSettings(gap: 12))
+        let destinations = try desk.executor.destinations(for: .swapWindow(.left), settings: ActionSettings.pinned(gap: 12))
 
         let gapped = TileLayout.grid(windowCount: 2, rows: 1, columns: 2).frames(in: visible, gap: 12)
         #expect(destinations == [
@@ -364,17 +364,17 @@ struct DestinationsTests {
     func swapWindowNothingToDo() throws {
         let desk = Desk()
         desk.openWindows(2)
-        #expect(try desk.executor.destinations(for: .swapWindow(.right)).isEmpty)
+        #expect(try desk.executor.destinations(for: .swapWindow(.right), settings: .pinned()).isEmpty)
 
         try desk.arrange(count: 2, rows: 1, columns: 2)
         let mark = desk.log.count
-        #expect(try desk.executor.destinations(for: .swapWindow(.left)).isEmpty)
-        #expect(try desk.executor.destinations(for: .swapWindow(.up)).isEmpty)
+        #expect(try desk.executor.destinations(for: .swapWindow(.left), settings: .pinned()).isEmpty)
+        #expect(try desk.executor.destinations(for: .swapWindow(.up), settings: .pinned()).isEmpty)
         #expect(desk.calls(since: mark).isEmpty)
         #expect(desk.executor.linkedGroups.count == 1)
 
         desk.focused = nil
-        #expect(try desk.executor.destinations(for: .swapWindow(.right)).isEmpty)
+        #expect(try desk.executor.destinations(for: .swapWindow(.right), settings: .pinned()).isEmpty)
     }
 
     @Test("swapWindow with a broken group answers nothing and does not dissolve it; the real run does")
@@ -386,7 +386,7 @@ struct DestinationsTests {
         let groups = desk.executor.linkedGroups
         let mark = desk.log.count
 
-        #expect(try desk.executor.destinations(for: .swapWindow(.right)).isEmpty)
+        #expect(try desk.executor.destinations(for: .swapWindow(.right), settings: .pinned()).isEmpty)
 
         #expect(desk.executor.linkedGroups == groups, "the plan must leave the broken group for the real run")
         #expect(desk.calls(since: mark).isEmpty)
@@ -403,7 +403,7 @@ struct DestinationsTests {
         desk.close(3)
         let groups = desk.executor.linkedGroups
 
-        #expect(try desk.executor.destinations(for: .swapWindow(.right)).isEmpty)
+        #expect(try desk.executor.destinations(for: .swapWindow(.right), settings: .pinned()).isEmpty)
         #expect(desk.executor.linkedGroups == groups)
     }
 
@@ -417,7 +417,7 @@ struct DestinationsTests {
         try desk.arrange(count: 2, rows: 1, columns: 2)
         let groups = desk.executor.linkedGroups
 
-        #expect(try desk.executor.destinations(for: .swapWindow(.right), onlyPid: 100).isEmpty)
+        #expect(try desk.executor.destinations(for: .swapWindow(.right), onlyPid: 100, settings: .pinned()).isEmpty)
         #expect(desk.executor.linkedGroups == groups)
     }
 }

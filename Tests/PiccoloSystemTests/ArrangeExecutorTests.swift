@@ -137,7 +137,7 @@ struct ExecutorArrangeGridTests {
         let entries = (1...4).map { Rig.window(UInt32($0)) }
         let run = executor(entries: entries, focused: entries[3], history: [4, 3, 2, 1])
 
-        let outcome = try arranged(try run.run(.arrangeGrid(Rig.grid2x2)))
+        let outcome = try arranged(try run.run(.arrangeGrid(Rig.grid2x2), settings: .pinned()))
 
         let cells = Rig.cells(4)
         #expect(outcome.displayIndex == 0)
@@ -154,7 +154,7 @@ struct ExecutorArrangeGridTests {
         let entries = (1...3).map { Rig.window(UInt32($0)) }
         let run = executor(entries: entries, focused: entries[2], history: [3, 2, 1])
 
-        let outcome = try arranged(try run.run(.arrangeGrid(Rig.grid2x2)))
+        let outcome = try arranged(try run.run(.arrangeGrid(Rig.grid2x2), settings: .pinned()))
 
         let cells = Rig.cells(3)
         #expect(outcome.windows.map(\.target) == cells)
@@ -168,7 +168,7 @@ struct ExecutorArrangeGridTests {
         let entries = (1...6).map { Rig.window(UInt32($0)) }
         let run = executor(entries: entries, focused: entries[5], history: [6, 5, 4, 3, 2, 1])
 
-        let outcome = try arranged(try run.run(.arrangeGrid(Rig.grid2x2)))
+        let outcome = try arranged(try run.run(.arrangeGrid(Rig.grid2x2), settings: .pinned()))
 
         #expect(outcome.windows.map(\.window) == [6, 5, 4, 3].map(Rig.id))
         for number in [1, 2] {
@@ -183,7 +183,7 @@ struct ExecutorArrangeGridTests {
         let entries = (1...3).map { Rig.window(UInt32($0)) }
         let run = executor(entries: entries, focused: entries[2], history: [3, 2, 1])
 
-        let outcome = try arranged(try run.run(.arrangeGrid(GridSpec(count: 3, rows: 1, columns: 3))))
+        let outcome = try arranged(try run.run(.arrangeGrid(GridSpec(count: 3, rows: 1, columns: 3)), settings: .pinned()))
 
         #expect(outcome.windows.map(\.window) == [3, 2, 1].map(Rig.id))
     }
@@ -193,7 +193,7 @@ struct ExecutorArrangeGridTests {
         let entries = (1...4).map { Rig.window(UInt32($0)) }
         let run = executor(entries: entries, focused: entries[2], history: [3])
 
-        let outcome = try arranged(try run.run(.arrangeGrid(Rig.grid2x2)))
+        let outcome = try arranged(try run.run(.arrangeGrid(Rig.grid2x2), settings: .pinned()))
 
         #expect(outcome.windows.map(\.window) == [3, 1, 2, 4].map(Rig.id))
     }
@@ -204,7 +204,7 @@ struct ExecutorArrangeGridTests {
         // The tracker has not seen window 4 yet.
         let run = executor(entries: entries, focused: entries[3], history: [3, 2, 1])
 
-        let outcome = try arranged(try run.run(.arrangeGrid(Rig.grid2x2)))
+        let outcome = try arranged(try run.run(.arrangeGrid(Rig.grid2x2), settings: .pinned()))
 
         #expect(outcome.windows.map(\.window) == [4, 3, 2, 1].map(Rig.id))
     }
@@ -217,7 +217,7 @@ struct ExecutorArrangeGridTests {
         ]
         let run = executor(entries: entries, focused: entries[4], history: [5, 4, 3, 2, 1])
 
-        let outcome = try arranged(try run.run(.arrangeGrid(Rig.grid2x2)))
+        let outcome = try arranged(try run.run(.arrangeGrid(Rig.grid2x2), settings: .pinned()))
 
         #expect(outcome.windows.map(\.window) == [5, 1].map(Rig.id))
         for number in [2, 3, 4] {
@@ -231,11 +231,11 @@ struct ExecutorArrangeGridTests {
         let asked = Asked()
         let run = executor(entries: entries, focused: entries[1], history: [2, 1], asked: asked)
 
-        _ = try run.run(.arrangeGrid(Rig.grid2x2), onlyPid: 100)
+        _ = try run.run(.arrangeGrid(Rig.grid2x2), onlyPid: 100, settings: .pinned())
         #expect(asked.onlyPids == [100])
 
         // No window of this process: the catalog is empty and nothing moves.
-        let outcome = try run.run(.arrangeGrid(Rig.grid2x2), onlyPid: 999)
+        let outcome = try run.run(.arrangeGrid(Rig.grid2x2), onlyPid: 999, settings: .pinned())
         #expect(outcome == .nothingToDo)
         #expect(asked.onlyPids == [100, 999])
     }
@@ -254,7 +254,7 @@ struct ExecutorArrangeDisplayTests {
         let entries = there + here
         let run = executor(entries: entries, focused: here[1], history: [2, 4, 3, 1])
 
-        let outcome = try arranged(try run.run(.arrangeGrid(Rig.grid2x2)))
+        let outcome = try arranged(try run.run(.arrangeGrid(Rig.grid2x2), settings: .pinned()))
 
         #expect(outcome.displayIndex == index)
         #expect(outcome.windows.map(\.window) == [2, 1].map(Rig.id))
@@ -271,7 +271,7 @@ struct ExecutorArrangeDisplayTests {
         let behind = Rig.window(2, on: Rig.primary)
         let run = executor(entries: [front, behind], focused: nil, history: [2, 1])
 
-        let outcome = try arranged(try run.run(.arrangeGrid(Rig.grid2x2)))
+        let outcome = try arranged(try run.run(.arrangeGrid(Rig.grid2x2), settings: .pinned()))
 
         #expect(outcome.displayIndex == 1)
         #expect(outcome.windows.map(\.window) == [1].map(Rig.id))
@@ -294,7 +294,7 @@ struct ExecutorArrangeDisplayTests {
                 history: { history },
                 focusedWindowID: { Rig.id(2) }))
 
-        let outcome = try arranged(try run.run(.arrangeGrid(Rig.grid2x2)))
+        let outcome = try arranged(try run.run(.arrangeGrid(Rig.grid2x2), settings: .pinned()))
 
         #expect(outcome.windows.map(\.window) == [1, 2].map(Rig.id))
     }
@@ -311,7 +311,7 @@ struct ExecutorArrangeDisplayTests {
                 history: { FocusHistory() },
                 focusedWindowID: { nil }))
 
-        let outcome = try arranged(try run.run(.arrangeGrid(Rig.grid2x2)))
+        let outcome = try arranged(try run.run(.arrangeGrid(Rig.grid2x2), settings: .pinned()))
 
         #expect(outcome.windows.map(\.window) == [1].map(Rig.id))
     }
@@ -323,7 +323,7 @@ struct ExecutorArrangeNothingToDoTests {
     func nothingAtAll() throws {
         let run = executor(entries: [], focused: nil, history: [])
 
-        #expect(try run.run(.arrangeGrid(Rig.grid2x2)) == .nothingToDo)
+        #expect(try run.run(.arrangeGrid(Rig.grid2x2), settings: .pinned()) == .nothingToDo)
     }
 
     @Test("a focused window but no candidates: nothing to do")
@@ -331,7 +331,7 @@ struct ExecutorArrangeNothingToDoTests {
         let focused = Rig.window(1)
         let run = executor(entries: [], focused: focused, history: [1])
 
-        #expect(try run.run(.arrangeGrid(Rig.grid2x2)) == .nothingToDo)
+        #expect(try run.run(.arrangeGrid(Rig.grid2x2), settings: .pinned()) == .nothingToDo)
         #expect(focused.handle.calls.isEmpty)
     }
 
@@ -341,7 +341,7 @@ struct ExecutorArrangeNothingToDoTests {
         let elsewhere = Rig.window(2, on: Rig.secondary)
         let run = executor(entries: [elsewhere], focused: focused, history: [2, 1])
 
-        #expect(try run.run(.arrangeGrid(Rig.grid2x2)) == .nothingToDo)
+        #expect(try run.run(.arrangeGrid(Rig.grid2x2), settings: .pinned()) == .nothingToDo)
         #expect(elsewhere.handle.calls.isEmpty)
     }
 
@@ -350,7 +350,7 @@ struct ExecutorArrangeNothingToDoTests {
         let entries = [Rig.window(1, isMinimized: true), Rig.window(2, isFullScreen: true)]
         let run = executor(entries: entries, focused: entries[0], history: [2, 1])
 
-        #expect(try run.run(.arrangeGrid(Rig.grid2x2)) == .nothingToDo)
+        #expect(try run.run(.arrangeGrid(Rig.grid2x2), settings: .pinned()) == .nothingToDo)
         #expect(entries.allSatisfy { $0.handle.calls.isEmpty })
     }
 
@@ -359,7 +359,7 @@ struct ExecutorArrangeNothingToDoTests {
         let window = Rig.window(1)
         let run = ActionExecutor(window: { window.handle }, displays: { Rig.both })
 
-        #expect(try run.run(.arrangeGrid(Rig.grid2x2)) == .nothingToDo)
+        #expect(try run.run(.arrangeGrid(Rig.grid2x2), settings: .pinned()) == .nothingToDo)
         #expect(window.handle.calls.isEmpty)
     }
 
@@ -371,7 +371,7 @@ struct ExecutorArrangeNothingToDoTests {
             throws: ArrangePlannerError.invalidGrid(
                 .outOfRange(field: "count", rule: "must be <= rows * columns"))
         ) {
-            try run.run(.arrangeGrid(GridSpec(count: 5, rows: 2, columns: 2)))
+            try run.run(.arrangeGrid(GridSpec(count: 5, rows: 2, columns: 2)), settings: .pinned())
         }
     }
 }
@@ -385,7 +385,7 @@ struct ExecutorArrangeFailureTests {
         entries[2].handle.failPositionWith = .windowGone
         let run = executor(entries: entries, focused: entries[3], history: [4, 3, 2, 1])
 
-        let outcome = try arranged(try run.run(.arrangeGrid(Rig.grid2x2)))
+        let outcome = try arranged(try run.run(.arrangeGrid(Rig.grid2x2), settings: .pinned()))
 
         let cells = Rig.cells(4)
         #expect(outcome.windows.map(\.window) == [4, 3, 2, 1].map(Rig.id))
@@ -404,7 +404,7 @@ struct ExecutorArrangeFailureTests {
         entries[0].handle.failFrameWith = .accessibility(operation: "read AXPosition", code: -25204)
         let run = executor(entries: entries, focused: entries[1], history: [2, 1])
 
-        let outcome = try arranged(try run.run(.arrangeGrid(Rig.grid2x2)))
+        let outcome = try arranged(try run.run(.arrangeGrid(Rig.grid2x2), settings: .pinned()))
 
         #expect(outcome.windows[0].result == .placed(achieved: Rig.cells(2)[0]))
         guard case .failed(let message) = outcome.windows[1].result else {
@@ -422,7 +422,7 @@ struct ExecutorArrangeFailureTests {
         entries[2].handle.minimumSize = CGSize(width: 900, height: cells[1].height)
         let run = executor(entries: entries, focused: entries[3], history: [4, 3, 2, 1])
 
-        let outcome = try arranged(try run.run(.arrangeGrid(Rig.grid2x2)))
+        let outcome = try arranged(try run.run(.arrangeGrid(Rig.grid2x2), settings: .pinned()))
 
         guard case .placed(let achieved) = outcome.windows[1].result else {
             Issue.record("expected window 3 to be placed, got \(outcome.windows[1].result)")
@@ -445,7 +445,7 @@ struct ExecutorArrangeFailureTests {
         entries[1].handle.isFixedSize = true
         let run = executor(entries: entries, focused: entries[0], history: [1, 2])
 
-        let outcome = try arranged(try run.run(.arrangeGrid(Rig.grid2x2)))
+        let outcome = try arranged(try run.run(.arrangeGrid(Rig.grid2x2), settings: .pinned()))
 
         let cells = Rig.cells(2)
         #expect(outcome.windows[1].target == cells[1])
@@ -459,7 +459,7 @@ struct ExecutorArrangeFailureTests {
         let run = executor(entries: entries, focused: entries[11], history: (1...12).reversed().map { UInt32($0) })
 
         #expect(throws: ArrangePlannerError.cellTooSmall) {
-            try run.run(.arrangeGrid(GridSpec(count: 12, rows: 12, columns: 1)))
+            try run.run(.arrangeGrid(GridSpec(count: 12, rows: 12, columns: 1)), settings: .pinned())
         }
         #expect(entries.allSatisfy { $0.handle.calls.isEmpty })
     }
@@ -470,7 +470,7 @@ struct ExecutorArrangeFailureTests {
         let run = executor(entries: entries, focused: entries[3], history: [4, 3, 2, 1])
 
         #expect(throws: ArrangePlannerError.self) {
-            try run.run(.arrangeGrid(GridSpec(count: 0, rows: 2, columns: 2)))
+            try run.run(.arrangeGrid(GridSpec(count: 0, rows: 2, columns: 2)), settings: .pinned())
         }
         #expect(entries.allSatisfy { $0.handle.calls.isEmpty })
     }
@@ -482,7 +482,7 @@ struct ExecutorArrangeFailureTests {
             entries: entries, focused: entries[0], history: [1], catalogError: WindowError.notTrusted)
 
         #expect(throws: WindowError.notTrusted) {
-            try run.run(.arrangeGrid(Rig.grid2x2))
+            try run.run(.arrangeGrid(Rig.grid2x2), settings: .pinned())
         }
         #expect(entries[0].handle.calls.isEmpty)
     }
@@ -500,7 +500,7 @@ struct ExecutorArrangeFailureTests {
                 focusedWindowID: { nil }))
 
         #expect(throws: WindowError.notTrusted) {
-            try run.run(.arrangeGrid(Rig.grid2x2))
+            try run.run(.arrangeGrid(Rig.grid2x2), settings: .pinned())
         }
         #expect(entries[0].handle.calls.isEmpty)
     }
@@ -511,7 +511,7 @@ struct ExecutorArrangeFailureTests {
         let run = executor(entries: entries, focused: entries[0], history: [1], displays: [])
 
         #expect(throws: ActionPlanningError.noDisplays) {
-            try run.run(.arrangeGrid(Rig.grid2x2))
+            try run.run(.arrangeGrid(Rig.grid2x2), settings: .pinned())
         }
     }
 

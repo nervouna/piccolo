@@ -26,7 +26,8 @@ struct LayoutEditorSheetRenderTests {
 
     /// A model on `bindings`, with the grids filling in `fillOrder`.
     private func model(_ bindings: [KeyBinding] = [], fillOrder: GridFillOrder = .rows) -> SettingsModel {
-        let backend = InMemorySettingsBackend(config: Config(bindings: bindings))
+        // Rows first unless `fillOrder` says otherwise, whatever the default of a new install is.
+        let backend = InMemorySettingsBackend(config: Config(gridFillOrder: .rows, bindings: bindings))
         let model = SettingsModel(backend: backend, loginItem: FakeLoginItem(), language: FakeLanguage()) { _ in nil }
         if fillOrder != .rows {
             #expect(model.setGridFillOrder(fillOrder))

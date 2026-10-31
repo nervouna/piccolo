@@ -25,7 +25,8 @@ struct SettingsUndoModelTests {
     private func make(
         _ config: Config? = nil, language: FakeLanguage = FakeLanguage(), loginItem: FakeLoginItem = FakeLoginItem()
     ) -> (model: SettingsModel, backend: InMemorySettingsBackend) {
-        let backend = InMemorySettingsBackend(config: config ?? Config(gap: 16, bindings: [left, right]))
+        let backend = InMemorySettingsBackend(
+            config: config ?? Config(animation: .fast, gridFillOrder: .rows, gap: 16, bindings: [left, right]))
         let model = SettingsModel(backend: backend, loginItem: loginItem, language: language) { code in
             ["0": "a", "11": "b"][String(code)]
         }
@@ -226,7 +227,7 @@ struct SettingsUndoModelTests {
 
         #expect(model.restoreDefaultShortcuts())
         let restored = model.config
-        #expect(restored.bindings.count == 32)
+        #expect(restored.bindings.count == 33)
         #expect(backend.copies.count == 1)
 
         #expect(model.undo())

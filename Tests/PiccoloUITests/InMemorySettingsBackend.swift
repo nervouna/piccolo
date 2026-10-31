@@ -102,9 +102,10 @@ enum UIFixture {
     /// The letter A with control: registrable, and not a function key.
     static let controlA = Shortcut(keyCode: 0, modifiers: [.control])
 
-    /// Two bindings: Left Half on ⌃⌥⇧⌘F13 and Next Display without a shortcut.
+    /// Two bindings: Left Half on ⌃⌥⇧⌘F13 and Next Display without a shortcut. The settings are the ones
+    /// the model tests were written for (Fast, rows first, no gap), not the defaults of a new install.
     static func twoBindings() -> Config {
-        Config(bindings: [
+        Config(animation: .fast, gridFillOrder: .rows, gap: 0, bindings: [
             KeyBinding(id: idA, action: .placeWindow(.preset(.leftHalf)), shortcut: f13),
             KeyBinding(id: idB, action: .moveToDisplay(.next)),
         ])

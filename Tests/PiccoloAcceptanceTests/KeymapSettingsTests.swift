@@ -10,8 +10,8 @@ import Testing
 /// grids and custom areas, and keeps the config file and the global hotkeys in step with all of it.
 ///
 /// Every test runs on a temporary config applied with `config.load` (see ``withSettingsSession(_:inNewSubfolder:_:)``),
-/// holding the 32 default shortcuts, so that Settings never writes to the default location. Recording
-/// suspends every hotkey, so the keys the tests post (including ⌃⌥←, which is a default shortcut) never
+/// holding the 33 default shortcuts, so that Settings never writes to the default location. Recording
+/// suspends every hotkey, so the keys the tests post (including Left Half's default shortcut) never
 /// fire an action; only the shortcut recorded for a new binding is a hotkey afterwards, and it is control +
 /// option + shift + command with F14.
 ///
@@ -24,23 +24,22 @@ extension DesktopAcceptanceTests {
 
         private static let leftHalf = Action.placeWindow(.preset(.leftHalf))
         private static let topLeft = Action.placeWindow(.preset(.topLeft))
-        private static let nextDisplay = Action.moveToDisplay(.next)
-        private static let controlOptionLeft = Shortcut(keyCode: 123, modifiers: [.control, .option])
+        private static let topHalf = Action.placeWindow(.preset(.topHalf))
 
         // MARK: 1. A row without a binding
 
-        @Test("keymap 1. recording ⌃⌥⇧⌘F14 on moveToDisplay.next, which has no binding, adds one to the file and registers the hotkey")
+        @Test("keymap 1. recording ⌃⌥⇧⌘F14 on placeWindow.topHalf, which has no binding, adds one to the file and registers the hotkey")
         func recordUnboundRow() async throws {
             try await withSettingsSession(Config.defaultShortcuts.bindings) { session in
                 try piccolo.settingsSetSearch("")
                 try session.openSettings()
                 let before = try session.fileBindings()
                 #expect(
-                    !before.contains { $0.action == Self.nextDisplay },
-                    "the default shortcuts already bind \(Self.nextDisplay)")
+                    !before.contains { $0.action == Self.topHalf },
+                    "the default shortcuts already bind \(Self.topHalf)")
                 let registeredBefore = try piccolo.configStatus().registered
 
-                let state = try await session.record("moveToDisplay.next", TestShortcut.f14)
+                let state = try await session.record("placeWindow.topHalf", TestShortcut.f14)
 
                 #expect(state.error == nil, "recording set the error \(state.error ?? "")")
                 #expect(state.recordingRow == nil, "the recording did not end")
@@ -49,11 +48,11 @@ extension DesktopAcceptanceTests {
                 #expect(after.count == before.count + 1, "the file holds \(after.count) bindings, not \(before.count + 1)")
                 #expect(Array(after.dropLast()) == before, "the other bindings changed")
                 let added = try #require(after.last)
-                #expect(added.action == Self.nextDisplay)
+                #expect(added.action == Self.topHalf)
                 #expect(added.shortcut == TestShortcut.f14)
 
-                let row = try #require(state.rows.first { $0.row == "moveToDisplay.next" })
-                #expect(row.section == "displays")
+                let row = try #require(state.rows.first { $0.row == "placeWindow.topHalf" })
+                #expect(row.section == "halves")
                 #expect(row.shortcuts.map(\.bindingID) == [added.id])
                 #expect(row.shortcuts.map(\.shortcutText) == ["⌃⌥⇧⌘F14"])
                 #expect(row.shortcuts.map(\.active) == [true])
@@ -71,24 +70,29 @@ extension DesktopAcceptanceTests {
 
         // MARK: 2. A shortcut another row has
 
-        @Test("keymap 2. recording ⌃⌥← on placeWindow.topLeft answers a conflict naming Left Half and changes nothing; replacing moves the shortcut in one step")
+        @Test("keymap 2. recording Left Half's shortcut on placeWindow.topLeft answers a conflict naming Left Half and changes nothing; replacing moves the shortcut in one step")
         func conflictAndReplace() async throws {
+            let leftShortcut = try Config.defaultShortcut(of: Self.leftHalf)
             try await withSettingsSession(Config.defaultShortcuts.bindings) { session in
                 try piccolo.settingsSetSearch("")
                 try session.openSettings()
                 let before = try session.fileBindings()
                 let beforeBytes = try session.fileBytes()
                 let left = try #require(before.first { $0.action == Self.leftHalf })
-                #expect(left.shortcut == Self.controlOptionLeft)
+                #expect(left.shortcut == leftShortcut)
+                // The text of the shortcut on this keyboard layout, as the keymap shows it.
+                let leftText = try #require(
+                    try piccolo.keymapState().rows.first { $0.row == "placeWindow.leftHalf" }?.shortcuts.first?.shortcutText,
+                    "the Left Half row shows no shortcut")
                 let topLeft = try #require(before.first { $0.action == Self.topLeft })
                 let registeredBefore = try piccolo.configStatus().registered
 
-                let state = try await session.record("placeWindow.topLeft", Self.controlOptionLeft)
+                let state = try await session.record("placeWindow.topLeft", leftShortcut)
 
                 let conflict = try #require(state.conflict, "recording a taken shortcut answered no conflict")
                 let texts = try InterfaceTexts.current(piccolo)
                 #expect(conflict.row == "placeWindow.topLeft")
-                #expect(conflict.shortcutText == "⌃⌥←")
+                #expect(conflict.shortcutText == leftText)
                 #expect(conflict.ownerBindingID == left.id)
                 #expect(conflict.ownerName == texts.summary(of: Self.leftHalf), "the conflict names \(conflict.ownerName)")
                 #expect(state.recordingRow == nil, "the recording did not end")
@@ -103,33 +107,33 @@ extension DesktopAcceptanceTests {
                 let leftRow = try #require(resolved.rows.first { $0.row == "placeWindow.leftHalf" })
                 #expect(leftRow.shortcuts.isEmpty, "Left Half still has \(leftRow.shortcuts)")
                 let topLeftRow = try #require(resolved.rows.first { $0.row == "placeWindow.topLeft" })
-                #expect(topLeftRow.shortcuts.map(\.shortcutText) == ["⌃⌥←"])
+                #expect(topLeftRow.shortcuts.map(\.shortcutText) == [leftText])
 
                 let after = try session.fileBindings()
                 #expect(!after.contains { $0.action == Self.leftHalf }, "the file still has a Left Half binding")
                 #expect(after.count == before.count - 1)
                 let changed = try #require(after.first { $0.id == topLeft.id })
-                #expect(changed.shortcut == Self.controlOptionLeft)
-                #expect(after.filter { $0.shortcut == Self.controlOptionLeft }.map(\.id) == [topLeft.id])
+                #expect(changed.shortcut == leftShortcut)
+                #expect(after.filter { $0.shortcut == leftShortcut }.map(\.id) == [topLeft.id])
 
                 let registered = try piccolo.configStatus().registered
                 let holders = registered.filter {
-                    $0.keyCode == Self.controlOptionLeft.keyCode && $0.modifiers == Self.controlOptionLeft.modifiers
+                    $0.keyCode == leftShortcut.keyCode && $0.modifiers == leftShortcut.modifiers
                 }
-                #expect(holders.map(\.id) == [topLeft.id], "⌃⌥← is registered for \(holders.map(\.id))")
+                #expect(holders.map(\.id) == [topLeft.id], "\(leftText) is registered for \(holders.map(\.id))")
                 #expect(registered.count == registeredBefore.count - 1)
             }
         }
 
         // MARK: 3. Adding a layout
 
-        @Test("keymap 3. adding the grid 4 in 2 × 2, which exists, is refused and leaves the file; adding 3 in 2 × 2 adds it and records it")
+        @Test("keymap 3. adding the grid 3 in 2 × 2, which exists, is refused and leaves the file; adding 4 in 2 × 2 adds it and records it")
         func addLayout() async throws {
             try await withSettingsSession(Config.defaultShortcuts.bindings) { session in
                 try piccolo.settingsSetSearch("")
                 let beforeBytes = try session.fileBytes()
                 let registeredBefore = try piccolo.configStatus().registered
-                let existing = Action.arrangeGrid(GridSpec(count: 4, rows: 2, columns: 2))
+                let existing = Action.arrangeGrid(GridSpec(count: 3, rows: 2, columns: 2))
                 let language = try #require(AppLanguage(rawValue: try piccolo.settingsState().effectiveLanguage))
                 let bundle = try #require(language.textBundle)
 
@@ -142,7 +146,7 @@ extension DesktopAcceptanceTests {
                 #expect(refused.errorTarget == .string("window"))
                 #expect(refused.recordingRow == nil)
 
-                let grid = Action.arrangeGrid(GridSpec(count: 3, rows: 2, columns: 2))
+                let grid = Action.arrangeGrid(GridSpec(count: 4, rows: 2, columns: 2))
                 let state = try piccolo.keymapAddLayout(grid)
 
                 let recording = try #require(state.recordingRow, "adding a grid did not start a recording")
@@ -173,24 +177,36 @@ extension DesktopAcceptanceTests {
                 try piccolo.settingsSetSearch("")
                 let state = try piccolo.keymapState()
 
-                // 30 built-in rows and the four default grids, in the order of the keymap.
+                // 30 built-in rows, the four default grids and the default custom area, in the order of the keymap.
                 let sections = state.rows.map(\.section).reduce(into: [String]()) { names, name in
                     if names.last != name { names.append(name) }
                 }
                 #expect(
-                    sections == ["halves", "quarters", "thirds", "other", "displays", "grids", "dividers", "swaps"],
+                    sections
+                        == [
+                            "halves", "quarters", "thirds", "other", "displays", "grids", "dividers", "swaps",
+                            "customAreas",
+                        ],
                     "the sections are \(sections)")
-                #expect(state.rows.count == 34, "the state lists \(state.rows.count) rows")
+                #expect(state.rows.count == 35, "the state lists \(state.rows.count) rows")
                 #expect(state.rows.filter { !$0.editable }.map(\.row) == BuiltInActions.all.map { KeymapRowID.builtIn($0).name })
                 let grids = state.rows.filter { $0.section == "grids" }
                 #expect(grids.count == 4)
                 #expect(grids.allSatisfy { $0.editable && UUID(uuidString: $0.row) != nil })
+                let areas = state.rows.filter { $0.section == "customAreas" }
+                #expect(areas.count == 1)
+                #expect(areas.allSatisfy { $0.editable && UUID(uuidString: $0.row) != nil })
 
                 // A hand-edited file may bind one action twice: both shortcuts are in the row, in file order.
                 let leftRow = try #require(state.rows.first { $0.row == "placeWindow.leftHalf" })
-                #expect(leftRow.shortcuts.map(\.shortcutText) == ["⌃⌥←", "⌃⌥⇧⌘F13"])
+                let defaultLeft = try #require(defaults.first { $0.action == Self.leftHalf })
+                #expect(leftRow.shortcuts.map(\.bindingID) == [defaultLeft.id, extra.id])
+                #expect(leftRow.shortcuts.last?.shortcutText == "⌃⌥⇧⌘F13")
+                // Top Half and Bottom Half have no default shortcut; Next Display has one.
+                let topHalfRow = try #require(state.rows.first { $0.row == "placeWindow.topHalf" })
+                #expect(topHalfRow.shortcuts.isEmpty)
                 let nextRow = try #require(state.rows.first { $0.row == "moveToDisplay.next" })
-                #expect(nextRow.shortcuts.isEmpty)
+                #expect(nextRow.shortcuts.count == 1)
 
                 // Beginning a recording marks the row and suspends the hotkeys; cancelling brings them back.
                 let registeredBefore = try piccolo.configStatus().registered
@@ -210,9 +226,9 @@ extension DesktopAcceptanceTests {
                 #expect(!(try session.registeredIDs().contains(divider.id)))
 
                 // A grid can become another grid, but not one that exists.
-                let fourInTwoByTwo = Action.arrangeGrid(GridSpec(count: 4, rows: 2, columns: 2))
+                let threeInTwoByTwo = Action.arrangeGrid(GridSpec(count: 3, rows: 2, columns: 2))
                 let sixInTwoByThree = Action.arrangeGrid(GridSpec(count: 6, rows: 2, columns: 3))
-                let grid = try #require(try session.fileBindings().first { $0.action == fourInTwoByTwo })
+                let grid = try #require(try session.fileBindings().first { $0.action == threeInTwoByTwo })
                 let refusal = try piccolo.keymapUpdateLayoutExpectingRefusal(grid.id, sixInTwoByThree)
                 #expect(try piccolo.keymapState().error == refusal)
                 #expect(try piccolo.keymapState().errorTarget == .string("window"))

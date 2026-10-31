@@ -190,7 +190,7 @@ final class Desk: @unchecked Sendable {
     @discardableResult
     func arrange(count: Int, rows: Int, columns: Int, onlyPid: pid_t? = nil) throws -> ArrangeOutcome {
         let outcome = try executor.run(
-            .arrangeGrid(GridSpec(count: count, rows: rows, columns: columns)), onlyPid: onlyPid)
+            .arrangeGrid(GridSpec(count: count, rows: rows, columns: columns)), onlyPid: onlyPid, settings: .pinned())
         guard case .arranged(let arranged) = outcome else {
             throw DeskFailure("expected an arrangement, got \(outcome)")
         }
@@ -201,7 +201,7 @@ final class Desk: @unchecked Sendable {
     func move(
         _ direction: Direction, step: Double = DeskRig.step, onlyPid: pid_t? = nil
     ) throws -> DividerMoveOutcome {
-        let outcome = try executor.run(.moveDivider(direction), onlyPid: onlyPid, settings: ActionSettings(resizeStep: step))
+        let outcome = try executor.run(.moveDivider(direction), onlyPid: onlyPid, settings: ActionSettings.pinned(resizeStep: step))
         guard case .dividerMove(let result) = outcome else {
             throw DeskFailure("expected a divider move, got \(outcome)")
         }
@@ -221,7 +221,7 @@ final class Desk: @unchecked Sendable {
 
     /// Presses a swap key. `settings` carries the gap and the animation; the defaults have neither.
     func swap(
-        _ direction: Direction, settings: ActionSettings = ActionSettings(), onlyPid: pid_t? = nil
+        _ direction: Direction, settings: ActionSettings = .pinned(), onlyPid: pid_t? = nil
     ) throws -> SwapOutcome {
         let outcome = try executor.run(.swapWindow(direction), onlyPid: onlyPid, settings: settings)
         guard case .swap(let result) = outcome else {
@@ -235,7 +235,7 @@ final class Desk: @unchecked Sendable {
     /// - Returns: the display and every window of the group in cell order, after the swap.
     @discardableResult
     func swapped(
-        _ direction: Direction, settings: ActionSettings = ActionSettings(), onlyPid: pid_t? = nil
+        _ direction: Direction, settings: ActionSettings = .pinned(), onlyPid: pid_t? = nil
     ) throws -> (display: Int, windows: [ArrangedWindow]) {
         let outcome = try swap(direction, settings: settings, onlyPid: onlyPid)
         guard case .swapped(let display, let windows) = outcome else {

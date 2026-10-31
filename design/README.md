@@ -9,6 +9,7 @@
 | `menubar-icon-outline.svg` | Menu bar glyph, candidate 2 (outline): 19 × 18 pt on the 18 pt grid. Not used by the app. |
 | `menubar-preview.png` | Candidate 1, the 16 pt latte, the 18 pt latte and candidate 2, each at 16, 18 and 22 pt, at 1x and 2x, on a light and a dark menu bar, plus a magnified view of the 1x pixels. |
 | `render-menubar-preview.swift` | Script that renders `menubar-preview.png` from the SVGs in its `candidates` array. |
+| `frame-screenshot.swift` | Script that puts a window capture on the cream background of the banner, with a soft shadow, for the README screenshots: `swift design/frame-screenshot.swift <capture.png> <output.png>`. |
 
 ## Replacing the app icon
 

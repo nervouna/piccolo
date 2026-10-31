@@ -9,8 +9,8 @@ extension ConfigDirectory {
     /// returns its URL.
     @discardableResult
     func write(
-        resizeStep: Double, animation: WindowAnimation = Config.defaultAnimation,
-        gridFillOrder: GridFillOrder = .rows, gap: Int = Config.defaultGap,
+        resizeStep: Double, animation: WindowAnimation = FrameTestSettings.animation,
+        gridFillOrder: GridFillOrder = FrameTestSettings.gridFillOrder, gap: Int = FrameTestSettings.gap,
         destinationPreview: Bool = Config.defaultDestinationPreview, bindings: [KeyBinding] = [],
         as name: String = "config.json"
     ) throws -> URL {
@@ -30,9 +30,9 @@ extension ConfigDirectory {
 /// Piccolo is back on the fresh-install config the test started on (see `withConfigDirectory`).
 func withLinkedResize<Result>(
     step: Double = LinkedRun.defaultStep,
-    animation: WindowAnimation = Config.defaultAnimation,
-    gridFillOrder: GridFillOrder = .rows,
-    gap: Int = Config.defaultGap,
+    animation: WindowAnimation = FrameTestSettings.animation,
+    gridFillOrder: GridFillOrder = FrameTestSettings.gridFillOrder,
+    gap: Int = FrameTestSettings.gap,
     destinationPreview: Bool = Config.defaultDestinationPreview,
     bindings: [KeyBinding] = [],
     _ body: (LinkedRun) async throws -> Result

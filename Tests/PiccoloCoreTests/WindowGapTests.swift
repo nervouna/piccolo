@@ -69,10 +69,10 @@ struct WindowGapConfigTests {
         }
     }
 
-    @Test("a file without gap loads 0 without an issue")
+    @Test("a file without gap loads the default, 16, without an issue")
     func missing() throws {
         let result = try load(#"{"bindings":[],"version":1}"#)
-        #expect(result.config.gap == 0)
+        #expect(result.config.gap == 16)
         #expect(result.issues.isEmpty)
         #expect(result.droppedEntries == false)
     }
@@ -90,7 +90,7 @@ struct WindowGapConfigTests {
     ])
     func invalid(_ value: String) throws {
         let result = try load(#"{"bindings":[],"gap":\#(value),"resizeStep":0.1,"version":1}"#)
-        #expect(result.config.gap == 0)
+        #expect(result.config.gap == 16)
         #expect(result.config.resizeStep == 0.1)
         #expect(result.issues.count == 1)
         #expect(result.issues.first?.hasPrefix("gap ") == true, "\(result.issues)")
@@ -103,7 +103,7 @@ struct WindowGapConfigTests {
             let url = directory.appending(path: "config.json")
             let store = ConfigStore(url: url)
             try store.save(Config())
-            #expect(try String(contentsOf: url, encoding: .utf8).contains(#""gap" : 0"#))
+            #expect(try String(contentsOf: url, encoding: .utf8).contains(#""gap" : 16"#))
 
             let config = Config(gap: 12, bindings: allKindsBindings)
             try store.save(config)
@@ -128,8 +128,8 @@ struct WindowGapConfigTests {
     @Test("the action settings carry the gap")
     func actionSettings() {
         #expect(ActionSettings(Config(gap: 9)).gap == 9)
-        #expect(ActionSettings.default.gap == 0)
-        #expect(ActionSettings().gap == 0)
+        #expect(ActionSettings.default.gap == 16)
+        #expect(ActionSettings().gap == 16)
     }
 }
 

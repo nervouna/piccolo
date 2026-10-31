@@ -36,11 +36,12 @@ struct ConfigDirectory {
         url.appending(path: name)
     }
 
-    /// Writes a config with `bindings` as `name`, the way Piccolo itself would, and returns its URL.
+    /// Writes a config with `bindings` and the settings of ``FrameTestSettings`` as `name`, the way Piccolo
+    /// itself would, and returns its URL.
     @discardableResult
     func write(_ bindings: [KeyBinding], as name: String = "config.json") throws -> URL {
         let target = file(name)
-        try ConfigStore(url: target).save(Config(bindings: bindings))
+        try ConfigStore(url: target).save(Config.frameTest(bindings: bindings))
         return target
     }
 

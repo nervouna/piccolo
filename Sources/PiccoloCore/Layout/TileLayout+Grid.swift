@@ -3,7 +3,7 @@ extension TileLayout {
     ///
     /// Only the first `min(windowCount, rows * columns)` cells are used.
     ///
-    /// - Rows first (the default): the layout is a row layout. Every used row holds `columns`
+    /// - Rows first: the layout is a row layout. Every used row holds `columns`
     ///   windows, except the last, which holds the remainder. Used rows have equal heights, and the
     ///   windows of a row have equal widths. A short last row therefore stretches to the full width,
     ///   and unused rows give their height to the used ones.

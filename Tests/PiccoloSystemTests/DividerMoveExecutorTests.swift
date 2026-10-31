@@ -481,7 +481,7 @@ struct DividerMoveExecutorTests {
         desk.openWindows(2)
         try desk.arrange(count: 2, rows: 1, columns: 2)
 
-        let outcome = try desk.executor.run(.moveDivider(.right))
+        let outcome = try desk.executor.run(.moveDivider(.right), settings: .pinned())
 
         guard case .dividerMove(.moved) = outcome else {
             Issue.record("expected the divider to move, got \(outcome)")

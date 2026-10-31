@@ -552,7 +552,7 @@ extension DesktopAcceptanceTests {
 
         // MARK: 13. Restore the default shortcuts
 
-        @Test("settings 13. settings.restoreDefaults replaces the bindings with the 32 defaults, keeps the resize step and a copy of the file")
+        @Test("settings 13. settings.restoreDefaults replaces the bindings with the 33 defaults, keeps the resize step and a copy of the file")
         func restoreDefaults() async throws {
             let custom = KeyBinding(action: .placeWindow(.preset(.rightHalf)), shortcut: TestShortcut.f14)
             try await withSettingsSession([custom]) { session in
@@ -563,7 +563,7 @@ extension DesktopAcceptanceTests {
                 let restored = try piccolo.settingsRestoreDefaults()
 
                 #expect(restored.state.error == nil, "restoring set the error \(restored.state.error ?? "")")
-                #expect(restored.state.bindings.count == 32, "the state lists \(restored.state.bindings.count) bindings")
+                #expect(restored.state.bindings.count == 33, "the state lists \(restored.state.bindings.count) bindings")
                 #expect(restored.state.resizeStep == 0.1, "the resize step became \(restored.state.resizeStep)")
                 #expect(!restored.state.bindings.contains { $0.id == custom.id }, "the custom binding survived the restore")
 
@@ -573,13 +573,13 @@ extension DesktopAcceptanceTests {
                 #expect(try Data(contentsOf: copy) == before, "the copy differs from the file as it was before the restore")
 
                 let inFile = try session.fileConfig()
-                #expect(inFile.bindings.count == 32, "the file holds \(inFile.bindings.count) bindings")
+                #expect(inFile.bindings.count == 33, "the file holds \(inFile.bindings.count) bindings")
                 #expect(inFile.resizeStep == 0.1, "the file's resize step is \(inFile.resizeStep)")
 
                 let status = try piccolo.configStatus()
-                #expect(status.bindingCount == 32, "config.status counts \(status.bindingCount) bindings")
+                #expect(status.bindingCount == 33, "config.status counts \(status.bindingCount) bindings")
                 #expect(status.issues.isEmpty, "config.status reports issues: \(status.issues)")
-                #expect(status.registered.count == 32, "config.status lists \(status.registered.count) as registered")
+                #expect(status.registered.count == 33, "config.status lists \(status.registered.count) as registered")
             }
         }
 
@@ -624,11 +624,7 @@ extension DesktopAcceptanceTests {
                 let restored = try piccolo.settingsRestoreDefaults().state
                 let defaults = Config.defaultShortcuts.bindings
 
-                // A custom area makes the ninth section: the default shortcuts have none. Adding it starts a
-                // recording, which ends at once.
-                let area = Action.placeWindow(.custom(FractionalRect(x: 0.25, y: 0, width: 0.5, height: 1)))
-                try piccolo.keymapAddLayout(area)
-                try piccolo.settingsCancelRecording()
+                // The default shortcuts have a custom area, which makes the ninth section.
                 let state = try piccolo.keymapState()
 
                 // Nine sections, in order, with the rows of the 30 built-in actions and of each grid and area.
@@ -644,7 +640,9 @@ extension DesktopAcceptanceTests {
                     expected[KeymapSection(of: action).rawValue, default: 0] += 1
                 }
                 expected[KeymapSection.grids.rawValue] = defaults.filter { KeymapSection(of: $0.action) == .grids }.count
-                expected[KeymapSection.customAreas.rawValue] = 1
+                expected[KeymapSection.customAreas.rawValue] =
+                    defaults.filter { KeymapSection(of: $0.action) == .customAreas }.count
+                #expect(expected[KeymapSection.customAreas.rawValue] == 1, "the default shortcuts have no custom area")
                 #expect(counts == expected, "row counts are \(counts), expected \(expected)")
                 #expect(state.search == "", "the search is \"\(state.search)\" after restoring")
 
@@ -662,7 +660,8 @@ extension DesktopAcceptanceTests {
                 #expect(namedRows == [Self.leftHalfRow], "the search for \"\(name)\" left \(namedRows)")
 
                 // A search by shortcut text keeps the rows whose shortcut has the query, the Left Half row among them.
-                let query = "⌃⌥←"
+                let leftHalfRow = try #require(state.rows.first { $0.row == Self.leftHalfRow })
+                let query = try #require(leftHalfRow.shortcuts.first?.shortcutText, "Left Half has no shortcut")
                 try piccolo.settingsSetSearch(query)
                 let byShortcut = try piccolo.keymapState().rows
                 let wanted = state.rows.filter { row in

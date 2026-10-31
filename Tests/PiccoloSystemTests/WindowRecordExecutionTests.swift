@@ -38,7 +38,7 @@ struct SingleActionRecordTests {
         let window = RecordRig.window()
         let executor = RecordRig.executor(window)
 
-        _ = try executor.run(.placeWindow(.preset(.leftHalf)))
+        _ = try executor.run(.placeWindow(.preset(.leftHalf)), settings: .pinned())
 
         let record = try #require(executor.records.record(for: RecordRig.id))
         #expect(record.origin == RecordRig.start)
@@ -49,7 +49,7 @@ struct SingleActionRecordTests {
     @Test("an action that is not a cycling preset records no step")
     func noStep() throws {
         let executor = RecordRig.executor(RecordRig.window())
-        _ = try executor.run(.placeWindow(.preset(.maximize)))
+        _ = try executor.run(.placeWindow(.preset(.maximize)), settings: .pinned())
         #expect(executor.records.record(for: RecordRig.id)?.cycle == nil)
     }
 
@@ -58,8 +58,8 @@ struct SingleActionRecordTests {
         let window = RecordRig.window()
         let executor = RecordRig.executor(window)
 
-        _ = try executor.run(.placeWindow(.preset(.leftHalf)))
-        _ = try executor.run(.placeWindow(.preset(.maximize)))
+        _ = try executor.run(.placeWindow(.preset(.leftHalf)), settings: .pinned())
+        _ = try executor.run(.placeWindow(.preset(.maximize)), settings: .pinned())
 
         let record = try #require(executor.records.record(for: RecordRig.id))
         #expect(record.origin == RecordRig.start)
@@ -70,11 +70,11 @@ struct SingleActionRecordTests {
     func movedWindowNewOrigin() throws {
         let window = RecordRig.window()
         let executor = RecordRig.executor(window)
-        _ = try executor.run(.placeWindow(.preset(.leftHalf)))
+        _ = try executor.run(.placeWindow(.preset(.leftHalf)), settings: .pinned())
 
         let moved = CGRect(x: 500, y: 200, width: 450, height: 350)
         try FrameSetter.apply(moved, to: window)
-        _ = try executor.run(.placeWindow(.preset(.maximize)))
+        _ = try executor.run(.placeWindow(.preset(.maximize)), settings: .pinned())
 
         #expect(executor.records.record(for: RecordRig.id)?.origin == moved)
     }
@@ -85,7 +85,7 @@ struct SingleActionRecordTests {
         let executor = RecordRig.executor(window)
 
         for step in [0, 1, 2, 0] {
-            _ = try executor.run(.placeWindow(.preset(.leftHalf)))
+            _ = try executor.run(.placeWindow(.preset(.leftHalf)), settings: .pinned())
             #expect(try window.frame() == RecordRig.frame(.leftHalf, step))
             #expect(executor.records.record(for: RecordRig.id)?.cycle == CycleStep(preset: .leftHalf, step: step))
         }
@@ -99,9 +99,9 @@ struct SingleActionRecordTests {
         window.minimumSize = CGSize(width: 1000, height: 100)
         let executor = RecordRig.executor(window)
 
-        _ = try executor.run(.placeWindow(.preset(.leftHalf)))
+        _ = try executor.run(.placeWindow(.preset(.leftHalf)), settings: .pinned())
         let first = try window.frame()
-        _ = try executor.run(.placeWindow(.preset(.leftHalf)))
+        _ = try executor.run(.placeWindow(.preset(.leftHalf)), settings: .pinned())
         // Step 1 is 2/3 of 1600, which the window can take; step 0 was 800, which it refused (1000).
         #expect(first.width == 1000)
         #expect(try window.frame().width == RecordRig.frame(.leftHalf, 1).width)
@@ -114,7 +114,7 @@ struct SingleActionRecordTests {
         let executor = RecordRig.executor(window)
 
         #expect(throws: WindowError.windowGone) {
-            try executor.run(.placeWindow(.preset(.leftHalf)))
+            try executor.run(.placeWindow(.preset(.leftHalf)), settings: .pinned())
         }
         #expect(executor.records.record(for: RecordRig.id) == nil)
     }
@@ -124,13 +124,13 @@ struct SingleActionRecordTests {
         let window = RecordRig.window(id: nil)
         let executor = RecordRig.executor(window)
 
-        _ = try executor.run(.placeWindow(.preset(.leftHalf)))
-        _ = try executor.run(.placeWindow(.preset(.leftHalf)))
+        _ = try executor.run(.placeWindow(.preset(.leftHalf)), settings: .pinned())
+        _ = try executor.run(.placeWindow(.preset(.leftHalf)), settings: .pinned())
 
         #expect(try window.frame() == RecordRig.frame(.leftHalf, 1))
         #expect(executor.windowRecords.isEmpty)
         // Nor can it be restored.
-        #expect(try executor.run(.restoreWindow) == .nothingToDo)
+        #expect(try executor.run(.restoreWindow, settings: .pinned()) == .nothingToDo)
         #expect(try window.frame() == RecordRig.frame(.leftHalf, 1))
     }
 }
@@ -141,16 +141,16 @@ struct RestoreExecutionTests {
     func restores() throws {
         let window = RecordRig.window()
         let executor = RecordRig.executor(window)
-        _ = try executor.run(.placeWindow(.preset(.leftHalf)))
-        _ = try executor.run(.placeWindow(.preset(.maximize)))
+        _ = try executor.run(.placeWindow(.preset(.leftHalf)), settings: .pinned())
+        _ = try executor.run(.placeWindow(.preset(.maximize)), settings: .pinned())
 
-        let outcome = try executor.run(.restoreWindow)
+        let outcome = try executor.run(.restoreWindow, settings: .pinned())
 
         #expect(outcome == .placed(target: RecordRig.start, achieved: RecordRig.start))
         #expect(try window.frame() == RecordRig.start)
         #expect(executor.records.record(for: RecordRig.id) == nil)
         // One level only: a second restore has nothing to go back to.
-        #expect(try executor.run(.restoreWindow) == .nothingToDo)
+        #expect(try executor.run(.restoreWindow, settings: .pinned()) == .nothingToDo)
     }
 
     @Test("without a record there is nothing to do and the window stays")
@@ -158,7 +158,7 @@ struct RestoreExecutionTests {
         let window = RecordRig.window()
         let executor = RecordRig.executor(window)
 
-        #expect(try executor.run(.restoreWindow) == .nothingToDo)
+        #expect(try executor.run(.restoreWindow, settings: .pinned()) == .nothingToDo)
         #expect(try window.frame() == RecordRig.start)
     }
 
@@ -166,11 +166,11 @@ struct RestoreExecutionTests {
     func movedWindow() throws {
         let window = RecordRig.window()
         let executor = RecordRig.executor(window)
-        _ = try executor.run(.placeWindow(.preset(.leftHalf)))
+        _ = try executor.run(.placeWindow(.preset(.leftHalf)), settings: .pinned())
         let moved = CGRect(x: 640, y: 120, width: 500, height: 500)
         try FrameSetter.apply(moved, to: window)
 
-        #expect(try executor.run(.restoreWindow) == .nothingToDo)
+        #expect(try executor.run(.restoreWindow, settings: .pinned()) == .nothingToDo)
         #expect(try window.frame() == moved)
         #expect(executor.records.record(for: RecordRig.id) == nil)
     }
@@ -179,13 +179,13 @@ struct RestoreExecutionTests {
     func previewIsReadOnly() throws {
         let window = RecordRig.window()
         let executor = RecordRig.executor(window)
-        _ = try executor.run(.placeWindow(.preset(.leftHalf)))
+        _ = try executor.run(.placeWindow(.preset(.leftHalf)), settings: .pinned())
         let before = executor.windowRecords.map(\.record)
 
-        #expect(try executor.destinations(for: .restoreWindow) == [Destination(frame: RecordRig.start)])
-        #expect(try executor.destinations(for: .placeWindow(.preset(.leftHalf)))
+        #expect(try executor.destinations(for: .restoreWindow, settings: .pinned()) == [Destination(frame: RecordRig.start)])
+        #expect(try executor.destinations(for: .placeWindow(.preset(.leftHalf)), settings: .pinned())
             == [Destination(frame: RecordRig.frame(.leftHalf, 1))])
-        #expect(try executor.destinations(for: .placeWindow(.preset(.maximize))).count == 1)
+        #expect(try executor.destinations(for: .placeWindow(.preset(.maximize)), settings: .pinned()).count == 1)
 
         #expect(executor.windowRecords.map(\.record) == before)
         #expect(try window.frame() == RecordRig.frame(.leftHalf, 0))
@@ -195,10 +195,10 @@ struct RestoreExecutionTests {
     func previewOfNothing() throws {
         let window = RecordRig.window()
         let executor = RecordRig.executor(window)
-        _ = try executor.run(.placeWindow(.preset(.leftHalf)))
+        _ = try executor.run(.placeWindow(.preset(.leftHalf)), settings: .pinned())
         try FrameSetter.apply(CGRect(x: 640, y: 120, width: 500, height: 500), to: window)
 
-        #expect(try executor.destinations(for: .restoreWindow).isEmpty)
+        #expect(try executor.destinations(for: .restoreWindow, settings: .pinned()).isEmpty)
         #expect(executor.records.record(for: RecordRig.id) != nil)
     }
 }
@@ -264,9 +264,9 @@ struct ArrangementRecordTests {
         try desk.arrange(count: 3, rows: 1, columns: 3)
         let records = desk.executor.windowRecords.map(\.record)
 
-        _ = try desk.executor.destinations(for: .moveDivider(.right), settings: ActionSettings(resizeStep: 0.05))
-        _ = try desk.executor.destinations(for: .swapWindow(.right))
-        _ = try desk.executor.destinations(for: .arrangeGrid(GridSpec(count: 2, rows: 1, columns: 2)))
+        _ = try desk.executor.destinations(for: .moveDivider(.right), settings: ActionSettings.pinned(resizeStep: 0.05))
+        _ = try desk.executor.destinations(for: .swapWindow(.right), settings: .pinned())
+        _ = try desk.executor.destinations(for: .arrangeGrid(GridSpec(count: 2, rows: 1, columns: 2)), settings: .pinned())
 
         #expect(desk.executor.windowRecords.map(\.record) == records)
     }
@@ -278,7 +278,7 @@ struct ArrangementRecordTests {
         let before = try desk.frames(2)
         try desk.arrange(count: 2, rows: 1, columns: 2)
 
-        _ = try desk.executor.run(.restoreWindow)
+        _ = try desk.executor.run(.restoreWindow, settings: .pinned())
 
         #expect(try desk.frame(of: 1) == before[0])
         #expect(desk.executor.windowRecords.map(\.window) == [DeskRig.id(2)])

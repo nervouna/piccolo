@@ -11,8 +11,8 @@ public enum WindowGap {
     /// The gaps a config can hold, in points.
     public static let range = 0...64
 
-    /// The gap of a config that does not set one.
-    public static let `default` = 0
+    /// The gap of a config that does not set one, in points.
+    public static let `default` = 16
 
     /// Two edges this close, in points, are the same edge: a frame edge on the visible frame's edge.
     static let edgeTolerance: CGFloat = 1

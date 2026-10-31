@@ -474,7 +474,7 @@ struct SettingsModelTests {
 
     // MARK: Restoring the default shortcuts
 
-    @Test("restoring keeps a copy of the file, replaces the bindings with the 32 defaults and keeps the resize step")
+    @Test("restoring keeps a copy of the file, replaces the bindings with the 33 defaults and keeps the resize step")
     func restoreDefaults() {
         let (model, backend) = make(Config(resizeStep: 0.2, bindings: UIFixture.twoBindings().bindings))
 
@@ -482,12 +482,12 @@ struct SettingsModelTests {
 
         #expect(backend.copies == [InMemorySettingsBackend.copyName])
         #expect(model.backupName == InMemorySettingsBackend.copyName)
-        #expect(model.bindings.count == 32)
+        #expect(model.bindings.count == 33)
         #expect(model.bindings.map(\.action) == Config.defaultShortcuts.bindings.map(\.action))
         #expect(model.bindings.map(\.shortcut) == Config.defaultShortcuts.bindings.map(\.shortcut))
         #expect(model.resizeStep == 0.2)
         #expect(backend.config.resizeStep == 0.2)
-        #expect(backend.config.bindings.count == 32)
+        #expect(backend.config.bindings.count == 33)
         #expect(model.error == nil)
     }
 
@@ -547,8 +547,8 @@ struct SettingsModelTests {
 
         #expect(backend.copies.isEmpty)
         #expect(model.backupName == nil)
-        #expect(model.bindings.count == 32)
-        #expect(backend.config.bindings.count == 32)
+        #expect(model.bindings.count == 33)
+        #expect(backend.config.bindings.count == 33)
     }
 
     @Test("a restore the backend cannot carry out changes nothing, and the error says why")
@@ -629,8 +629,8 @@ struct SettingsModelTests {
         #expect(!model.setDestinationPreview(false))
 
         #expect(model.config == before)
-        #expect(model.animation == Config.defaultAnimation)
-        #expect(model.gridFillOrder == Config.defaultGridFillOrder)
+        #expect(model.animation == .fast)
+        #expect(model.gridFillOrder == .rows)
         #expect(model.destinationPreview == Config.defaultDestinationPreview)
         #expect(backend.saved.isEmpty)
         #expect(model.error?.contains("newer version") == true)
@@ -645,12 +645,12 @@ struct SettingsModelTests {
 
         #expect(model.restoreDefaultShortcuts())
 
-        #expect(model.bindings.count == 32)
+        #expect(model.bindings.count == 33)
         #expect(model.resizeStep == 0.2)
         #expect(model.animation == .slow)
         #expect(model.gridFillOrder == .columns)
         #expect(model.destinationPreview == false)
-        #expect(backend.config.bindings.count == 32)
+        #expect(backend.config.bindings.count == 33)
         #expect(backend.config.resizeStep == 0.2)
         #expect(backend.config.animation == .slow)
         #expect(backend.config.gridFillOrder == .columns)
