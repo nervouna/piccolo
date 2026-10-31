@@ -8,7 +8,8 @@ import PiccoloCore
 
 /// Draws the sheet that creates and edits a grid or a custom area into bitmaps, off screen, as a smoke test that its
 /// states can be built and laid out and that each looks different from the one it departs from, and looks at what
-/// the pictures can tell: the red outline around a field, the state of the Done button, the numbers of the windows.
+/// the pictures can tell: the labels and the units of the fields, the red outline around a field, the state of the
+/// Done button, the numbers of the windows.
 /// Nothing is shown and no permission is involved.
 ///
 /// Set `PICCOLO_RENDER_DIR` to a folder to keep the images, for example to look at the sheet in light and dark
@@ -56,6 +57,33 @@ struct LayoutEditorSheetRenderTests {
             ).integral
             guard let image = bitmap.cgImage?.cropping(to: pixels) else { return nil }
             return NSBitmapImageRep(cgImage: image).representation(using: .png, properties: [:])
+        }
+
+        /// How many pixels in the band of `rect` (points from the top-left corner of the sheet) are drawn, that is,
+        /// are darker than white once taken over white, and the darkest of them (0 black, 1 white). The sheet's own
+        /// background is transparent in the picture, as a viewer shows it on white.
+        func ink(in rect: CGRect) -> (count: Int, darkest: CGFloat) {
+            let minX = max(0, Int((rect.minX * scale).rounded(.down)))
+            let maxX = min(bitmap.pixelsWide, Int((rect.maxX * scale).rounded(.up)))
+            let minY = max(0, Int((rect.minY * scale).rounded(.down)))
+            let maxY = min(bitmap.pixelsHigh, Int((rect.maxY * scale).rounded(.up)))
+            var count = 0
+            var darkest: CGFloat = 1
+            for x in minX..<max(minX, maxX) {
+                for y in minY..<max(minY, maxY) {
+                    guard let color = bitmap.colorAt(x: x, y: y)?.usingColorSpace(.deviceRGB) else { continue }
+                    let luminance = Self.luminanceOverWhite(color)
+                    if luminance < 0.9 { count += 1 }
+                    darkest = min(darkest, luminance)
+                }
+            }
+            return (count, darkest)
+        }
+
+        private static func luminanceOverWhite(_ color: NSColor) -> CGFloat {
+            let alpha = color.alphaComponent
+            let value = 0.299 * color.redComponent + 0.587 * color.greenComponent + 0.114 * color.blueComponent
+            return value * alpha + (1 - alpha)
         }
 
         /// The number of red pixels in the band of 4 points around `field`'s frame, which is where the outline of a
@@ -195,6 +223,22 @@ struct LayoutEditorSheetRenderTests {
         window.contentView = hosting
         hosting.layoutSubtreeIfNeeded()
         #expect(textFields(in: hosting).map(\.stringValue) == ["10", "12.5", "33.33", "50"])
+    }
+
+    @Test("each field of the area has its label on its left, in the primary colour, and a % after it")
+    func fieldsHaveLabelsAndUnit() async throws {
+        let model = model()
+        let picture = try await draw(
+            LayoutEditorSheet(model: model, request: .new(.customAreas)), named: "area-labels-and-unit")
+        #expect(picture.fields.count == 4)
+        for field in picture.fields {
+            // The label band ends 2 points short of the field and starts 60 points before it, clear of the picture.
+            let label = picture.ink(in: CGRect(x: field.minX - 60, y: field.minY, width: 58, height: field.height))
+            #expect(label.count > 20, "a field has no label on its left")
+            #expect(label.darkest < 0.4, "a label is not in the primary colour")
+            let unit = picture.ink(in: CGRect(x: field.maxX + 2, y: field.minY, width: 14, height: field.height))
+            #expect(unit.count > 10, "a field has no % after it")
+        }
     }
 
     @Test("an invalid value outlines its fields, shows the message, and disables Done")

@@ -221,7 +221,10 @@ private struct AreaEditor: View {
 
     private func field(_ title: String, _ fraction: Binding<Double>, _ field: LayoutField) -> some View {
         GridRow {
+            // Fixed size: the grid squeezes its flexible cells to the width it is given, and a label squeezed that far
+            // is gone. The unit after the field is fixed for the same reason.
             Text(verbatim: title)
+                .fixedSize()
             AreaPercentField(title: title, fraction: fraction, isOutlined: problemFields.contains(field))
         }
     }
@@ -372,6 +375,7 @@ struct AreaPercentField: View {
             }
             Text(verbatim: "%")
                 .foregroundStyle(.secondary)
+                .fixedSize()
         }
         .onChange(of: fraction) { _, new in
             // Typing set the fraction from the text, so the text already says it; a drag did not.
