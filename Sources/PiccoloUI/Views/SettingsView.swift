@@ -13,7 +13,7 @@ public struct SettingsView: View {
 
     public var body: some View {
         TabView(selection: $model.tab) {
-            ShortcutsTab(model: model)
+            ShortcutsTab(model: model, host: host)
                 .tabItem {
                     Label {
                         Text(localized: "Shortcuts")

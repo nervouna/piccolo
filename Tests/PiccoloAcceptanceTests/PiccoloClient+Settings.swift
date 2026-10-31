@@ -11,10 +11,6 @@ struct SettingsState: Decodable, Equatable {
         var summary: String
         var shortcut: Shortcut?
         var shortcutText: String?
-        /// The kind's name in the config file: `placeWindow`, `moveToDisplay`, `arrangeGrid`, `moveDivider`, `swapWindow`.
-        var section: String
-        /// Whether the list shows the binding under the current search.
-        var visible: Bool
         /// False only for a shortcut that is not registered.
         var active: Bool
     }
@@ -38,9 +34,8 @@ struct SettingsState: Decodable, Equatable {
     var gap: Int
     var issues: [String]
     var error: String?
-    var recordingBindingID: UUID?
-    /// The binding the list has selected, if any.
-    var selectedBindingID: UUID?
+    /// The name of the row that is waiting for a key press (`KeymapRowID.name`).
+    var recordingRow: String?
     /// The tab the window shows: `shortcuts` or `general`.
     var tab: String
     /// What the system says about starting Piccolo at login, by the name of `LoginItemStatus`.
@@ -96,16 +91,6 @@ extension PiccoloClient {
     // MARK: View state
 
     @discardableResult
-    func settingsSelect(_ id: UUID) throws -> SettingsState {
-        try settingsCommand("settings.select", ["id": .string(id.uuidString)])
-    }
-
-    /// `settings.select` with an ID that must be refused. Returns the message.
-    func settingsSelectExpectingRefusal(_ id: UUID) throws -> String {
-        try settingsExpectingRefusal("settings.select", ["id": .string(id.uuidString)])
-    }
-
-    @discardableResult
     func settingsSetSearch(_ text: String) throws -> SettingsState {
         try settingsCommand("settings.setSearch", ["text": .string(text)])
     }
@@ -121,11 +106,6 @@ extension PiccoloClient {
     }
 
     // MARK: Edits
-
-    @discardableResult
-    func settingsAddBinding() throws -> SettingsState {
-        try settingsCommand("settings.addBinding")
-    }
 
     @discardableResult
     func settingsRemoveBinding(_ id: UUID) throws -> SettingsState {
@@ -214,24 +194,8 @@ extension PiccoloClient {
     // MARK: Recording
 
     @discardableResult
-    func settingsBeginRecording(_ id: UUID) throws -> SettingsState {
-        try settingsCommand("settings.beginRecording", ["id": .string(id.uuidString)])
-    }
-
-    @discardableResult
     func settingsCancelRecording() throws -> SettingsState {
         try settingsCommand("settings.cancelRecording")
-    }
-
-    /// One `settings.record`: a refusal (Piccolo not frontmost, Settings not key) is an error.
-    /// A shortcut the model rejects is not: it comes back in the state's `error`.
-    func settingsRecord(_ id: UUID, _ shortcut: Shortcut) throws -> SettingsState {
-        try settingsCommand("settings.record", recordParams(id, shortcut))
-    }
-
-    /// `settings.record`, answering the raw response (for refusals).
-    func settingsRecordRaw(_ id: UUID, _ shortcut: Shortcut) throws -> ControlResponse {
-        try sendRaw("settings.record", recordParams(id, shortcut))
     }
 
     // MARK: Helpers
@@ -239,14 +203,6 @@ extension PiccoloClient {
     private func updateParams(_ id: UUID, _ action: Action) throws -> [String: JSONValue] {
         let encoded = try JSONValue(encoding: action)
         return ["id": .string(id.uuidString), "action": encoded]
-    }
-
-    private func recordParams(_ id: UUID, _ shortcut: Shortcut) -> [String: JSONValue] {
-        [
-            "id": .string(id.uuidString),
-            "keyCode": .int(shortcut.keyCode),
-            "modifiers": .array(shortcut.modifiers.map(\.rawValue).sorted().map { .string($0) }),
-        ]
     }
 
     private func settingsCommand(_ command: String, _ params: [String: JSONValue] = [:]) throws -> SettingsState {

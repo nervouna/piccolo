@@ -40,7 +40,7 @@ extension DesktopAcceptanceTests {
                     "the default shortcuts already bind \(Self.nextDisplay)")
                 let registeredBefore = try piccolo.configStatus().registered
 
-                let state = try await session.recordRow("moveToDisplay.next", TestShortcut.f14)
+                let state = try await session.record("moveToDisplay.next", TestShortcut.f14)
 
                 #expect(state.error == nil, "recording set the error \(state.error ?? "")")
                 #expect(state.recordingRow == nil, "the recording did not end")
@@ -83,7 +83,7 @@ extension DesktopAcceptanceTests {
                 let topLeft = try #require(before.first { $0.action == Self.topLeft })
                 let registeredBefore = try piccolo.configStatus().registered
 
-                let state = try await session.recordRow("placeWindow.topLeft", Self.controlOptionLeft)
+                let state = try await session.record("placeWindow.topLeft", Self.controlOptionLeft)
 
                 let conflict = try #require(state.conflict, "recording a taken shortcut answered no conflict")
                 let texts = try InterfaceTexts.current(piccolo)

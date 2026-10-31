@@ -109,33 +109,15 @@ struct ActionSummaryTests {
         #expect(!ActionSummary.percent(.infinity).isEmpty)
     }
 
-    @Test("every action kind has a title and a default action of its own kind")
-    func kinds() {
-        #expect(ActionKind.allCases.count == 6)
-        #expect(Set(ActionKind.allCases.map(\.title)).count == 6)
-        for kind in ActionKind.allCases {
-            #expect(ActionKind(kind.defaultAction) == kind)
-        }
-        #expect(Action.newBindingDefault == .placeWindow(.preset(.leftHalf)))
-        #expect(ActionKind.arrangeGrid.defaultAction == .arrangeGrid(GridSpec(count: 4, rows: 2, columns: 2)))
-    }
-
-    @Test("Restore Window is a kind of its own, with the same text as its summary and no parameters")
+    @Test("Restore Window has a summary and no picture")
     func restoreWindow() throws {
-        #expect(ActionKind(.restoreWindow) == .restoreWindow)
-        #expect(ActionKind.restoreWindow.defaultAction == .restoreWindow)
-        #expect(ActionKind.restoreWindow.configName == "restoreWindow")
         #expect(ActionSummary.text(for: .restoreWindow, bundle: AppLanguage.en.textBundle!) == "Restore Window")
-        #expect(ActionKind.restoreWindow.title(bundle: AppLanguage.en.textBundle!) == "Restore Window")
         #expect(ActionPreview.rects(for: .restoreWindow) == nil)
     }
 
-    @Test("Swap Window is a kind of its own, with a direction that defaults to left")
+    @Test("Swap Window has a summary for each direction and no picture")
     func swapWindow() throws {
-        #expect(ActionKind(.swapWindow(.down)) == .swapWindow)
-        #expect(ActionKind.swapWindow.defaultAction == .swapWindow(.left))
-        #expect(ActionKind.swapWindow.configName == "swapWindow")
-        #expect(ActionKind.swapWindow.title(bundle: AppLanguage.en.textBundle!) == "Swap Window")
+        #expect(ActionSummary.text(for: .swapWindow(.down), bundle: AppLanguage.en.textBundle!) == "Swap Window Down")
         #expect(ActionPreview.rects(for: .swapWindow(.left)) == nil)
     }
 }

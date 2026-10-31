@@ -55,7 +55,6 @@ struct KeymapModelTests {
 
         #expect(model.recordingRow == leftRow)
         #expect(model.isRecording)
-        #expect(model.recordingBindingID == nil)
         #expect(model.error == nil)
         #expect(model.errorTarget == nil)
         #expect(backend.suspendRequests == [true])
@@ -87,21 +86,16 @@ struct KeymapModelTests {
         #expect(!model.isRecording)
     }
 
-    @Test("a recording of a binding and a recording of a row replace each other")
-    func rowAndBindingRecordingReplaceEachOther() {
+    @Test("beginning a recording on another row moves the recording and keeps the hotkeys suspended")
+    func recordingMovesToAnotherRow() {
         let (model, backend) = make()
 
-        model.beginRecording(left.id)
+        model.beginRecording(leftRow)
         #expect(model.isRecording)
-        #expect(model.recordingRow == nil)
+        #expect(model.recordingRow == leftRow)
 
         model.beginRecording(rightRow)
-        #expect(model.recordingBindingID == nil)
         #expect(model.recordingRow == rightRow)
-
-        model.beginRecording(right.id)
-        #expect(model.recordingRow == nil)
-        #expect(model.recordingBindingID == right.id)
         #expect(model.isRecording)
 
         // The hotkeys stay suspended throughout and come back once.
@@ -109,7 +103,6 @@ struct KeymapModelTests {
         model.cancelRecording()
         #expect(!model.isRecording)
         #expect(model.recordingRow == nil)
-        #expect(model.recordingBindingID == nil)
         #expect(backend.suspendRequests.last == false)
         #expect(!backend.isSuspended)
     }
@@ -421,17 +414,6 @@ struct KeymapModelTests {
         #expect(model.pendingConflict == nil)
     }
 
-    @Test("beginning a recording of a binding drops a pending conflict too")
-    func beginningBindingDropsConflict() {
-        let (model, _) = make()
-        model.beginRecording(rightRow)
-        model.record(UIFixture.f13)
-
-        model.beginRecording(right.id)
-
-        #expect(model.pendingConflict == nil)
-    }
-
     @Test("any accepted change drops a pending conflict, and one that is refused does not")
     func acceptedChangeDropsConflict() {
         let (model, _) = make()
@@ -663,7 +645,7 @@ struct KeymapModelTests {
         backend.failure = "the disk is full"
         #expect(!model.setAnimation(.slow))
         #expect(model.errorTarget == .window)
-        #expect(model.addBinding() == nil)
+        #expect(model.addLayout(Self.gridAction) == nil)
         #expect(model.errorTarget == .window)
         #expect(!model.setGap(8))
         #expect(model.errorTarget == .field(.gap), "a gap that cannot be saved is the gap's error")
@@ -675,47 +657,27 @@ struct KeymapModelTests {
         #expect(model.errorTarget == .window)
         #expect(!model.updateAction(UUID(), to: Self.nextAction))
         #expect(model.errorTarget == .window)
-        #expect(!model.setShortcut(UUID(), to: hyperF16))
-        #expect(model.errorTarget == .window)
-        #expect(!model.beginRecording(UUID()))
+        #expect(!model.beginRecording(.layout(UUID())))
         #expect(model.errorTarget == .window)
     }
 
-    @Test("a rejected shortcut of the binding-ID path names the row of that binding")
-    func bindingPathErrorsNameTheRow() {
+    @Test("a shortcut that cannot be global names the row, whether it is a built-in one or a layout")
+    func rowErrorsNameTheRow() {
         let (model, _) = make()
 
-        #expect(!model.setShortcut(left.id, to: shiftA))
+        model.beginRecording(leftRow)
+        model.record(shiftA)
         #expect(model.errorTarget == .row(leftRow))
 
-        #expect(!model.setShortcut(right.id, to: UIFixture.f13))
-        #expect(model.errorTarget == .row(rightRow))
-        #expect(model.error == SettingsMessages.alreadyUsed(
-            model.shortcutText(for: UIFixture.f13), by: model.summary(of: left)))
-
-        #expect(!model.setShortcut(grid.id, to: UIFixture.f13))
-        #expect(model.errorTarget == .row(.layout(grid.id)))
-
-        model.beginRecording(area.id)
+        model.beginRecording(.layout(area.id))
         model.record(shiftA)
         #expect(model.errorTarget == .row(.layout(area.id)))
-        #expect(model.recordingBindingID == nil, "the binding-ID path ends recording on a rejection")
-    }
+        #expect(model.recordingRow == .layout(area.id), "recording goes on")
 
-    @Test("the binding-ID path of recording is unchanged")
-    func bindingPathUnchanged() {
-        let (model, backend) = make()
-        model.beginRecording(right.id)
-        #expect(model.recordingBindingID == right.id)
-        #expect(model.isRecording)
-
-        model.record(hyperF16)
-
-        #expect(model.binding(right.id)?.shortcut == hyperF16)
-        #expect(model.recordingBindingID == nil)
-        #expect(model.pressesTaken == 1)
-        #expect(backend.suspendRequests == [true, false])
-        #expect(model.pendingConflict == nil)
+        model.beginRecording(.layout(grid.id))
+        model.record(UIFixture.f13)
+        #expect(model.pendingConflict?.row == .layout(grid.id))
+        #expect(model.errorTarget == nil)
     }
 
     @Test("the error and its target are replaced by a later error and cleared by a reload")

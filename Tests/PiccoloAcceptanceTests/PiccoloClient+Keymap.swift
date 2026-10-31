@@ -36,7 +36,6 @@ struct KeymapState: Decodable, Equatable {
     var rows: [Row]
     /// The name of the row that is waiting for a key press.
     var recordingRow: String?
-    var recordingBindingID: UUID?
     var conflict: Conflict?
     var error: String?
     /// `{"row": name}`, `{"field": "gap" | "resizeStep"}` or `"window"`.
@@ -55,13 +54,18 @@ extension PiccoloClient {
 
     @discardableResult
     func keymapBeginRecording(_ row: String) throws -> KeymapState {
-        try keymapCommand("settings.beginRecordingRow", ["row": .string(row)])
+        try keymapCommand("settings.beginRecording", ["row": .string(row)])
     }
 
-    /// `settings.recordRow`, answering the raw response (for refusals).
-    func keymapRecordRowRaw(_ row: String, _ shortcut: Shortcut) throws -> ControlResponse {
+    /// `settings.beginRecording` with a row that must be refused. Returns the message.
+    func keymapBeginRecordingExpectingRefusal(_ row: String) throws -> String {
+        try keymapExpectingRefusal("settings.beginRecording", ["row": .string(row)])
+    }
+
+    /// `settings.record`, answering the raw response (for refusals).
+    func keymapRecordRaw(_ row: String, _ shortcut: Shortcut) throws -> ControlResponse {
         try sendRaw(
-            "settings.recordRow",
+            "settings.record",
             [
                 "row": .string(row),
                 "keyCode": .int(shortcut.keyCode),
@@ -153,22 +157,22 @@ extension PiccoloClient {
 }
 
 extension SettingsSession {
-    /// `settings.recordRow` once Piccolo is frontmost with the Settings window key, as ``record(_:_:timeout:)``
-    /// does for a binding: a refusal for that reason leaves nothing behind (no key was posted), so it is
-    /// tried again, handing Piccolo to LaunchServices in between, until `timeout`.
-    func recordRow(_ row: String, _ shortcut: Shortcut, timeout: TimeInterval = 20) async throws -> KeymapState {
+    /// `settings.record` once Piccolo is frontmost with the Settings window key. A refusal for that reason
+    /// leaves nothing behind (no key was posted), so it is tried again, handing Piccolo to LaunchServices
+    /// in between, until `timeout`; any other failure ends the wait.
+    func record(_ row: String, _ shortcut: Shortcut, timeout: TimeInterval = 20) async throws -> KeymapState {
         try await bringPiccoloForward()
         let piccolo = self.piccolo
         return try await eventually(
-            "settings.recordRow of \(shortcut) on \(row) to be accepted", timeout: timeout, interval: 0.25
+            "settings.record of \(shortcut) on \(row) to be accepted", timeout: timeout, interval: 0.25
         ) {
-            let response = try piccolo.keymapRecordRowRaw(row, shortcut)
+            let response = try piccolo.keymapRecordRaw(row, shortcut)
             if response.ok {
-                return .satisfied(try piccolo.decodeKeymapState(response.result ?? .null, of: "settings.recordRow"))
+                return .satisfied(try piccolo.decodeKeymapState(response.result ?? .null, of: "settings.record"))
             }
             let message = response.error ?? "no reason given"
             guard message.contains("frontmost") || message.contains("key window") else {
-                throw AcceptanceFailure("settings.recordRow was refused: \(message)")
+                throw AcceptanceFailure("settings.record was refused: \(message)")
             }
             // Not in front yet: try to bring it forward again, then look again.
             if let bundle = try? piccolo.bundlePath() { try? Shell.open([bundle]) }

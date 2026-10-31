@@ -98,7 +98,7 @@ struct SettingsViewRenderTests {
         }
     }
 
-    @Test("the window shows the tab and the selected binding the model names")
+    @Test("the window shows the tab the model names")
     func followsTheModel() throws {
         let model = model([Self.leftHalf, Self.custom])
         let shortcuts = try render(SettingsView(model: model, host: host))
@@ -110,47 +110,6 @@ struct SettingsViewRenderTests {
         model.tab = .shortcuts
         let again = try render(SettingsView(model: model, host: host))
         #expect(png(again) == png(shortcuts), "going back to the Shortcuts tab did not bring the same window back")
-
-        model.selectedBindingID = UIFixture.idA
-        let first = try render(SettingsView(model: model, host: host))
-        model.selectedBindingID = UIFixture.idB
-        let second = try render(SettingsView(model: model, host: host))
-        #expect(png(first) != png(second), "the window looks the same with the first and the second binding selected")
-    }
-
-    @Test("the Shortcuts tab renders each kind of action selected")
-    func eachAction() throws {
-        let bindings: [(String, KeyBinding)] = [
-            ("preset", Self.leftHalf), ("custom", Self.custom), ("grid", Self.grid),
-            ("display", Self.display), ("divider", Self.divider), ("swap", Self.swap),
-        ]
-        for (name, binding) in bindings {
-            let model = model([binding])
-            model.selectedBindingID = binding.id
-            let bitmap = try render(ShortcutsTab(model: model))
-            #expect(hasContent(bitmap), "the \(name) editor is blank")
-            keep(bitmap, as: "shortcuts-\(name)")
-        }
-    }
-
-    @Test("the Shortcuts tab renders when empty, while recording and with an error")
-    func otherStates() throws {
-        let empty = try render(ShortcutsTab(model: model([])))
-        #expect(hasContent(empty))
-        keep(empty, as: "shortcuts-empty")
-
-        let recording = model([Self.leftHalf, Self.custom])
-        recording.beginRecording(UIFixture.idB)
-        let recordingBitmap = try render(ShortcutsTab(model: recording))
-        #expect(hasContent(recordingBitmap))
-        keep(recordingBitmap, as: "shortcuts-recording")
-
-        let failing = model([Self.leftHalf, Self.custom])
-        failing.setShortcut(UIFixture.idB, to: UIFixture.f13)
-        #expect(failing.error != nil)
-        let errorBitmap = try render(ShortcutsTab(model: failing))
-        #expect(hasContent(errorBitmap))
-        keep(errorBitmap, as: "shortcuts-error")
     }
 
     @Test("the General tab renders, with and without Accessibility")

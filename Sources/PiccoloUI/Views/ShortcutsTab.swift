@@ -1,22 +1,19 @@
 import PiccoloCore
 import SwiftUI
 
-/// The "Shortcuts" tab: the list of bindings with a recorder per row, the buttons to add and
-/// remove one, the editor of the selected binding, and the last error and the config's issues.
+/// The "Shortcuts" tab: a keymap. A top bar with the search and the "⋯" menu, the banner of config problems, and
+/// the cards of the sections with a row per action, in the order of ``KeymapSection``. Errors show where they
+/// happen: under a row, or in the banner.
 struct ShortcutsTab: View {
     @Bindable var model: SettingsModel
+    let host: SettingsHost
 
     var body: some View {
-        VStack(spacing: 0) {
-            searchField
-            bindingList
-            listToolbar
-            Divider()
-            // The editor and the messages keep their natural height; the list takes the rest.
-            editor
-                .fixedSize(horizontal: false, vertical: true)
-            StatusMessages(model: model)
-                .fixedSize(horizontal: false, vertical: true)
+        VStack(spacing: 8) {
+            topBar
+            ProblemsBanner(model: model)
+                .padding(.horizontal, 16)
+            keymap
         }
         .alert(
             Text(localized: "Restore the default shortcuts?"), isPresented: $model.isConfirmingRestore
@@ -39,7 +36,16 @@ struct ShortcutsTab: View {
         }
     }
 
-    // MARK: List
+    // MARK: Top bar
+
+    private var topBar: some View {
+        HStack(spacing: 8) {
+            searchField
+            menu
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 8)
+    }
 
     private var searchField: some View {
         HStack(spacing: 6) {
@@ -51,78 +57,29 @@ struct ShortcutsTab: View {
                 text: Binding(get: { model.search }, set: { model.setSearch($0) })
             )
             .textFieldStyle(.plain)
+            .onExitCommand {
+                model.setSearch("")
+            }
+            if !model.search.isEmpty {
+                Button {
+                    model.setSearch("")
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(.secondary)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .help(Text(localized: "Clear Search"))
+                .accessibilityLabel(Text(localized: "Clear Search"))
+            }
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 5)
         .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 6))
-        .padding(.horizontal, 8)
-        .padding(.vertical, 6)
     }
 
-    private var bindingList: some View {
-        ScrollViewReader { proxy in
-            List(selection: $model.selectedBindingID) {
-                ForEach(model.sections, id: \.kind) { section in
-                    Section {
-                        ForEach(section.bindings, id: \.id) { binding in
-                            HStack {
-                                Text(model.summary(of: binding))
-                                Spacer()
-                                if model.inactiveBindingIDs.contains(binding.id) {
-                                    Image(systemName: "exclamationmark.triangle.fill")
-                                        .foregroundStyle(.yellow)
-                                        .help(Text(localized: "This shortcut is not active. See the problems below."))
-                                        .accessibilityLabel(
-                                            Text(localized: "This shortcut is not active. See the problems below."))
-                                }
-                                ShortcutRecorderButton(model: model, bindingID: binding.id)
-                            }
-                            .tag(binding.id)
-                            .id(binding.id)
-                        }
-                    } header: {
-                        Text(section.kind.title)
-                    }
-                }
-            }
-            .listStyle(.inset(alternatesRowBackgrounds: true))
-            .onChange(of: model.selectedBindingID) { _, id in
-                if let id { proxy.scrollTo(id) }
-            }
-        }
-        .frame(minHeight: 96, maxHeight: .infinity)
-        .overlay {
-            if model.bindings.isEmpty {
-                Text(localized: "No shortcuts yet. Click + to add one.")
-                    .foregroundStyle(.secondary)
-            } else if model.sections.isEmpty {
-                Text(localized: "No shortcuts match")
-                    .foregroundStyle(.secondary)
-            }
-        }
-    }
-
-    private var listToolbar: some View {
-        HStack(spacing: 4) {
-            Button {
-                model.addBinding()
-            } label: {
-                Image(systemName: "plus")
-            }
-            .help(Text(localized: "Add a shortcut"))
-            .accessibilityLabel(Text(localized: "Add Shortcut"))
-
-            Button {
-                if let id = model.selectedBindingID {
-                    model.removeBinding(id)
-                }
-            } label: {
-                Image(systemName: "minus")
-            }
-            .disabled(model.selectedBindingID == nil)
-            .help(Text(localized: "Remove the selected shortcut"))
-            .accessibilityLabel(Text(localized: "Remove Shortcut"))
-
+    private var menu: some View {
+        Menu {
             Button {
                 model.askToRestoreDefaults()
             } label: {
@@ -132,59 +89,103 @@ struct ShortcutsTab: View {
                 Text(
                     localized:
                         "Replace every shortcut with the defaults. A copy of the config file is kept next to it."))
-
-            Spacer()
+            Button {
+                host.revealConfigInFinder()
+            } label: {
+                Text(localized: "Reveal Config in Finder")
+            }
+        } label: {
+            Image(systemName: "ellipsis")
+                .accessibilityLabel(Text(localized: "More"))
         }
-        .buttonStyle(.borderless)
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
+        .menuStyle(.button)
+        .menuIndicator(.hidden)
+        .fixedSize()
     }
 
-    // MARK: Editor
+    // MARK: Cards
 
     @ViewBuilder
-    private var editor: some View {
-        if let id = model.selectedBindingID, let binding = model.binding(id) {
-            BindingEditor(model: model, binding: binding)
+    private var keymap: some View {
+        let groups = model.keymap
+        if groups.isEmpty {
+            Text(localized: "No shortcuts match")
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
-            Group {
-                if model.bindings.isEmpty {
-                    Text(verbatim: "")
-                } else {
-                    Text(localized: "Select a shortcut to edit what it does.")
+            ScrollViewReader { proxy in
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 18) {
+                        ForEach(groups, id: \.section) { group in
+                            KeymapCard(model: model, group: group)
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 16)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    // A click on anything that is not a control ends a recording.
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        if model.isRecording {
+                            model.cancelRecording()
+                        }
+                    }
+                }
+                .onChange(of: model.recordingRow) { _, row in
+                    if let row {
+                        proxy.scrollTo(row)
+                    }
                 }
             }
-            .foregroundStyle(.secondary)
-            .frame(maxWidth: .infinity, minHeight: 60)
         }
     }
 }
 
-/// The rejected change, if any, and the problems with the config file. Shown on both tabs.
-struct StatusMessages: View {
+/// The card of one section: its header, a row per action and, for grids and custom areas, the row that adds one.
+private struct KeymapCard: View {
     let model: SettingsModel
+    let group: KeymapGroup
 
     var body: some View {
-        if model.error != nil || !model.issues.isEmpty {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 4) {
-                    if let error = model.error {
-                        Label(error, systemImage: "exclamationmark.octagon.fill")
-                            .foregroundStyle(.red)
+        VStack(alignment: .leading, spacing: 6) {
+            Text(group.section.title())
+                .font(.headline)
+                .padding(.leading, 4)
+            VStack(spacing: 0) {
+                ForEach(Array(group.rows.enumerated()), id: \.element.id) { index, row in
+                    if index > 0 {
+                        Divider().padding(.leading, 12)
                     }
-                    ForEach(model.issues, id: \.self) { issue in
-                        Label(issue, systemImage: "exclamationmark.triangle")
-                            .foregroundStyle(.secondary)
-                    }
+                    KeymapRowView(model: model, row: row)
+                        .id(row.id)
                 }
-                .font(.callout)
-                .textSelection(.enabled)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
+                if let title = group.section.addRowTitle() {
+                    if !group.rows.isEmpty {
+                        Divider().padding(.leading, 12)
+                    }
+                    addRow(title)
+                }
             }
-            .frame(maxHeight: 96)
-            .background(.bar)
+            .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 8))
+            .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Color(nsColor: .separatorColor), lineWidth: 1))
         }
+    }
+
+    private func addRow(_ title: String) -> some View {
+        Button {
+            model.editLayout(.new(group.section))
+        } label: {
+            HStack(spacing: 10) {
+                Image(systemName: "plus")
+                    .frame(width: ActionGlyph.size.width)
+                Text(title)
+                Spacer()
+            }
+            .foregroundStyle(Color(nsColor: .controlAccentColor))
+            .padding(.horizontal, 12)
+            .padding(.vertical, 9)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 }

@@ -39,8 +39,10 @@ extension SettingsModel {
     // MARK: Recording by row
 
     /// Starts recording a shortcut for a row of the keymap and suspends the global hotkeys. A recording
-    /// that is going on, of a row or of a binding, moves to this row. Clears the error and drops a pending
-    /// conflict. A row that does not exist is rejected.
+    /// that is going on moves to this row. Clears the error and drops a pending conflict. A row that does
+    /// not exist is rejected.
+    ///
+    /// ``record(_:)`` then takes the key presses: see `recordForRow(_:_:)`.
     @discardableResult
     public func beginRecording(_ row: KeymapRowID) -> Bool {
         guard Keymap.row(row, in: bindings) != nil else {
@@ -48,7 +50,6 @@ extension SettingsModel {
         }
         resetError()
         pendingConflict = nil
-        recordingBindingID = nil
         recordingRow = row
         backend.setShortcutsSuspended(true)
         return true

@@ -383,6 +383,38 @@ struct KeymapLayoutTests {
         #expect(model.layoutEditor == .edit(area.id))
     }
 
+    @Test("a reload drops a request to edit a layout whose binding is gone, and keeps one whose binding is still there")
+    func reloadDropsTheRequestForAGoneBinding() {
+        let (model, backend) = make()
+        model.editLayout(.edit(grid.id))
+
+        backend.replaceFromOutside(Config(bindings: [left, grid]))
+        #expect(model.layoutEditor == .edit(grid.id), "the binding is still in the config")
+
+        backend.replaceFromOutside(Config(bindings: [left, area]))
+        #expect(model.layoutEditor == nil, "the binding is gone")
+    }
+
+    @Test("a reload keeps a request for a new layout")
+    func reloadKeepsTheRequestForANewLayout() {
+        let (model, backend) = make()
+        model.editLayout(.new(.customAreas))
+
+        backend.replaceFromOutside(Config(bindings: [left]))
+
+        #expect(model.layoutEditor == .new(.customAreas))
+    }
+
+    @Test("restoring the default shortcuts drops a request to edit a layout, since every binding gets a new ID")
+    func restoreDropsTheRequest() {
+        let (model, _) = make()
+        model.editLayout(.edit(grid.id))
+
+        #expect(model.restoreDefaultShortcuts())
+
+        #expect(model.layoutEditor == nil)
+    }
+
     @Test("a request for something that has no sheet is refused, and the open request stays")
     func refusedLayoutEditor() {
         let (model, backend) = make()
@@ -400,7 +432,7 @@ struct KeymapLayoutTests {
         #expect(backend.saved.isEmpty)
     }
 
-    @Test("opening the sheet ends a recording of a row or a binding and drops a pending conflict")
+    @Test("opening the sheet ends a recording of a row and drops a pending conflict")
     func openingTheEditorEndsRecording() {
         let (model, backend) = make()
         model.beginRecording(.layout(grid.id))
@@ -411,10 +443,9 @@ struct KeymapLayoutTests {
         #expect(model.recordingRow == nil)
         #expect(!backend.isSuspended)
 
-        model.beginRecording(left.id)
+        model.beginRecording(.builtIn(.placeWindow(.preset(.leftHalf))))
         model.editLayout(.new(.grids))
         #expect(!model.isRecording)
-        #expect(model.recordingBindingID == nil)
         #expect(!backend.isSuspended)
 
         model.beginRecording(.builtIn(.placeWindow(.preset(.rightHalf))))
