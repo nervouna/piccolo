@@ -129,6 +129,8 @@ struct GeneralTab: View {
             Text(verbatim: "Piccolo \(host.appVersion)")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
+                // The grouped form starts its first card 20 pt from its top: the version keeps as much room below.
+                .padding(.bottom, 20)
         }
         .onAppear {
             // The user can change the login item in System Settings at any time, and the language

@@ -170,6 +170,99 @@ struct KeymapViewRenderTests {
         #expect(try glyph(Self.leftHalf, .rows) == glyph(Self.leftHalf, .columns))
     }
 
+    /// The bitmap of a glyph, at its size.
+    private func glyph(_ kind: ActionGlyphKind, dark: Bool) throws -> NSBitmapImageRep {
+        try render(
+            ActionGlyph(kind: kind),
+            size: NSSize(width: ActionGlyph.size.width, height: ActionGlyph.size.height), dark: dark)
+    }
+
+    /// The sRGB components of the pixel that holds `point`, in points from the top-left corner of a glyph-sized bitmap.
+    private func pixel(_ bitmap: NSBitmapImageRep, at point: CGPoint) -> [CGFloat]? {
+        let x = Int(point.x * CGFloat(bitmap.pixelsWide) / ActionGlyph.size.width)
+        let y = Int(point.y * CGFloat(bitmap.pixelsHigh) / ActionGlyph.size.height)
+        return components(of: bitmap.colorAt(x: x, y: y))
+    }
+
+    private func components(of color: NSColor?) -> [CGFloat]? {
+        guard let srgb = color?.usingColorSpace(.sRGB) else { return nil }
+        return [srgb.redComponent, srgb.greenComponent, srgb.blueComponent, srgb.alphaComponent]
+    }
+
+    /// Whether two colours look the same: every channel within `tolerance`. False when either is missing.
+    private func same(_ first: [CGFloat]?, _ second: [CGFloat]?, tolerance: CGFloat = 0.02) -> Bool {
+        guard let first, let second else { return false }
+        return zip(first, second).allSatisfy { abs($0 - $1) <= tolerance }
+    }
+
+    @Test(
+        "the arrow of a divider or a swap sits on a pill of the screen's colour, which hides the split behind it",
+        arguments: [false, true])
+    func arrowPill(dark: Bool) throws {
+        let size = ActionGlyph.size
+        let centre = CGPoint(x: size.width / 2, y: size.height / 2)
+        // The pill is the colour of the screen: that of the bare screen's inside, beside its frame.
+        let pill = try #require(pixel(try glyph(.frames([]), dark: dark), at: CGPoint(x: 4, y: centre.y)))
+        for direction in Direction.allCases {
+            // The split runs through the centre: vertically for a left or right direction, horizontally for up or down.
+            let horizontalSplit = direction == .up || direction == .down
+            // Points along the split, 0.5 pt apart, from 2.5 pt short of one end to 2.5 pt short of the other: the
+            // windows reach 2 pt from the glyph's edges, so these lie on the split.
+            let length = horizontalSplit ? size.width : size.height
+            let along = stride(from: CGFloat(2.5), through: length - 2.5, by: 0.5).map { offset in
+                horizontalSplit ? CGPoint(x: offset, y: centre.y) : CGPoint(x: centre.x, y: offset)
+            }
+            for kind in [ActionGlyphKind.divider(direction), .swap(direction)] {
+                let bitmap = try glyph(kind, dark: dark)
+                let onPill = along.map { same(pixel(bitmap, at: $0), pill) }
+                // The ends of the split are outside the arrow's pill, where the split is drawn.
+                #expect(
+                    onPill.first == false && onPill.last == false,
+                    "the split is not drawn at its ends for \(kind), appearance dark: \(dark)")
+                // The arrow sits in the middle of the split, on a pill that covers the split where the arrow is not.
+                #expect(
+                    onPill.filter { $0 }.count >= 4,
+                    "the pill does not cover the split for \(kind), appearance dark: \(dark)")
+            }
+        }
+    }
+
+    @Test(
+        "the arrow of a display sits inside the small screen, which is drawn with its frame and no windows",
+        arguments: [false, true])
+    func displayInsideScreen(dark: Bool) throws {
+        let size = ActionGlyph.size
+        let screen = try glyph(.frames([]), dark: dark)
+        // The arrow is in the middle, from 5 pt to 5 pt short of the right edge: the rest is the bare screen.
+        let middle = 5.0...(size.width - 5)
+        for direction in DisplayDirection.allCases {
+            let bitmap = try glyph(.display(direction), dark: dark)
+            var outside = 0
+            var arrowDrawn = false
+            for x in 0..<bitmap.pixelsWide {
+                for y in 0..<bitmap.pixelsHigh {
+                    let point = CGPoint(
+                        x: (CGFloat(x) + 0.5) * size.width / CGFloat(bitmap.pixelsWide),
+                        y: (CGFloat(y) + 0.5) * size.height / CGFloat(bitmap.pixelsHigh))
+                    let matches = same(pixel(bitmap, at: point), pixel(screen, at: point), tolerance: 0.001)
+                    if middle.contains(point.x) {
+                        arrowDrawn = arrowDrawn || !matches
+                    } else if !matches {
+                        outside += 1
+                    }
+                }
+            }
+            #expect(
+                outside == 0,
+                "the glyph of \(direction) differs from the bare screen at \(outside) pixels outside the arrow")
+            #expect(arrowDrawn, "the arrow of \(direction) is not drawn")
+            // The frame's stroke lies along the left edge, the screen's fill 3 pt inside it.
+            let edge = pixel(bitmap, at: CGPoint(x: 0.5, y: size.height / 2))
+            let fill = pixel(bitmap, at: CGPoint(x: 4, y: size.height / 2))
+            #expect(!same(edge, fill, tolerance: 0.001), "the frame of \(direction) is not drawn, appearance dark: \(dark)")
+        }
+    }
+
     // MARK: The tab
 
     @Test("the default tab renders in light and dark appearance")
@@ -309,5 +402,23 @@ struct KeymapViewRenderTests {
         let bitmap = try render(tab(model), dark: false)
         #expect(hasContent(bitmap))
         #expect(png(bitmap) != images[false], "the inactive shortcut is not marked")
+    }
+
+    @Test("the ⋯ button is as tall as the search field, and the row of the two is no taller than the field")
+    func menuButtonHeight() {
+        let view = tab(model())
+        let search = fittingHeight(view.searchField)
+        #expect(search > 0)
+        #expect(
+            fittingHeight(view.menuLabel) == search,
+            "the ⋯ button is \(fittingHeight(view.menuLabel)) pt tall, the search field \(search) pt")
+        #expect(
+            fittingHeight(view.controls) == search,
+            "the search field and the ⋯ button make \(fittingHeight(view.controls)) pt, search field \(search) pt")
+    }
+
+    /// The height a view asks for, laid out off screen.
+    private func fittingHeight<Content: View>(_ view: Content) -> CGFloat {
+        NSHostingView(rootView: view).fittingSize.height
     }
 }

@@ -5,6 +5,11 @@ import SwiftUI
 /// the cards of the sections with a row per action, in the order of ``KeymapSection``. Errors show where they
 /// happen: under a row, or in the banner.
 struct ShortcutsTab: View {
+    /// The height of the search field, which the "⋯" button shares.
+    static let controlHeight: CGFloat = 26
+    /// The width of the "⋯" button.
+    static let menuWidth: CGFloat = 30
+
     @Bindable var model: SettingsModel
     let host: SettingsHost
 
@@ -42,15 +47,20 @@ struct ShortcutsTab: View {
     // MARK: Top bar
 
     private var topBar: some View {
+        controls
+            .padding(.horizontal, 16)
+            .padding(.top, 8)
+    }
+
+    /// The search field and the "⋯" button on one row. Internal, so that the render tests can measure them.
+    var controls: some View {
         HStack(spacing: 8) {
             searchField
             menu
         }
-        .padding(.horizontal, 16)
-        .padding(.top, 8)
     }
 
-    private var searchField: some View {
+    var searchField: some View {
         HStack(spacing: 6) {
             Image(systemName: "magnifyingglass")
                 .foregroundStyle(.secondary)
@@ -78,6 +88,7 @@ struct ShortcutsTab: View {
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 5)
+        .frame(height: Self.controlHeight)
         .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 6))
     }
 
@@ -98,12 +109,28 @@ struct ShortcutsTab: View {
                 Text(localized: "Reveal Config in Finder")
             }
         } label: {
-            Image(systemName: "ellipsis")
-                .accessibilityLabel(Text(localized: "More"))
+            menuLabel
         }
-        .menuStyle(.button)
+        .menuStyle(.borderlessButton)
         .menuIndicator(.hidden)
         .fixedSize()
+    }
+
+    /// The picture of the "⋯" button: a square as tall as the search field, filled and outlined like a bordered
+    /// macOS button. Internal, so that the render tests can measure it.
+    var menuLabel: some View {
+        Image(systemName: "ellipsis")
+            .frame(width: Self.menuWidth, height: Self.controlHeight)
+            .background {
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(Color(nsColor: .controlBackgroundColor))
+                    .shadow(color: .black.opacity(0.15), radius: 0.5, y: 0.5)
+            }
+            .overlay {
+                RoundedRectangle(cornerRadius: 6)
+                    .strokeBorder(Color(nsColor: .separatorColor), lineWidth: 0.5)
+            }
+            .accessibilityLabel(Text(localized: "More"))
     }
 
     // MARK: Cards

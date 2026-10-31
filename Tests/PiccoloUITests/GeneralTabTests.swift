@@ -169,6 +169,75 @@ struct GeneralTabTests {
         #expect(png(problems) == png(clean), "the General tab shows the problems of the config file")
     }
 
+    /// The General tab drawn into a window ordered front invisibly, once its layout has settled: the bitmap is taken
+    /// again, 20 ms apart, until two in a row are the same. A scroll view's content can be laid out a pass late, so
+    /// the first bitmap is not a fair picture (as in `SettingsViewRenderTests`). At most 250 polls, and the 120 s
+    /// limit only stops a hang: the budget counts polls that ran, not seconds.
+    private func settledRender(_ model: SettingsModel, dark: Bool) async throws -> NSBitmapImageRep {
+        // The background behind the tab: a bitmap of the bare hosting view leaves the bottom of the tab transparent.
+        let tab = GeneralTab(model: model, host: host()).background(Color(nsColor: .windowBackgroundColor))
+        let hosting = NSHostingView(rootView: tab)
+        hosting.frame = NSRect(origin: .zero, size: Self.size)
+        let window = NSWindow(
+            contentRect: NSRect(origin: .zero, size: Self.size), styleMask: [.titled], backing: .buffered,
+            defer: false)
+        window.appearance = NSAppearance(named: dark ? .darkAqua : .aqua)
+        window.contentView = hosting
+        window.alphaValue = 0
+        window.ignoresMouseEvents = true
+        window.orderFront(nil)
+        defer { window.orderOut(nil) }
+        func snapshot() throws -> NSBitmapImageRep {
+            hosting.layoutSubtreeIfNeeded()
+            let bitmap = try #require(hosting.bitmapImageRepForCachingDisplay(in: hosting.bounds))
+            hosting.cacheDisplay(in: hosting.bounds, to: bitmap)
+            return bitmap
+        }
+        let limit = ContinuousClock.now.advanced(by: .seconds(120))
+        var previous = try snapshot()
+        for _ in 0..<250 {
+            guard ContinuousClock.now < limit else { break }
+            try await Task.sleep(for: .milliseconds(20))
+            let next = try snapshot()
+            if png(next) == png(previous) { return next }
+            previous = next
+        }
+        return previous
+    }
+
+    @Test("the version keeps as much room below it as the form keeps above its first card, and at least 12 pt")
+    func versionClearsTheBottom() async throws {
+        for (name, dark) in Self.appearances {
+            let bitmap = try await settledRender(model(), dark: dark)
+            // The top-left corner is the window's background. Rows are counted from the top of the bitmap.
+            let background = try #require(bitmap.colorAt(x: 1, y: 1)?.usingColorSpace(.sRGB))
+            // The middle of the tab, where the cards and the version are.
+            let columns = stride(from: bitmap.pixelsWide / 4, to: bitmap.pixelsWide * 3 / 4, by: 2)
+            func inked(_ row: Int) -> Bool {
+                columns.contains { column in
+                    guard let color = bitmap.colorAt(x: column, y: row)?.usingColorSpace(.sRGB) else { return false }
+                    // A card is only 0.025 lighter than the background in light appearance.
+                    return abs(color.redComponent - background.redComponent) > 0.01
+                        || abs(color.greenComponent - background.greenComponent) > 0.01
+                        || abs(color.blueComponent - background.blueComponent) > 0.01
+                }
+            }
+            let rows = 0..<bitmap.pixelsHigh
+            let firstInk = try #require(rows.first(where: inked), "the tab is blank in \(name) appearance")
+            let lastInk = try #require(rows.last(where: inked))
+            let pointsPerRow = Self.size.height / CGFloat(bitmap.pixelsHigh)
+            // The form's space above its first card, and the space between the last line of the version and the bottom.
+            let above = CGFloat(firstInk) * pointsPerRow
+            let below = CGFloat(bitmap.pixelsHigh - 1 - lastInk) * pointsPerRow
+            #expect(
+                below >= 12,
+                "the version is \(below) pt above the bottom of the tab in \(name) appearance, at least 12 pt")
+            #expect(
+                abs(below - above) <= 3,
+                "the version is \(below) pt above the bottom, the form \(above) pt above its first card, in \(name)")
+        }
+    }
+
     @Test("a rejected resize step is called the linked resize step, in English")
     func resizeStepMessage() throws {
         let english = try #require(AppLanguage.en.textBundle)
