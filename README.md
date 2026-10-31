@@ -9,7 +9,7 @@
 Piccolo is a macOS menu bar app that moves, resizes and arranges windows with global keyboard shortcuts. You bind each shortcut to one action in the Settings window, such as placing the focused window at a preset or custom frame, moving it to another display, or arranging your most recently focused windows in a grid; the bindings live in a JSON file you can also edit by hand.
 
 
-<img src="docs/images/settings-shortcuts.png" alt="Settings window, Shortcuts tab: five bindings, with the Arrange Grid binding selected. Its editor shows 3 windows in 2 rows and 2 columns, and a preview of the three cells." width="640">
+<img src="docs/images/settings-shortcuts.png" alt="Settings window, Shortcuts tab: a search field and a keymap in grouped cards, Halves, Quarters, Thirds and Other, each row with a small picture of the frame, the action's name and its shortcut, such as ⌃⌥← for Left Half." width="640">
 
 ## Status
 
@@ -81,7 +81,7 @@ The guide is a small floating panel in the top-right corner of the display with 
 
 ### General tab
 
-<img src="docs/images/settings-general.png" alt="Settings window, General tab: the language, the Launch at login switch, window animation, the window gap, the grid fill order, the destination preview switch, the resize step, the Accessibility status, the Reveal Config in Finder button and the app version." width="640">
+<img src="docs/images/settings-general.png" alt="Settings window, General tab: Launch at login and the language; Moving windows with the window animation and the destination preview; Arranging windows with the window gap, the fill order as two pictures and the linked resize step; Accessibility and the config file; the version." width="640">
 
 - **Language** is the language of Piccolo's menu and Settings window: System default or one of the [supported languages](#languages). A change applies after Piccolo restarts, which the Restart Now button under the picker does.
 - **Launch at login** starts Piccolo when you log in. When macOS is waiting for you to allow it, the tab says so and offers a button to open Login Items in System Settings.
