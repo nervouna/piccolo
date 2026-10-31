@@ -59,7 +59,10 @@ extension FailureNotice {
             case .noFocusedWindow: self = .noWindow
             case .noGroup: self = .noGroup
             case .dissolved: self = .dissolved
-            case .noNeighbour: self = .noNeighbour
+            case .noNeighbour(let bounced):
+                // A window that bounced told the user already.
+                guard !bounced else { return nil }
+                self = .noNeighbour
             }
         }
     }

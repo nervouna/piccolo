@@ -128,7 +128,7 @@ Each binding runs one action. The windows glide to their new frames over the tim
 | Move to Display (`moveToDisplay`) | `direction`: `next`, `previous`, `left`, `right`, `up` or `down` | Moves the focused window to the neighbouring display and keeps its relative frame. |
 | Arrange Grid (`arrangeGrid`) | `count`, `rows`, `columns` | Arranges the `count` most recently focused windows in a grid of `rows` by `columns` cells. |
 | Move Divider (`moveDivider`) | `direction`: `left`, `right`, `up` or `down` | Moves a divider between windows that Arrange Grid placed by one resize step, and the neighbouring windows follow. Does nothing for a window that is in no such group. |
-| Swap Window (`swapWindow`) | `direction`: `left`, `right`, `up` or `down` | Exchanges the focused window with its neighbour on that side in a group that Arrange Grid placed: the two windows trade cells. Does nothing for a window that is in no such group, or with no window on that side. |
+| Swap Window (`swapWindow`) | `direction`: `left`, `right`, `up` or `down` | Exchanges the focused window with its neighbour on that side in a group that Arrange Grid placed: the two windows trade cells. With no window on that side the focused window bounces towards that side and back, or, with window animation Off, shows a notice. Does nothing for a window that is in no such group. |
 
 ### Place Window
 
@@ -222,7 +222,8 @@ Swap Window works on windows that Arrange Grid placed, like Move Divider, and on
 - **The focus stays.** The focused window keeps the focus and moves with its new cell, and no window is raised, so pressing the same key again carries it on across the group.
 - **Windows that refuse a size.** A window that cannot take the size of its new cell ends up at the size it accepts, the divider is recorded where the window ended up, and its neighbours fill the rest, as for Move Divider.
 - **Order and animation.** The two windows glide together over the [window animation](#general-tab), and pass each other on the way, so they overlap while they move. The one that gets smaller is then placed first.
-- **When it does nothing.** The notice "No window in that direction" shows when there is no window on that side. A window that is in no group, or a group that was dissolved because a window of it was closed or moved (more than 2 pt from where Piccolo left it), shows the same notices as Move Divider.
+- **At the edge.** When there is no window on that side, the focused window bounces instead: it moves 16 pt towards that side and comes back, in 0.2 s whatever the speed of the [window animation](#general-tab), and ends exactly where it was. Up squashes the window instead of moving it: the top edge stays and the bottom edge comes up by 16 pt, because macOS keeps windows below the menu bar. Nothing else changes, and the group stays as it is. With window animation Off there is no bounce and the notice "No window in that direction" shows. The notice shows too when the window cannot bounce: Up on a window whose height cannot be set, or a window that does not answer.
+- **When it does nothing.** A window that is in no group, or a group that was dissolved because a window of it was closed or moved (more than 2 pt from where Piccolo left it), shows the same notices as Move Divider.
 
 ## Default shortcuts
 

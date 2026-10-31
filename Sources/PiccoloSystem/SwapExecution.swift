@@ -24,8 +24,11 @@ public enum SwapOutcome: Equatable, Sendable {
         /// The focused window's group no longer held, so it was dissolved: a member was closed,
         /// left the screen or was moved.
         case dissolved(LayoutGroup.Breakage)
-        /// No window of the group is on that side of the focused window.
-        case noNeighbour
+        /// No window of the group is on that side of the focused window. `bounced` says whether the
+        /// focused window bounced towards that side and back instead (see
+        /// ``ActionExecutor/swapWindow(_:onlyPid:settings:)``); the hotkey path shows a notice when it
+        /// did not.
+        case noNeighbour(bounced: Bool)
 
         /// A sentence for logs and the control channel.
         public var message: String {
@@ -52,7 +55,14 @@ extension ActionExecutor {
     ///    ``lookUpFocusedGroup(onlyPid:)``): without a focused window, without a group, or with a group
     ///    that no longer holds (it is dissolved) there is nothing to do.
     /// 2. `SwapNeighbor.neighbor(of:direction:in:)` gives the cell to swap with. Without one there is
-    ///    nothing to do.
+    ///    nothing to swap, except that with `settings.animation` on (and an animator) the focused window
+    ///    bounces: it goes 16 pt towards that side and back in 0.2 s, whatever the animation speed (see
+    ///    ``EdgeBounce`` and ``WindowAnimator/bounce(_:from:towards:duration:)``), and ends exactly at
+    ///    the frame it started at. For `up` it is squashed instead, because macOS keeps a window below
+    ///    the menu bar. The group is neither recorded nor dissolved: the window is back at its recorded
+    ///    frame. The outcome says whether it bounced; it did not when the animation is off, when the
+    ///    executor has no animator, when the size of a window cannot be set for `up`, or when an
+    ///    Accessibility call failed.
     /// 3. The two windows trade cells: each is sent to the frame of the other's cell, and takes the
     ///    size of that cell. The layout is the same, so the group stays linked. They glide together
     ///    (they pass each other, so they overlap while they do), then are placed in the group's visible
@@ -72,6 +82,9 @@ extension ActionExecutor {
         case .nothingToDo(let reason, let dissolve):
             if let dissolve { groups.dissolve(display: dissolve) }
             return .swap(.nothingToDo(reason))
+        case .noNeighbour(let edge):
+            let bounced = bounce(edge.window, from: edge.frame, towards: direction, settings: settings)
+            return .swap(.nothingToDo(.noNeighbour(bounced: bounced)))
         case .swap(let found):
             planning = found
         }
@@ -104,18 +117,29 @@ extension ActionExecutor {
         var cells: [Int] { [focusedCell, neighborCell].sorted() }
     }
 
+    /// The focused window of a group that has no neighbour on the side of the key: what the run
+    /// bounces.
+    struct SwapEdge {
+        /// The focused window's handle and the frame it was read at.
+        var window: any WindowFrameAccess
+        var frame: CGRect
+    }
+
     /// What ``planSwap(_:onlyPid:)`` found.
     enum SwapPlan {
         case swap(SwapPlanning)
-        /// Nothing moves. `dissolve` is the display of a group that no longer holds and that the run
-        /// dissolves; a plan leaves it alone.
+        /// No window of the group is on that side of the focused window: nothing swaps, and the run
+        /// may bounce `SwapEdge/window`. A plan never does.
+        case noNeighbour(SwapEdge)
+        /// Nothing moves, for a reason other than a missing neighbour. `dissolve` is the display of a
+        /// group that no longer holds and that the run dissolves; a plan leaves it alone.
         case nothingToDo(SwapOutcome.Reason, dissolve: Int?)
     }
 
     /// Plans the swap ``swapWindow(_:onlyPid:settings:)`` carries out: steps 1 and 2 of its list, and
     /// the group with the two windows exchanged. It reads the windows on screen and touches neither a
     /// window nor a group; a group that no longer holds is reported (`dissolve`) and left for the
-    /// caller to dissolve.
+    /// caller to dissolve, and so is the bounce of a window with no neighbour.
     ///
     /// - Throws: ``WindowError`` when the windows on screen cannot be read.
     func planSwap(_ direction: Direction, onlyPid: pid_t?) throws -> SwapPlan {
@@ -134,7 +158,14 @@ extension ActionExecutor {
         guard
             let neighbor = SwapNeighbor.neighbor(
                 of: focused.cell, direction: direction, in: focused.group.layout)
-        else { return .nothingToDo(.noNeighbour, dissolve: nil) }
+        else {
+            let window = focused.group.windows[focused.cell]
+            guard let handle = focused.handles[window], let frame = focused.frames[window] else {
+                // Cannot happen after the group was checked; without a handle there is nothing to bounce.
+                return .nothingToDo(.noNeighbour(bounced: false), dissolve: nil)
+            }
+            return .noNeighbour(SwapEdge(window: handle, frame: frame))
+        }
         return .swap(
             SwapPlanning(
                 entry: focused.entry, group: focused.group.swappingCells(focused.cell, neighbor),

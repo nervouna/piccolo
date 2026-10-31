@@ -199,10 +199,10 @@ extension DesktopAcceptanceTests {
 
         // MARK: 7. The notice
 
-        @Test("swap 7. a swapWindow shortcut with no neighbour shows the noNeighbour notice, and nothing moves")
+        @Test("swap 7. with window animation Off, a swapWindow shortcut with no neighbour shows the noNeighbour notice, and nothing moves")
         func noNeighbourNotice() async throws {
             let swap = KeyBinding(action: .swapWindow(.left), shortcut: TestShortcut.f13)
-            try await withLinkedResize(destinationPreview: false, bindings: [swap]) { run in
+            try await withLinkedResize(animation: .off, destinationPreview: false, bindings: [swap]) { run in
                 let windows = try await run.open(["A", "B"])
                 let a = windows[0]
                 let (_, arranged) = try await run.arrange(windows, in: GridSpec(count: 2, rows: 1, columns: 2))
@@ -222,12 +222,214 @@ extension DesktopAcceptanceTests {
                 run.expectUnmoved(windows, at: arranged)
             }
         }
+
+        // MARK: 8. The bounce
+
+        @Test("swap 8. with window animation Fast, swapWindow left from the leftmost window of a 1 × 2 group answers noNeighbour with bounced true, the window goes out to the left and is back at its frame, and a following moveDivider answers moved")
+        func bounceLeft() async throws {
+            try await withLinkedResize(animation: .fast) { run in
+                let windows = try await run.open(["A", "B"])
+                let a = windows[0]
+                let (layout, arranged) = try await run.arrange(windows, in: GridSpec(count: 2, rows: 1, columns: 2))
+                let cells = layout.frames(in: run.screen.visibleFrame)
+                try await Focus.bring(a, of: run.fixture)
+
+                let (nothing, samples) = try await run.swapSampled(.left, from: a)
+
+                #expect(nothing.bounced == true, "bounced is \(String(describing: nothing.bounced)), the answer is \(nothing)")
+                run.expectBounce(of: arranged[0], towards: .left, samples: samples)
+                _ = try await Measure.waitForFrame(ofWindow: a.windowNumber, matching: arranged[0])
+                run.expectUnmoved(windows, at: arranged)
+                try run.expectGroup(order: windows, at: cells)
+
+                // The group is still linked: the window is at its recorded frame.
+                let moved = try await run.pressExpectingMove(.right, from: a, refocus: false)
+                try await run.expectLayout(
+                    LinkedRun.row(dividers: [0.5 + Self.step]), windows: windows, reported: moved)
+            }
+        }
+
+        @Test("swap 9. with window animation Fast, swapWindow up from a window of a 1 × 2 group bounces too: the window is squashed from below, and keeps its frame afterwards")
+        func bounceUp() async throws {
+            try await withLinkedResize(animation: .fast) { run in
+                let windows = try await run.open(["A", "B"])
+                let b = windows[1]
+                let (layout, arranged) = try await run.arrange(windows, in: GridSpec(count: 2, rows: 1, columns: 2))
+                let cells = layout.frames(in: run.screen.visibleFrame)
+                try await Focus.bring(b, of: run.fixture)
+
+                let (nothing, samples) = try await run.swapSampled(.up, from: b)
+
+                #expect(nothing.bounced == true, "bounced is \(String(describing: nothing.bounced)), the answer is \(nothing)")
+                run.expectBounce(of: arranged[1], towards: .up, samples: samples)
+                _ = try await Measure.waitForFrame(ofWindow: b.windowNumber, matching: arranged[1])
+                run.expectUnmoved(windows, at: arranged)
+                try run.expectGroup(order: windows, at: cells)
+            }
+        }
+
+        @Test("swap 10. with window animation Off, swapWindow left and up answer noNeighbour with bounced false, and the window is never seen anywhere but at its frame")
+        func noBounceWhenOff() async throws {
+            try await withLinkedResize(animation: .off) { run in
+                let windows = try await run.open(["A", "B"])
+                let a = windows[0]
+                let (layout, arranged) = try await run.arrange(windows, in: GridSpec(count: 2, rows: 1, columns: 2))
+                let cells = layout.frames(in: run.screen.visibleFrame)
+                try await Focus.bring(a, of: run.fixture)
+
+                for key in [Direction.left, .up] {
+                    let (nothing, samples) = try await run.swapSampled(key, from: a)
+
+                    #expect(nothing.bounced == false, "\(key): bounced is \(String(describing: nothing.bounced)), the answer is \(nothing)")
+                    #expect(!samples.isEmpty, "\(key): no sample of the window")
+                    for sample in samples {
+                        #expect(
+                            framesMatch(sample, arranged[0]),
+                            "\(key): the window was seen at \(describe(sample)), its frame is \(describe(arranged[0]))")
+                    }
+                }
+                run.expectUnmoved(windows, at: arranged)
+                try run.expectGroup(order: windows, at: cells)
+            }
+        }
+
+        @Test("swap 11. with window animation Fast, a swapWindow shortcut with no neighbour bounces the window and shows no notice")
+        func noNoticeWhenBouncing() async throws {
+            let swap = KeyBinding(action: .swapWindow(.left), shortcut: TestShortcut.f13)
+            try await withLinkedResize(animation: .fast, destinationPreview: false, bindings: [swap]) { run in
+                let windows = try await run.open(["A", "B"])
+                let a = windows[0]
+                let (_, arranged) = try await run.arrange(windows, in: GridSpec(count: 2, rows: 1, columns: 2))
+                try await Focus.bring(a, of: run.fixture)
+                let before = try piccolo.noticeState().last
+                let sampler = FrameSampler(window: a.windowNumber)
+
+                try piccolo.simulateHotkey(swap.id)
+
+                // The window bounces; a negative result (no notice) has to be watched for a while.
+                let clock = ContinuousClock()
+                let begin = clock.now
+                var failure: String?
+                while failure == nil, begin.duration(to: clock.now) < .seconds(1.5) {
+                    let state = try piccolo.noticeState()
+                    if state.visible { failure = "a notice became visible: \(state)" }
+                    if state.last != before { failure = "a notice was shown: \(String(describing: state.last))" }
+                    try await Task.sleep(for: .milliseconds(50))
+                }
+                let samples = sampler.stop()
+                if let failure { Issue.record("\(failure)") }
+                run.expectBounce(of: arranged[0], towards: .left, samples: samples)
+                run.expectUnmoved(windows, at: arranged)
+            }
+        }
+    }
+}
+
+/// Samples a window's frame from the window server on a thread of its own, every few milliseconds. A
+/// bounce is over when the command that makes it answers, so it can only be seen from outside.
+private final class FrameSampler: @unchecked Sendable {
+    private let lock = NSLock()
+    private var frames: [CGRect] = []
+    private var running = true
+    private let finished = DispatchSemaphore(value: 0)
+
+    init(window windowNumber: Int, interval: TimeInterval = 0.004) {
+        Thread.detachNewThread { [self] in
+            while isRunning {
+                if let frame = Measure.frame(ofWindow: windowNumber) { record(frame) }
+                Thread.sleep(forTimeInterval: interval)
+            }
+            finished.signal()
+        }
+    }
+
+    private var isRunning: Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return running
+    }
+
+    private func record(_ frame: CGRect) {
+        lock.lock()
+        defer { lock.unlock() }
+        frames.append(frame)
+    }
+
+    /// Stops sampling and returns the frames seen, in order.
+    func stop() -> [CGRect] {
+        lock.lock()
+        let wasRunning = running
+        running = false
+        lock.unlock()
+        if wasRunning { finished.wait() }
+        lock.lock()
+        defer { lock.unlock() }
+        return frames
     }
 }
 
 // MARK: - Steps
 
 extension LinkedRun {
+    /// Presses the swap key from `window`, which already has the focus, while its frame is sampled
+    /// from the window server (see `FrameSampler`), and expects the answer `noNeighbour`. Keeps sampling
+    /// for a moment after the answer, to show what the window does when it should be at rest.
+    ///
+    /// - Returns: the answer and the frames seen, in order.
+    fileprivate func swapSampled(
+        _ key: Direction, from window: FixtureWindow
+    ) async throws -> (nothing: PiccoloClient.SwapNothingToDo, samples: [CGRect]) {
+        let sampler = FrameSampler(window: window.windowNumber)
+        do {
+            let nothing = try await swapExpectingNothing(key, from: window, reason: "noNeighbour", refocus: false)
+            try await Task.sleep(for: .milliseconds(200))
+            return (nothing, sampler.stop())
+        } catch {
+            _ = sampler.stop()
+            throw error
+        }
+    }
+
+    /// Checks the frames seen during a bounce of a window that started at `start`: it went out towards
+    /// `direction` by at least 8 pt and by no more than the amplitude (1 pt tolerance), the whole
+    /// frame moving for left, right and down, and only the bottom edge for up (the top edge and the
+    /// width stay).
+    fileprivate func expectBounce(of start: CGRect, towards direction: Direction, samples: [CGRect]) {
+        #expect(samples.count >= 10, "\(direction): only \(samples.count) samples of the window")
+        var deepest: CGFloat = 0
+        var problems: [String] = []
+        for sample in samples {
+            let depth: CGFloat
+            let stays: Bool
+            switch direction {
+            case .left:
+                depth = start.minX - sample.minX
+                stays = approximatelyEqual(sample.minY, start.minY) && sizesMatch(sample.size, start.size)
+            case .right:
+                depth = sample.minX - start.minX
+                stays = approximatelyEqual(sample.minY, start.minY) && sizesMatch(sample.size, start.size)
+            case .down:
+                depth = sample.minY - start.minY
+                stays = approximatelyEqual(sample.minX, start.minX) && sizesMatch(sample.size, start.size)
+            case .up:
+                depth = start.maxY - sample.maxY
+                stays =
+                    approximatelyEqual(sample.minX, start.minX) && approximatelyEqual(sample.minY, start.minY)
+                    && approximatelyEqual(sample.width, start.width)
+            }
+            deepest = max(deepest, depth)
+            if !stays { problems.append("seen at \(describe(sample)), more than the bounce changes") }
+            if depth > EdgeBounce.amplitude + 1 {
+                problems.append("seen \(depth) pt out at \(describe(sample)), the bounce is \(EdgeBounce.amplitude) pt")
+            }
+        }
+        #expect(problems.isEmpty, "\(direction) from \(describe(start)): \(problems.prefix(3))")
+        #expect(
+            deepest >= 8,
+            "\(direction) from \(describe(start)): the window was seen at most \(deepest) pt out in \(samples.count) samples, a bounce is \(EdgeBounce.amplitude) pt"
+        )
+    }
+
     /// Focuses `window` (unless `refocus` is false: the window already has the focus) and presses the
     /// swap key.
     fileprivate func swap(

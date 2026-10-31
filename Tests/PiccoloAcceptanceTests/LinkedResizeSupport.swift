@@ -9,26 +9,28 @@ extension ConfigDirectory {
     /// returns its URL.
     @discardableResult
     func write(
-        resizeStep: Double, gridFillOrder: GridFillOrder = .rows, gap: Int = Config.defaultGap,
+        resizeStep: Double, animation: WindowAnimation = Config.defaultAnimation,
+        gridFillOrder: GridFillOrder = .rows, gap: Int = Config.defaultGap,
         destinationPreview: Bool = Config.defaultDestinationPreview, bindings: [KeyBinding] = [],
         as name: String = "config.json"
     ) throws -> URL {
         let target = file(name)
         try ConfigStore(url: target).save(
             Config(
-                resizeStep: resizeStep, gridFillOrder: gridFillOrder, destinationPreview: destinationPreview,
-                gap: gap, bindings: bindings))
+                resizeStep: resizeStep, animation: animation, gridFillOrder: gridFillOrder,
+                destinationPreview: destinationPreview, gap: gap, bindings: bindings))
         return target
     }
 }
 
 /// Runs `body` against a Piccolo whose config has no bindings (unless `bindings` gives some), the
-/// resize step `step`, the grid fill order `gridFillOrder`, the window `gap` and the destination
-/// preview setting, so that the expected frames do not depend on the config of whoever runs the tests,
+/// resize step `step`, the window `animation`, the grid fill order `gridFillOrder`, the window `gap`
+/// and the destination preview setting, so that the expected frames do not depend on the config of whoever runs the tests,
 /// and with a fixture that starts with no windows. Afterwards the fixture windows are closed and
-/// Piccolo is back on its default config (see `withConfigDirectory`).
+/// Piccolo is back on the fresh-install config the test started on (see `withConfigDirectory`).
 func withLinkedResize<Result>(
     step: Double = LinkedRun.defaultStep,
+    animation: WindowAnimation = Config.defaultAnimation,
     gridFillOrder: GridFillOrder = .rows,
     gap: Int = Config.defaultGap,
     destinationPreview: Bool = Config.defaultDestinationPreview,
@@ -39,8 +41,8 @@ func withLinkedResize<Result>(
     return try await withConfigDirectory { directory in
         try PiccoloClient().loadConfig(
             at: try directory.write(
-                resizeStep: step, gridFillOrder: gridFillOrder, gap: gap, destinationPreview: destinationPreview,
-                bindings: bindings))
+                resizeStep: step, animation: animation, gridFillOrder: gridFillOrder, gap: gap,
+                destinationPreview: destinationPreview, bindings: bindings))
         return try await withFixture { fixture in
             try await body(
                 LinkedRun(

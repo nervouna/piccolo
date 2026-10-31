@@ -1,3 +1,4 @@
+import CoreGraphics
 import PiccoloCore
 
 extension ActionExecutor {
@@ -15,5 +16,20 @@ extension ActionExecutor {
         guard settings.animation != .off, let animator, !windows.isEmpty else { return }
         animator.animate(
             windows, duration: settings.animation.duration, displays: displays, ordered: ordered)
+    }
+
+    /// Bounces `window` towards `direction` and back over ``EdgeBounce/duration``, whatever the speed of
+    /// `settings.animation`, and says whether it did. Does nothing, and answers `false`, when the
+    /// animation is off or the executor has no animator, so that the path without animation is the one
+    /// that runs. See ``WindowAnimator/bounce(_:from:towards:duration:)`` for the rest.
+    ///
+    /// - Parameters:
+    ///   - start: The frame the window is at, and is put back at.
+    func bounce(
+        _ window: any WindowFrameAccess, from start: CGRect, towards direction: Direction,
+        settings: ActionSettings
+    ) -> Bool {
+        guard settings.animation != .off, let animator else { return false }
+        return animator.bounce(window, from: start, towards: direction)
     }
 }
