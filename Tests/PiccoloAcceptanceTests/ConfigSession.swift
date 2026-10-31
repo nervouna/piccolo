@@ -67,29 +67,29 @@ struct ConfigDirectory {
 }
 
 /// Runs `body` with a temporary directory for config files and makes sure that afterwards
-/// Piccolo runs with its default config again, with nothing of the test left behind, whether
-/// `body` succeeded or not:
+/// Piccolo is back on the fresh-install config the test started on (``FreshInstallConfig``), with
+/// nothing of the test left behind, whether `body` succeeded or not:
 ///
-/// - `config.reload` always runs, so that the test's hotkeys are released;
-/// - `config.status.path` is the default location again;
+/// - the fresh-install config is loaded again, so that the test's hotkeys are released and whatever
+///   is still held is cancelled. `config.reload` would go to the default location, which is the
+///   person's own config: the code that follows `withConfigDirectory` in a test must act on the
+///   settings of a fresh install, not on those;
+/// - `config.status.path` is the fresh-install config's file;
 /// - the temporary directory is removed;
 /// - the default config directory holds what it held before.
 func withConfigDirectory<Result>(
     _ body: (ConfigDirectory) async throws -> Result
 ) async throws -> Result {
     let piccolo = PiccoloClient()
+    let fresh = try FreshInstallConfig.requireCurrent()
     let directory = try ConfigDirectory()
     let defaultFolder = ConfigLocation.defaultURL.deletingLastPathComponent()
     let before = configFolderListing(of: defaultFolder)
 
     func tearDown() throws {
         defer { try? FileManager.default.removeItem(at: directory.url) }
-        let status = try piccolo.reloadConfig()
-        guard status.path == ConfigLocation.defaultURL.path else {
-            throw AcceptanceFailure(
-                "after config.reload Piccolo reports the config path \(status.path), not the default location \(ConfigLocation.defaultURL.path)"
-            )
-        }
+        // Also checks the path Piccolo reports.
+        try fresh.load(into: piccolo)
         let after = configFolderListing(of: defaultFolder)
         guard after == before else {
             throw AcceptanceFailure(

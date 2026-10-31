@@ -12,8 +12,8 @@ import Testing
 ///
 /// A hold is a press without the release. The tests that hold a shortcut always end it before they
 /// finish: the release runs the action on the focused fixture window, an Escape cancels it, and
-/// `withConfigDirectory` ends with `config.reload`, which cancels whatever is still held without
-/// running it. No test releases a shortcut whose action could move a window of somebody else: the
+/// `withConfigDirectory` ends by loading the fresh-install config again, which cancels whatever is
+/// still held without running it. No test releases a shortcut whose action could move a window of somebody else: the
 /// focused window is always a window of the fixture, and the test of an arrangement checks which
 /// windows the preview refers to before it releases.
 ///
