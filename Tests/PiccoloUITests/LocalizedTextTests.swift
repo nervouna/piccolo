@@ -204,7 +204,7 @@ struct LocalizedTextTests {
             SettingsMessages.describe(.notFinite(field: "x"), bundle: english) == "Left must be a number.")
         #expect(
             SettingsMessages.describe(.outOfRange(field: "resizeStep", rule: ""), bundle: english)
-                == "The resize step must be more than 0% and at most 50%.")
+                == "The linked resize step must be more than 0% and at most 50%.")
     }
 
     @Test("a field without a sentence of its own is named as the model names it")

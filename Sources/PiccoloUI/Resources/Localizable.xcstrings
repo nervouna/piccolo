@@ -1167,31 +1167,31 @@
         }
       }
     },
-    "Config" : {
+    "Config file" : {
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Konfiguration"
+            "value" : "Konfigurationsdatei"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Config"
+            "value" : "Config file"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Configuración"
+            "value" : "Archivo de configuración"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Configuration"
+            "value" : "Fichier de configuration"
           }
         },
         "ja" : {
@@ -1203,13 +1203,13 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Configuração"
+            "value" : "Arquivo de configuração"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "配置"
+            "value" : "配置文件"
           }
         },
         "zh-Hant" : {
@@ -2121,165 +2121,6 @@
         }
       }
     },
-    "Hold a shortcut to see where windows will go, release it to move them, or press Escape to cancel. When off, windows move as soon as the shortcut is pressed." : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Halte einen Tastaturkurzbefehl gedrückt, um zu sehen, wohin die Fenster verschoben werden, lass ihn los, um sie zu verschieben, oder drücke Esc zum Abbrechen. Wenn diese Option deaktiviert ist, werden die Fenster verschoben, sobald der Tastaturkurzbefehl gedrückt wird."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hold a shortcut to see where windows will go, release it to move them, or press Escape to cancel. When off, windows move as soon as the shortcut is pressed."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mantén pulsado un atajo para ver adónde irán las ventanas, suéltalo para moverlas o pulsa Esc para cancelar. Si está desactivado, las ventanas se mueven en cuanto se pulsa el atajo."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Maintenez un raccourci enfoncé pour voir où les fenêtres iront, relâchez-le pour les déplacer, ou appuyez sur Esc pour annuler. Lorsque cette option est désactivée, les fenêtres se déplacent dès que le raccourci est pressé."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ショートカットを押している間、ウインドウの移動先を表示します。キーを離すとウインドウが移動し、Esc キーを押すとキャンセルされます。オフのときは、ショートカットを押すとすぐにウインドウが移動します。"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mantenha um atalho pressionado para ver para onde as janelas irão, solte-o para movê-las ou pressione Esc para cancelar. Quando desativado, as janelas se movem assim que o atalho é pressionado."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "按住快捷键可查看窗口将移到的位置，松开即可移动窗口，按下 Esc 键则取消。关闭后，按下快捷键时窗口会立即移动。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "按住快速鍵即可查看視窗將移至的位置，放開即可移動視窗，按下 Esc 則取消。關閉時，按下快速鍵後視窗會立即移動。"
-          }
-        }
-      }
-    },
-    "How far a linked resize moves a divider, as a share of the screen. Between 0% and 50%." : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wie weit eine verknüpfte Größenänderung eine Trennlinie verschiebt, als Anteil am Bildschirm. Zwischen 0 % und 50 %."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "How far a linked resize moves a divider, as a share of the screen. Between 0% and 50%."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Distancia que recorre un divisor al redimensionar en grupo, como porcentaje de la pantalla. Entre 0 % y 50 %."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Distance dont un redimensionnement lié déplace un séparateur, en pourcentage de l'écran. Entre 0 % et 50 %."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "連動リサイズで区切り線を動かす距離を、画面に対する割合で指定します。0% から 50% までの範囲です。"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "O quanto um redimensionamento vinculado move um divisor, como porcentagem da tela. Entre 0% e 50%."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "联动调整时分隔线每次移动的距离，以屏幕尺寸的百分比表示。范围为 0% 到 50%。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "聯動調整時分隔線每次移動的距離，以螢幕尺寸的百分比表示。範圍為 0% 到 50%。"
-          }
-        }
-      }
-    },
-    "How long a window takes to move to its new place." : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wie lange ein Fenster braucht, um an seine neue Position zu wechseln."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "How long a window takes to move to its new place."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tiempo que tarda una ventana en moverse a su nueva posición."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Durée nécessaire à une fenêtre pour rejoindre son nouvel emplacement."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ウインドウが新しい位置へ移動するまでの時間です。"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quanto tempo uma janela leva para se mover até o novo lugar."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "窗口移动到新位置所需的时间。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "視窗移至新位置所需的時間。"
-          }
-        }
-      }
-    },
     "Key %lld" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3022,6 +2863,59 @@
         }
       }
     },
+    "Linked resize step" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verknüpfte Schrittweite"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Linked resize step"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paso de redimensionamiento vinculado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pas de redimensionnement lié"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "連動調整ステップ"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passo de redimensionamento vinculado"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "联动调整步长"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "聯動調整步長"
+          }
+        }
+      }
+    },
     "Maximize" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3442,6 +3336,59 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "移到顯示器"
+          }
+        }
+      }
+    },
+    "Moving windows" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fenster werden verschoben"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Moving windows"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Moviendo ventanas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Déplacement des fenêtres"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ウインドウを移動"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Movendo janelas"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移动窗口"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移動視窗"
           }
         }
       }
@@ -4612,6 +4559,59 @@
         }
       }
     },
+    "Release the shortcut to move the windows, or press Escape to cancel." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lass den Tastaturkurzbefehl los, um die Fenster zu verschieben, oder drücke Esc zum Abbrechen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Release the shortcut to move the windows, or press Escape to cancel."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suelta el atajo para mover las ventanas o pulsa Esc para cancelar."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Relâchez le raccourci pour déplacer les fenêtres, ou appuyez sur Esc pour annuler."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ショートカットを離すとウインドウが移動し、Esc キーを押すとキャンセルされます。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solte o atalho para mover as janelas ou pressione Esc para cancelar."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "松开快捷键即可移动窗口，按下 Esc 键则取消。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "放開快速鍵即可移動視窗，按下 Esc 則取消。"
+          }
+        }
+      }
+    },
     "Remove Shortcut" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4767,59 +4767,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "將所有快速鍵替換為預設值。設定檔的一份副本會保存在它旁邊。"
-          }
-        }
-      }
-    },
-    "Resize step" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Schrittweite"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Resize step"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Paso de redimensionamiento"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pas de redimensionnement"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "調整ステップ"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Passo de redimensionamento"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "调整步长"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "調整步長"
           }
         }
       }
@@ -5085,59 +5032,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "回復視窗"
-          }
-        }
-      }
-    },
-    "Reveal Config in Finder" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Konfiguration im Finder anzeigen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reveal Config in Finder"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mostrar configuración en el Finder"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Afficher la configuration dans le Finder"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "設定ファイルをFinderに表示"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mostrar configuração no Finder"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "在访达中显示配置"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "在Finder中顯示設定檔"
           }
         }
       }
@@ -5725,6 +5619,59 @@
         }
       }
     },
+    "Show in Finder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "im Finder anzeigen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show in Finder"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar en el Finder"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher dans le Finder"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finderに表示"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar no Finder"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在访达中显示"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在Finder中顯示"
+          }
+        }
+      }
+    },
     "Slow" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -5827,59 +5774,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "空白鍵"
-          }
-        }
-      }
-    },
-    "Status" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Status"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Status"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Estado"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "État"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "状態"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Estado"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "状态"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "狀態"
           }
         }
       }
@@ -6467,6 +6361,112 @@
         }
       }
     },
+    "The linked resize step" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die verknüpfte Schrittweite"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The linked resize step"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El paso de redimensionamiento vinculado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le pas de redimensionnement lié"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "連動調整ステップ"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O passo de redimensionamento vinculado"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "联动调整步长"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "聯動調整步長"
+          }
+        }
+      }
+    },
+    "The linked resize step must be more than 0% and at most 50%." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die verknüpfte Schrittweite muss größer als 0 % und höchstens 50 % sein."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The linked resize step must be more than 0% and at most 50%."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El paso de redimensionamiento vinculado debe ser mayor que 0 % y como máximo 50 %."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le pas de redimensionnement lié doit être supérieur à 0 % et inférieur ou égal à 50 %."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "連動調整ステップは 0% より大きく、50% 以下にしてください。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O passo de redimensionamento vinculado deve ser maior que 0% e no máximo 50%."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "联动调整步长必须大于 0%，且不超过 50%。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "聯動調整步長必須大於 0%，且不超過 50%。"
+          }
+        }
+      }
+    },
     "The new language applies after Piccolo restarts." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -6622,112 +6622,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "視窗數量至少為 1。"
-          }
-        }
-      }
-    },
-    "The resize step" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Die Schrittweite"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The resize step"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "El paso de redimensionamiento"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Le pas de redimensionnement"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "調整ステップ"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "O passo de redimensionamento"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "调整步长"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "調整步長"
-          }
-        }
-      }
-    },
-    "The resize step must be more than 0% and at most 50%." : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Die Schrittweite muss größer als 0 % und höchstens 50 % sein."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The resize step must be more than 0% and at most 50%."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "El paso de redimensionamiento debe ser mayor que 0 % y como máximo 50 %."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Le pas de redimensionnement doit être supérieur à 0 % et inférieur ou égal à 50 %."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "調整ステップは 0% より大きく、50% 以下にしてください。"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "O passo de redimensionamento deve ser maior que 0% e no máximo 50%."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "调整步长必须大于 0%，且不超过 50%。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "調整步長必須大於 0%，且不超過 50%。"
           }
         }
       }
@@ -7523,112 +7417,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "上方"
-          }
-        }
-      }
-    },
-    "Version" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Version"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Version"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Versión"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Version"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "バージョン"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Versão"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "版本"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "版本"
-          }
-        }
-      }
-    },
-    "When the windows do not fill the grid. With 3 windows in 2 × 2, rows first puts two windows on top and one across the bottom; columns first puts two on the left and one down the right side." : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wenn die Fenster das Raster nicht ausfüllen. Bei 3 Fenstern in einem 2 × 2-Raster setzt „Zeilen zuerst“ zwei Fenster nach oben und eines quer nach unten; „Spalten zuerst“ setzt zwei nach links und eines die rechte Seite hinunter."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "When the windows do not fill the grid. With 3 windows in 2 × 2, rows first puts two windows on top and one across the bottom; columns first puts two on the left and one down the right side."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cuando las ventanas no llenan la cuadrícula. Con 3 ventanas en 2 × 2, «Filas primero» coloca dos ventanas arriba y una a lo ancho abajo; «Columnas primero» coloca dos a la izquierda y una a lo largo de la derecha."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lorsque les fenêtres ne remplissent pas la grille. Avec 3 fenêtres en 2 × 2, « Lignes d'abord » place deux fenêtres en haut et une en bas sur toute la largeur ; « Colonnes d'abord » place deux fenêtres à gauche et une à droite sur toute la hauteur."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ウインドウがグリッドを埋めきらない場合の配置方法です。2 × 2 のグリッドに 3 個のウインドウを配置する場合、「行優先」では上に 2 個、下に横長に 1 個を配置します。「列優先」では左に 2 個、右に縦長に 1 個を配置します。"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quando as janelas não preenchem a grade. Com 3 janelas em 2 × 2, “Linhas primeiro” põe duas janelas em cima e uma ocupando a parte de baixo; “Colunas primeiro” põe duas à esquerda e uma descendo pelo lado direito."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "窗口数量不足以填满网格时的排列方式。以 2 × 2 网格排列 3 个窗口时，“行优先”会将两个窗口放在上方，另一个横跨下方；“列优先”会将两个窗口放在左侧，另一个占满右侧。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "視窗數量不足以填滿網格時的排列方式。以 2 × 2 網格排列 3 個視窗時，「列優先」會將兩個視窗放在上方，另一個橫跨下方；「欄優先」會將兩個視窗放在左側，另一個佔滿右側。"
           }
         }
       }
