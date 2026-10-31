@@ -77,6 +77,27 @@ enum SettingsMessages {
         String(localized: "\(text) is already used by \(summary).", bundle: bundle)
     }
 
+    static func duplicateGrid(bundle: Bundle = .module) -> String {
+        String(localized: "There is already a grid like this.", bundle: bundle)
+    }
+
+    static func duplicateCustomArea(bundle: Bundle = .module) -> String {
+        String(localized: "There is already a custom area like this.", bundle: bundle)
+    }
+
+    // The two sentences below are for requests no window makes (a grid asked to become a custom area, a
+    // sheet asked for something that has none); they are in English only, like the texts of PiccoloCore.
+
+    /// A request that needs a grid or a custom area was made with something else.
+    static func notALayout() -> String {
+        "That is not a grid or a custom area."
+    }
+
+    /// A grid was asked to become a custom area, or the other way round.
+    static func layoutKindFixed() -> String {
+        "A grid cannot become a custom area, nor a custom area a grid."
+    }
+
     /// A change that the backend could not save; `reason` is the backend's own words.
     static func notSaved(_ reason: String, bundle: Bundle = .module) -> String {
         String(localized: "The change could not be saved: \(reason)", bundle: bundle)

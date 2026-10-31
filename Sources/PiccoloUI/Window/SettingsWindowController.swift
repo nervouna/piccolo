@@ -448,6 +448,7 @@ public final class SettingsWindowController: NSObject, NSWindowDelegate, NSToolb
         model.cancelRecording()
         // A confirmation still showing must not come back with the window the next time it opens.
         model.cancelRestoreDefaults()
+        model.dismissLayoutEditor()
         removeKeyMonitor()
     }
 
@@ -501,7 +502,7 @@ public final class SettingsWindowController: NSObject, NSWindowDelegate, NSToolb
     /// Gives a key press to the model if a binding is recording and the press is for this window.
     /// Returns `nil` (the event is swallowed) when the recorder took it.
     private func offer(_ event: NSEvent) -> NSEvent? {
-        guard model.recordingBindingID != nil, isKey, event.window === window else {
+        guard model.isRecording, isKey, event.window === window else {
             return event
         }
         let press = Shortcut(keyCode: Int(event.keyCode), modifiers: Self.modifiers(of: event))

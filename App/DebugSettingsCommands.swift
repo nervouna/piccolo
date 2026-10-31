@@ -12,8 +12,10 @@ import PiccoloUI
 /// `settings.setResizeStep`, `settings.setGap`, `settings.setAnimation`, `settings.setGridFillOrder`,
 /// `settings.setDestinationPreview`, `settings.setLanguage`, `settings.restoreDefaults`), the restart
 /// that applies a new language (`settings.restartNow`) and recording
-/// (`settings.beginRecording`, `settings.cancelRecording`, `settings.record`), and the login item
-/// (`loginItem.status`, `loginItem.set`).
+/// (`settings.beginRecording`, `settings.cancelRecording`, `settings.record`), the keymap
+/// (`settings.beginRecordingRow`, `settings.recordRow`, `settings.clearShortcut`, `settings.resolveConflict`,
+/// `settings.addLayout`, `settings.updateLayout`, `settings.editLayout`, `settings.dismissLayoutEditor`),
+/// and the login item (`loginItem.status`, `loginItem.set`).
 ///
 /// They drive the model the window uses, through the same methods and properties, so a rejected
 /// edit answers `ok: false` with the model's own message and the window follows what the commands
@@ -261,66 +263,191 @@ extension DebugControlServer {
         // unless Piccolo is the active application and the Settings window is its key window.
         router.register("settings.record") { params in
             let request = try params.decode(RecordParams.self)
-            guard CGPreflightPostEventAccess() else {
-                throw ControlCommandError.failed(
-                    "Piccolo is not allowed to post keyboard events (CGPreflightPostEventAccess is false); "
-                        + "this command never asks for the permission")
-            }
             let press = Shortcut(keyCode: request.keyCode, modifiers: Set(request.modifiers))
-
-            // The checks and the posting are one step on the main thread, so that nothing can
-            // change the frontmost application in between.
-            let pressesBefore: Int = try onMainActor {
-                let settings = SettingsController.shared
-                guard NSApplication.shared.isActive,
-                    NSWorkspace.shared.frontmostApplication?.processIdentifier
-                        == ProcessInfo.processInfo.processIdentifier
-                else {
-                    throw ControlCommandError.failed(
-                        "Piccolo is not the frontmost application; refusing to post a key press that could land "
-                            + "in another app (bring Piccolo forward with `open` first)")
-                }
-                guard settings.isOpen, settings.isKey else {
-                    throw ControlCommandError.failed(
-                        "the Settings window is not the key window; refusing to post a key press "
-                            + "(settings.open, then bring Piccolo forward with `open`)")
-                }
-                guard settings.model.beginRecording(request.id) else {
-                    throw rejection(of: settings.model)
-                }
-                let pressesBefore = settings.model.pressesTaken
-                do {
-                    try postKeyPress(press)
-                } catch {
-                    settings.model.cancelRecording()
-                    throw error
-                }
-                return pressesBefore
-            }
-
-            // The events are asynchronous: wait until the recorder has taken the key press.
-            let deadline = Date().addingTimeInterval(recordTimeout)
-            while Date() < deadline {
-                let (taken, stillRecording) = onMainActor {
-                    let model = SettingsController.shared.model
-                    return (model.pressesTaken, model.recordingBindingID != nil)
-                }
-                if taken > pressesBefore {
-                    return onMainActor { settingsState() }
-                }
-                if !stillRecording {
-                    // Something else ended the recording (the window lost key status, the app
-                    // was deactivated) before the key press arrived.
-                    throw ControlCommandError.failed(
-                        "the recording ended before the key press arrived: the Settings window is no longer the key window")
-                }
-                Thread.sleep(forTimeInterval: 0.01)
-            }
-            onMainActor { SettingsController.shared.model.cancelRecording() }
-            throw ControlCommandError.failed(
-                "the key press was posted but the recorder did not receive it within \(Int(recordTimeout)) s; "
-                    + "recording was cancelled")
+            return try recordByKeyPress(press) { $0.beginRecording(request.id) }
         }
+
+        // The keymap's commands. A row is named as `settings.state` names it (`KeymapRowID.name`).
+
+        // Starts recording on a row, as a click on its shortcut button does.
+        router.register("settings.beginRecordingRow") { params in
+            let row = try rowID(named: try params.decode(RowParams.self).row)
+            return try onMainActor {
+                let model = SettingsController.shared.model
+                guard model.beginRecording(row) else { throw rejection(of: model) }
+                return settingsState()
+            }
+        }
+
+        // `settings.record` for a row: begins recording on it and posts one key press with real keyboard
+        // events, with the same refusals. A shortcut the model rejects, a conflict and a shortcut that
+        // cannot be a global one come back in the state (`error`, `errorTarget`, `conflict`), not as
+        // `ok: false`.
+        router.register("settings.recordRow") { params in
+            let request = try params.decode(RecordRowParams.self)
+            let row = try rowID(named: request.row)
+            let press = Shortcut(keyCode: request.keyCode, modifiers: Set(request.modifiers))
+            return try recordByKeyPress(press) { $0.beginRecording(row) }
+        }
+
+        // Takes away a row's shortcut, as the ✕ in the shortcut button does.
+        router.register("settings.clearShortcut") { params in
+            let row = try rowID(named: try params.decode(RowParams.self).row)
+            return try onMainActor {
+                let model = SettingsController.shared.model
+                guard model.clearShortcut(row) else { throw rejection(of: model) }
+                return settingsState()
+            }
+        }
+
+        // Settles the pending conflict: `replace: true` moves the shortcut to the row that was recorded,
+        // `replace: false` drops the conflict. `ok: false` when there is none.
+        router.register("settings.resolveConflict") { params in
+            let replace = try params.decode(ReplaceParams.self).replace
+            return try onMainActor {
+                let model = SettingsController.shared.model
+                guard model.pendingConflict != nil else {
+                    throw ControlCommandError.failed("there is no shortcut conflict to resolve")
+                }
+                guard model.resolveConflict(replace: replace) else { throw rejection(of: model) }
+                return settingsState()
+            }
+        }
+
+        // Adds a grid or a custom area (an action as the config file writes it) and starts recording its
+        // shortcut: the state's `recordingRow` is the new row. A layout that has a problem is refused with
+        // the model's message.
+        router.register("settings.addLayout") { params in
+            let action = try params.decode(ActionParams.self).action
+            return try onMainActor {
+                let model = SettingsController.shared.model
+                guard model.addLayout(action) != nil else { throw rejection(of: model) }
+                return settingsState()
+            }
+        }
+
+        // Replaces the action of a grid or a custom area; the params are the binding's ID and an action.
+        router.register("settings.updateLayout") { params in
+            let update = try params.decode(UpdateActionParams.self)
+            return try onMainActor {
+                let model = SettingsController.shared.model
+                guard model.updateLayout(update.id, to: update.action) else { throw rejection(of: model) }
+                return settingsState()
+            }
+        }
+
+        // Asks for the sheet of a layout: `row` is a grid's or custom area's row (its UUID), `new` is
+        // "grids" or "customAreas". The state's `layoutEditor` is the request.
+        router.register("settings.editLayout") { params in
+            let request = try params.decode(EditLayoutParams.self)
+            let editor: LayoutEditorRequest
+            switch (request.row, request.new) {
+            case (let name?, nil):
+                guard case .layout(let id) = try rowID(named: name) else {
+                    throw ControlCommandError.invalidParams("row must be the row of a grid or a custom area")
+                }
+                editor = .edit(id)
+            case (nil, let name?):
+                guard let section = KeymapSection(rawValue: name), section == .grids || section == .customAreas
+                else {
+                    throw ControlCommandError.invalidParams("new must be \"grids\" or \"customAreas\", not \"\(name)\"")
+                }
+                editor = .new(section)
+            default:
+                throw ControlCommandError.invalidParams("give either row or new")
+            }
+            return try onMainActor {
+                let model = SettingsController.shared.model
+                guard model.editLayout(editor) else { throw rejection(of: model) }
+                return settingsState()
+            }
+        }
+
+        router.register("settings.dismissLayoutEditor") { _ in
+            onMainActor {
+                SettingsController.shared.model.dismissLayoutEditor()
+                return settingsState()
+            }
+        }
+    }
+
+    // MARK: Recording by key press
+
+    /// Starts a recording with `begin`, posts `press` with real keyboard events and answers the state once
+    /// the recorder has taken it. Refuses (nothing posted) unless Piccolo may post events, is the frontmost
+    /// application and has the Settings window as its key window.
+    private nonisolated static func recordByKeyPress(
+        _ press: Shortcut, begin: @MainActor (SettingsModel) -> Bool
+    ) throws -> JSONValue {
+        guard CGPreflightPostEventAccess() else {
+            throw ControlCommandError.failed(
+                "Piccolo is not allowed to post keyboard events (CGPreflightPostEventAccess is false); "
+                    + "this command never asks for the permission")
+        }
+
+        // The checks and the posting are one step on the main thread, so that nothing can
+        // change the frontmost application in between.
+        let pressesBefore: Int = try onMainActor {
+            let settings = SettingsController.shared
+            guard NSApplication.shared.isActive,
+                NSWorkspace.shared.frontmostApplication?.processIdentifier
+                    == ProcessInfo.processInfo.processIdentifier
+            else {
+                throw ControlCommandError.failed(
+                    "Piccolo is not the frontmost application; refusing to post a key press that could land "
+                        + "in another app (bring Piccolo forward with `open` first)")
+            }
+            guard settings.isOpen, settings.isKey else {
+                throw ControlCommandError.failed(
+                    "the Settings window is not the key window; refusing to post a key press "
+                        + "(settings.open, then bring Piccolo forward with `open`)")
+            }
+            guard begin(settings.model) else {
+                throw rejection(of: settings.model)
+            }
+            let pressesBefore = settings.model.pressesTaken
+            do {
+                try postKeyPress(press)
+            } catch {
+                settings.model.cancelRecording()
+                throw error
+            }
+            return pressesBefore
+        }
+
+        // The events are asynchronous: wait until the recorder has taken the key press.
+        let deadline = Date().addingTimeInterval(recordTimeout)
+        while Date() < deadline {
+            let (taken, stillRecording) = onMainActor {
+                let model = SettingsController.shared.model
+                return (model.pressesTaken, model.isRecording)
+            }
+            if taken > pressesBefore {
+                return onMainActor { settingsState() }
+            }
+            if !stillRecording {
+                // Something else ended the recording (the window lost key status, the app
+                // was deactivated) before the key press arrived.
+                throw ControlCommandError.failed(
+                    "the recording ended before the key press arrived: the Settings window is no longer the key window")
+            }
+            Thread.sleep(forTimeInterval: 0.01)
+        }
+        onMainActor { SettingsController.shared.model.cancelRecording() }
+        throw ControlCommandError.failed(
+            "the key press was posted but the recorder did not receive it within \(Int(recordTimeout)) s; "
+                + "recording was cancelled")
+    }
+
+    /// The row a name stands for (see ``KeymapRowID/name``).
+    private nonisolated static func rowID(named name: String) throws -> KeymapRowID {
+        guard let row = KeymapRowID(name: name) else {
+            throw ControlCommandError.invalidParams(
+                "there is no row named \"\(name)\": a built-in row is placeWindow.<preset>, restoreWindow, "
+                    + "moveToDisplay.<direction>, moveDivider.<direction> or swapWindow.<direction>; "
+                    + "a grid or a custom area is the UUID of its binding")
+        }
+        return row
     }
 
     // MARK: State
@@ -389,8 +516,64 @@ extension DebugControlServer {
         if let restartError = model.restartError {
             state["restartError"] = .string(restartError)
         }
+        state["rows"] = keymapRows(of: model)
+        if let row = model.recordingRow {
+            state["recordingRow"] = .string(row.name)
+        }
+        if let conflict = model.pendingConflict {
+            state["conflict"] = .object([
+                "row": .string(conflict.row.name),
+                "shortcutText": .string(model.shortcutText(for: conflict.shortcut)),
+                "ownerBindingID": .string(conflict.ownerBindingID.uuidString),
+                "ownerName": .string(model.binding(conflict.ownerBindingID).map { model.summary(of: $0) } ?? ""),
+            ])
+        }
+        if let target = model.errorTarget {
+            switch target {
+            case .row(let row): state["errorTarget"] = .object(["row": .string(row.name)])
+            case .field(let field): state["errorTarget"] = .object(["field": .string(field.rawValue)])
+            case .window: state["errorTarget"] = .string("window")
+            }
+        }
+        if let editor = model.layoutEditor {
+            switch editor {
+            case .new(let section): state["layoutEditor"] = .object(["new": .string(section.rawValue)])
+            case .edit(let id): state["layoutEditor"] = .object(["edit": .string(id.uuidString)])
+            }
+        }
         state.merge(extra) { _, new in new }
         return .object(state)
+    }
+
+    /// The rows of the keymap under the current search, in the order the Shortcuts tab lists them. A row's
+    /// `shortcuts` are its bindings that have a shortcut.
+    @MainActor
+    private static func keymapRows(of model: SettingsModel) -> JSONValue {
+        var rows: [JSONValue] = []
+        for group in model.keymap {
+            for row in group.rows {
+                var shortcuts: [JSONValue] = []
+                for binding in row.bindings {
+                    guard let shortcut = binding.shortcut else { continue }
+                    shortcuts.append(
+                        .object([
+                            "bindingID": .string(binding.id.uuidString),
+                            "shortcutText": .string(model.shortcutText(for: shortcut)),
+                            "active": .bool(!model.inactiveBindingIDs.contains(binding.id)),
+                        ]))
+                }
+                rows.append(
+                    .object([
+                        "row": .string(row.id.name),
+                        "section": .string(group.section.rawValue),
+                        "name": .string(row.name),
+                        "editable": .bool(row.isEditable),
+                        "shortcuts": .array(shortcuts),
+                        "recording": .bool(model.recordingRow == row.id),
+                    ]))
+            }
+        }
+        return .array(rows)
     }
 
     /// The message for a value that is not a name of `type`, listing the names it accepts.
@@ -450,6 +633,29 @@ extension DebugControlServer {
         var id: UUID
         var keyCode: Int
         var modifiers: [Modifier]
+    }
+
+    private struct RowParams: Decodable {
+        var row: String
+    }
+
+    private struct RecordRowParams: Decodable {
+        var row: String
+        var keyCode: Int
+        var modifiers: [Modifier]
+    }
+
+    private struct ReplaceParams: Decodable {
+        var replace: Bool
+    }
+
+    private struct ActionParams: Decodable {
+        var action: Action
+    }
+
+    private struct EditLayoutParams: Decodable {
+        var row: String?
+        var new: String?
     }
 }
 #endif
