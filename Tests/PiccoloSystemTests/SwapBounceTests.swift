@@ -47,7 +47,7 @@ private func depth(of frame: CGRect, from start: CGRect, towards direction: Dire
 
 @Suite("ActionExecutor: swapWindow bounces at the edge")
 struct SwapBounceTests {
-    @Test("with Fast and no neighbour on the left the window goes out up to 16 pt and comes back to the start frame")
+    @Test("with Fast and no neighbour on the left the window goes out 16 pt, overshoots the start by 2 pt and settles on the start frame")
     func bouncesLeft() throws {
         let rig = try BounceRig()
         let start = try rig.desk.frame(of: 1)
@@ -65,7 +65,9 @@ struct SwapBounceTests {
         #expect(moves.allSatisfy { $0.frame.size == start.size && $0.frame.minY == start.minY })
         let depths = moves.map { depth(of: $0.frame, from: start, towards: .left) }
         #expect(depths.max() == 16, "the deepest point of the bounce is \(depths.max() ?? -1) pt")
-        #expect(depths.allSatisfy { (0...16).contains($0) }, "\(depths)")
+        // The overshoot goes past the start, to the right of it, by 2 pt.
+        #expect(depths.min() == -2, "the overshoot is \(depths.min() ?? 0) pt")
+        #expect(depths.allSatisfy { (-2...16).contains($0) }, "\(depths)")
         // The window goes out to the left of the display (no shift into the visible frame) and comes back.
         #expect(moves.map(\.frame.minX).min() == start.minX - 16)
         #expect(moves.last?.frame == start, "the last frame is \(String(describing: moves.last?.frame)), the start is \(start)")
@@ -77,7 +79,7 @@ struct SwapBounceTests {
     }
 
     @Test(
-        "the bounce lasts 0.2 s whatever the animation speed",
+        "the bounce lasts 0.42 s whatever the animation speed",
         arguments: [WindowAnimation.fast, .medium, .slow])
     func duration(animation: WindowAnimation) throws {
         let rig = try BounceRig()
@@ -85,7 +87,7 @@ struct SwapBounceTests {
         let outcome = try rig.swap(.left, animation)
 
         #expect(outcome == .nothingToDo(.noNeighbour(bounced: true)))
-        #expect(abs(rig.clock.elapsed - 0.2) < 1e-9, "\(animation) took \(rig.clock.elapsed) s")
+        #expect(abs(rig.clock.elapsed - 0.42) < 1e-9, "\(animation) took \(rig.clock.elapsed) s")
     }
 
     @Test(
@@ -104,7 +106,7 @@ struct SwapBounceTests {
             fast.changes(since: fastMark).map(\.frame) == other.changes(since: otherMark).map(\.frame))
     }
 
-    @Test("it ticks at most 60 times a second, and the last tick is at the end of the 0.2 s")
+    @Test("it ticks at most 60 times a second, and every change comes within the 0.42 s")
     func ticks() throws {
         let rig = try BounceRig()
         let mark = rig.desk.trace.count
@@ -112,15 +114,16 @@ struct SwapBounceTests {
         _ = try rig.swap(.left)
 
         let times = rig.changes(since: mark).map(\.time)
-        #expect(times.count <= 12, "\(times.count) changes in 0.2 s")
-        #expect(times.count >= 8, "only \(times.count) changes in 0.2 s")
+        // 0.42 s at 60 ticks a second is 26 ticks at most; only the ticks that change the window are seen.
+        #expect(times.count <= 26, "\(times.count) changes in 0.42 s")
+        #expect(times.count >= 8, "only \(times.count) changes in 0.42 s")
         for (earlier, later) in zip(times, times.dropFirst()) {
             #expect(later - earlier >= 1.0 / 60 - 1e-9, "ticks \(later - earlier) s apart")
         }
-        #expect(abs((times.last ?? 0) - (FakeClock.origin + 0.2)) < 1e-9, "the last change is at \(times.last ?? 0)")
+        #expect((times.last ?? 0) <= FakeClock.origin + 0.42 + 1e-9, "the last change is at \(times.last ?? 0)")
     }
 
-    @Test("it goes out and comes back: the depth rises to the middle and falls after it")
+    @Test("it goes out and comes back: the depth rises to the 16 pt peak, falls past the start by 2 pt and settles there")
     func shape() throws {
         let rig = try BounceRig()
         let start = try rig.desk.frame(of: 1)
@@ -130,11 +133,11 @@ struct SwapBounceTests {
 
         let depths = rig.changes(since: mark).map { depth(of: $0.frame, from: start, towards: .left) }
         let peak = try #require(depths.firstIndex(of: 16))
-        let rising = Array(depths[...peak])
-        let falling = Array(depths[peak...])
-        #expect(rising == rising.sorted(), "\(depths)")
-        #expect(falling == falling.sorted(by: >), "\(depths)")
-        #expect(depths.first.map { $0 > 0 } == true)
+        let trough = try #require(depths.firstIndex(of: -2))
+        #expect(peak < trough, "\(depths)")
+        #expect(Array(depths[...peak]) == Array(depths[...peak]).sorted(), "\(depths)")
+        #expect(Array(depths[peak...trough]) == Array(depths[peak...trough]).sorted(by: >), "\(depths)")
+        #expect(Array(depths[trough...]) == Array(depths[trough...]).sorted(), "\(depths)")
         #expect(depths.last == 0)
     }
 
@@ -161,7 +164,7 @@ struct SwapBounceTests {
         }
     }
 
-    @Test("up sends sizes only and keeps the origin: the top edge stays and the bottom edge comes up by 16 pt")
+    @Test("up sends sizes only and keeps the origin: the top edge stays, the bottom edge comes up by 16 pt and then overshoots by 2 pt")
     func upSquashes() throws {
         let rig = try BounceRig()
         let start = try rig.desk.frame(of: 1)
@@ -175,7 +178,9 @@ struct SwapBounceTests {
         #expect(moves.allSatisfy { $0.window == 1 && $0.kind == .size }, "\(moves.map(\.kind))")
         #expect(moves.allSatisfy { $0.frame.origin == start.origin && $0.frame.width == start.width })
         #expect(moves.map(\.frame.height).min() == start.height - 16)
-        #expect(moves.allSatisfy { $0.frame.height <= start.height })
+        // The overshoot grows the window by 2 pt, with the top edge still where it was.
+        #expect(moves.map(\.frame.height).max() == start.height + 2)
+        #expect(moves.allSatisfy { $0.frame.maxY >= start.maxY - 16 && $0.frame.maxY <= start.maxY + 2 })
         #expect(moves.last?.frame == start)
     }
 
@@ -298,8 +303,8 @@ struct SwapNoBounceTests {
         let now = try rig.desk.frame(of: 1)
         #expect(now == start, "the window was left at \(now)")
         #expect(rig.desk.executor.linkedGroups == groups)
-        // The bounce was abandoned: no more ticks after the failure.
-        #expect(rig.clock.elapsed < 0.2)
+        // The bounce was abandoned at the third change, at 0.05 s: no more ticks after the failure.
+        #expect(rig.clock.elapsed < EdgeBounce.duration / 2)
     }
 
     @Test("a window that keeps failing is not bounced, and the run does not throw")

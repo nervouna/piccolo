@@ -692,7 +692,7 @@ struct AnimatedSwapTests {
         #expect(clock.sleeps.isEmpty)
     }
 
-    @Test("with no neighbour there is nothing to glide: the focused window only bounces, in 0.2 s whatever the speed")
+    @Test("with no neighbour there is nothing to glide: the focused window only bounces, in 0.42 s whatever the speed")
     func noNeighbour() throws {
         let clock = FakeClock()
         let desk = try makeDesk(clock: clock)
@@ -702,6 +702,6 @@ struct AnimatedSwapTests {
 
         #expect(outcome == .swap(.nothingToDo(.noNeighbour(bounced: true))))
         #expect(desk.calls(since: mark).allSatisfy { $0 == "1 position" }, "\(desk.calls(since: mark))")
-        #expect(abs(clock.elapsed - 0.2) < 1e-9)
+        #expect(abs(clock.elapsed - 0.42) < 1e-9)
     }
 }

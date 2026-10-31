@@ -4,60 +4,99 @@ import Testing
 
 @testable import PiccoloCore
 
+/// The spring of the spec, written out here from its formula rather than read from `EdgeBounce`: the
+/// offset at elapsed time `s` is `A · e^(−s/τ) · sin(2πs/T) / m`, with `m` the same product at the first
+/// peak `s*`, so that the peak is `A`.
+private enum Spring {
+    static let amplitude = 16.0
+    static let period = 0.26
+    static let decay = 0.07
+    static let duration = 0.42
+
+    static let omega = 2 * Double.pi / period
+    /// The first peak: the first positive root of the derivative, tan(ω s) = ω τ.
+    static let peakTime = atan(omega * decay) / omega
+    static let peakValue = exp(-peakTime / decay) * sin(omega * peakTime)
+
+    /// The spring at elapsed time `s`, before rounding.
+    static func raw(_ s: Double) -> Double {
+        amplitude * exp(-s / decay) * sin(omega * s) / peakValue
+    }
+}
+
 @Suite("EdgeBounce: the constants and the offset")
 struct EdgeBounceOffsetTests {
-    @Test("the bounce is 16 pt deep and lasts 0.2 s")
+    @Test("the bounce is 16 pt deep and lasts 0.42 s")
     func constants() {
         #expect(EdgeBounce.amplitude == 16)
-        #expect(EdgeBounce.duration == 0.2)
+        #expect(EdgeBounce.duration == 0.42)
     }
 
-    @Test("the offset is 0 at the start and at the end, and the whole amplitude at the middle")
+    @Test("the offset is exactly 0 at the start and at the end")
     func endpoints() {
         #expect(EdgeBounce.offset(at: 0) == 0)
-        #expect(EdgeBounce.offset(at: 0.5) == 16)
         #expect(EdgeBounce.offset(at: 1) == 0)
     }
 
+    @Test("the first peak is 16 pt, at s* = 0.043 s, and no offset is deeper")
+    func peak() {
+        #expect(abs(Spring.peakTime - 0.043) < 0.0005)
+        #expect(EdgeBounce.offset(at: Spring.peakTime / Spring.duration) == 16)
+        let deepest = (0...420).map { EdgeBounce.offset(at: Double($0) / 420) }.max()
+        #expect(deepest == 16)
+    }
+
+    @Test("the overshoot past the start is 2 pt deep around s = 0.17 s, and never deeper than 3 pt")
+    func overshoot() {
+        let around = (150...190).map { EdgeBounce.offset(at: Double($0) / 1000 / Spring.duration) }
+        #expect((-3 ... -2).contains(around.min() ?? 0), "the deepest overshoot near 0.17 s is \(around.min() ?? 0)")
+        #expect(EdgeBounce.offset(at: 0.17 / Spring.duration) < 0)
+        let whole = (0...420).map { EdgeBounce.offset(at: Double($0) / 420) }
+        #expect((whole.min() ?? 0) >= -3)
+    }
+
     @Test(
-        "up to the middle it follows A × easeOut(2t), after it A × (1 − easeIn(2t − 1)), in whole points",
-        arguments: [0.05, 0.1, 0.2, 0.25, 0.3, 0.4, 0.45, 0.55, 0.6, 0.7, 0.75, 0.8, 0.9, 0.95])
-    func formula(t: Double) {
-        let amplitude = 16.0
-        let raw: Double
-        if t <= 0.5 {
-            let u = 2 * t
-            raw = amplitude * (1 - (1 - u) * (1 - u) * (1 - u))
-        } else {
-            let u = 2 * t - 1
-            raw = amplitude * (1 - u * u * u)
-        }
-        let offset = EdgeBounce.offset(at: t)
+        "the offset follows the damped spring, in whole points",
+        arguments: [0.005, 0.02, 0.043, 0.07, 0.1, 0.13, 0.15, 0.17, 0.2, 0.25, 0.3, 0.35, 0.4])
+    func formula(s: Double) {
+        let raw = Spring.raw(s)
+        let offset = EdgeBounce.offset(at: s / Spring.duration)
         let wanted = CGFloat((raw + 0.5).rounded(.down))
-        #expect(offset == wanted, "t = \(t): \(raw) gave \(offset)")
-        #expect(offset == offset.rounded(), "t = \(t): \(offset) is not a whole number")
+        #expect(offset == wanted, "s = \(s): \(raw) gave \(offset)")
+        #expect(offset == offset.rounded(), "s = \(s): \(offset) is not a whole number")
     }
 
-    @Test("a quarter and three quarters of the way are 14 pt out")
-    func quarters() {
-        #expect(EdgeBounce.offset(at: 0.25) == 14)
-        #expect(EdgeBounce.offset(at: 0.75) == 14)
-    }
-
-    @Test("it rises to the middle and falls after it, never leaving 0...16")
-    func shape() {
-        var previous: CGFloat = 0
-        for index in 1...50 {
-            let offset = EdgeBounce.offset(at: Double(index) / 100)
-            #expect(offset >= previous, "the offset falls before the middle at t = \(Double(index) / 100)")
-            #expect((0...16).contains(offset))
-            previous = offset
+    @Test("sampled at 0, 0.02, 0.043, 0.1, 0.13, 0.17, 0.25, 0.35 and 0.42 s the offset is 0, 12, 16, 5, 0, -2, 0, 0 and 0 pt")
+    func sampledTimes() {
+        let table: [(seconds: Double, offset: CGFloat)] = [
+            (0, 0), (0.02, 12), (0.043, 16), (0.1, 5), (0.13, 0), (0.17, -2), (0.25, 0), (0.35, 0), (0.42, 0),
+        ]
+        for (seconds, offset) in table {
+            #expect(EdgeBounce.offset(at: seconds / EdgeBounce.duration) == offset, "s = \(seconds)")
         }
-        for index in 51...100 {
-            let offset = EdgeBounce.offset(at: Double(index) / 100)
-            #expect(offset <= previous, "the offset rises after the middle at t = \(Double(index) / 100)")
-            #expect((0...16).contains(offset))
-            previous = offset
+    }
+
+    @Test("it leaves the start going out, is back at the start at 0.13 s, dips past it until 0.26 s and is at rest after")
+    func shape() {
+        for millisecond in 0...420 {
+            let seconds = Double(millisecond) / 1000
+            let offset = EdgeBounce.offset(at: seconds / EdgeBounce.duration)
+            if seconds < 0.13 {
+                #expect(offset >= 0, "s = \(seconds): \(offset) is on the far side of the start")
+            } else if seconds < 0.26 {
+                #expect(offset <= 0, "s = \(seconds): \(offset) is on the near side of the start")
+            } else {
+                #expect(offset == 0, "s = \(seconds): the bounce has not settled, \(offset)")
+            }
+        }
+    }
+
+    @Test("every offset is a whole number of points, between the overshoot and the peak")
+    func wholePoints() {
+        for index in 0...420 {
+            let offset = EdgeBounce.offset(at: Double(index) / 420)
+            #expect(offset == offset.rounded(), "t = \(Double(index) / 420): \(offset) is not a whole number")
+            #expect((-3...16).contains(offset), "t = \(Double(index) / 420): \(offset)")
         }
     }
 
@@ -80,6 +119,11 @@ struct EdgeBounceFrameTests {
         EdgeBounce.frame(from: start, towards: direction, progress: t)
     }
 
+    /// The frame `seconds` into the bounce.
+    private func frame(_ direction: Direction, atSeconds seconds: Double) -> CGRect {
+        frame(direction, seconds / EdgeBounce.duration)
+    }
+
     /// The frame `start` has with the offset applied to the side of `direction`.
     private func expected(_ direction: Direction, offset d: CGFloat) -> CGRect {
         switch direction {
@@ -91,51 +135,70 @@ struct EdgeBounceFrameTests {
     }
 
     @Test(
-        "at t = 0, 0.25, 0.5, 0.75 and 1 the frame is the start, 14, 16, 14 pt out, and the start again",
+        "at 0, 0.043, 0.13, 0.17 and 0.42 s the frame is the start, 16 pt out, the start, 2 pt past it and the start again",
         arguments: Direction.allCases)
     func keyFrames(direction: Direction) {
-        #expect(frame(direction, 0) == start)
-        #expect(frame(direction, 0.25) == expected(direction, offset: 14))
-        #expect(frame(direction, 0.5) == expected(direction, offset: 16))
-        #expect(frame(direction, 0.75) == expected(direction, offset: 14))
-        #expect(frame(direction, 1) == start)
+        #expect(frame(direction, atSeconds: 0) == start)
+        #expect(frame(direction, atSeconds: 0.043) == expected(direction, offset: 16))
+        #expect(frame(direction, atSeconds: 0.13) == start)
+        #expect(frame(direction, atSeconds: 0.17) == expected(direction, offset: -2))
+        #expect(frame(direction, atSeconds: 0.42) == start)
     }
 
-    @Test("left moves the whole frame towards smaller x, and the size stays")
+    @Test("left moves the whole frame towards smaller x, and its overshoot is to the right of the start")
     func left() {
-        let moved = frame(.left, 0.5)
-        #expect(moved.origin == CGPoint(x: 104, y: 90))
-        #expect(moved.size == start.size)
+        let peak = frame(.left, atSeconds: 0.043)
+        #expect(peak.origin == CGPoint(x: 104, y: 90))
+        #expect(peak.size == start.size)
+        let overshoot = frame(.left, atSeconds: 0.17)
+        #expect(overshoot.origin == CGPoint(x: 122, y: 90))
+        #expect(overshoot.size == start.size)
     }
 
-    @Test("right moves the whole frame towards larger x, and the size stays")
+    @Test("right moves the whole frame towards larger x, and its overshoot is to the left of the start")
     func right() {
-        let moved = frame(.right, 0.5)
-        #expect(moved.origin == CGPoint(x: 136, y: 90))
-        #expect(moved.size == start.size)
+        let peak = frame(.right, atSeconds: 0.043)
+        #expect(peak.origin == CGPoint(x: 136, y: 90))
+        #expect(peak.size == start.size)
+        let overshoot = frame(.right, atSeconds: 0.17)
+        #expect(overshoot.origin == CGPoint(x: 118, y: 90))
+        #expect(overshoot.size == start.size)
     }
 
-    @Test("down moves the whole frame towards larger y, and the size stays")
+    @Test("down moves the whole frame towards larger y, and its overshoot is above the start")
     func down() {
-        let moved = frame(.down, 0.5)
-        #expect(moved.origin == CGPoint(x: 120, y: 106))
-        #expect(moved.size == start.size)
+        let peak = frame(.down, atSeconds: 0.043)
+        #expect(peak.origin == CGPoint(x: 120, y: 106))
+        #expect(peak.size == start.size)
+        let overshoot = frame(.down, atSeconds: 0.17)
+        #expect(overshoot.origin == CGPoint(x: 120, y: 88))
+        #expect(overshoot.size == start.size)
     }
 
-    @Test("up squashes: the origin and the top edge stay, the bottom edge moves up and the height shrinks")
+    @Test(
+        "up squashes: the origin and the top edge stay; the height shrinks by 16 pt at the peak and grows by 2 pt on the overshoot")
     func up() {
-        let squashed = frame(.up, 0.5)
+        let squashed = frame(.up, atSeconds: 0.043)
         #expect(squashed.origin == start.origin)
         #expect(squashed.minY == start.minY)
         #expect(squashed.width == start.width)
         #expect(squashed.height == start.height - 16)
         #expect(squashed.maxY == start.maxY - 16)
+
+        let overshoot = frame(.up, atSeconds: 0.17)
+        #expect(overshoot.origin == start.origin)
+        #expect(overshoot.minY == start.minY)
+        #expect(overshoot.width == start.width)
+        #expect(overshoot.height == start.height + 2)
+        #expect(overshoot.maxY == start.maxY + 2)
     }
 
-    @Test("the frames between the key frames are whole points, and only the side of the key changes", arguments: Direction.allCases)
+    @Test(
+        "the frames of the whole bounce are whole points, and only the side of the key changes",
+        arguments: Direction.allCases)
     func wholePoints(direction: Direction) {
-        for index in 0...100 {
-            let t = Double(index) / 100
+        for index in 0...420 {
+            let t = Double(index) / 420
             let moved = frame(direction, t)
             let d = EdgeBounce.offset(at: t)
             #expect(moved == expected(direction, offset: d), "t = \(t)")
