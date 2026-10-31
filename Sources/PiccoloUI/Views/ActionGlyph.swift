@@ -7,7 +7,7 @@ enum ActionGlyphKind: Equatable {
     /// Windows on a small screen: a preset or custom frame, or the cells of a grid in the fill order. Rectangles
     /// in the unit square (see ``ActionPreview``).
     case frames([CGRect])
-    /// A move to another display: an arrow, with a bar for the next and previous display.
+    /// A move to another display: an arrow in a small screen, with a bar for the next and previous display.
     case display(DisplayDirection)
     /// Two light halves split along the divider, with the arrow of the direction the divider moves.
     case divider(Direction)
@@ -98,18 +98,21 @@ struct ActionGlyph: View {
                 windows(rects, filled: true)
             }
         case .display(let direction):
-            Image(systemName: ActionGlyphKind.displaySymbol(direction))
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(.secondary)
+            screen {
+                Image(systemName: ActionGlyphKind.displaySymbol(direction))
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(accent)
+                    .frame(width: Self.size.width, height: Self.size.height)
+            }
         case .divider(let direction):
             screen {
                 windows(ActionGlyphKind.halves(split: direction), filled: false)
-                arrow(direction, color: accent)
+                arrow(direction)
             }
         case .swap(let direction):
             screen {
                 windows(ActionGlyphKind.halves(split: direction), filled: true)
-                arrow(direction, color: .primary)
+                arrow(direction)
             }
         case .restore:
             screen {
@@ -157,10 +160,14 @@ struct ActionGlyph: View {
         }
     }
 
-    private func arrow(_ direction: Direction, color: Color) -> some View {
+    /// The arrow across the split, in the accent colour like every arrow of the glyphs, centred on a pill of the
+    /// screen's colour, so that the split line stops behind it.
+    private func arrow(_ direction: Direction) -> some View {
         Image(systemName: ActionGlyphKind.arrowSymbol(direction))
             .font(.system(size: 8, weight: .heavy))
-            .foregroundStyle(color)
+            .foregroundStyle(accent)
+            .padding(.horizontal, 2)
+            .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 3))
             .frame(width: Self.size.width, height: Self.size.height)
     }
 }
