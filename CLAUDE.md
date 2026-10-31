@@ -59,7 +59,7 @@ Non-goals: drag-to-snap with the mouse, automatic tiling of new windows, moving 
 
 ## Workflow
 
-Developed with the global `orchestrate` skill: the owner files issues and makes product decisions; Claude writes each issue as a spec, Claude subagents implement it as a PR, Claude reviews, merges and releases. Milestones (M0–M7 so far) are GitHub milestones, each with a tracking issue. Piccolo's own rules:
+Developed with the global `orchestrate` skill: the owner files issues and makes product decisions; Claude writes each issue as a spec, Claude subagents implement it as a PR, Claude reviews, merges and releases. Milestones are GitHub milestones, each with a tracking issue. Piccolo's own rules:
 
 - Desktop acceptance (anything that moves real windows or installs the app) is a machine-wide shared resource: one run at a time. Run `scripts/accept.sh`, not its pieces: it holds the lock and always tears down.
 - Acceptance scope: a run covers what the change can break, not the whole suite by default. A full run takes the screen for over two minutes, so it is reserved for changes that can affect every test. `scripts/accept.sh` takes a regular expression matched against the test identifiers, so a suite's struct name selects it; the script prefixes it with `PiccoloAcceptanceTests.*`, so an alternation goes in parentheses, or its later branches also match unit tests of the same name. A change that touches several rows runs the union of their filters (`scripts/accept.sh '(SettingsWindow|SettingsInFront|WindowGap)'`).
@@ -67,10 +67,11 @@ Developed with the global `orchestrate` skill: the owner files issues and makes 
   | Change touches | Filter |
   |---|---|
   | Frames and actions: `PiccoloCore/Geometry`, `Actions`, `Layout`, `LinkedResize`, `Arrange`, `Animation`, `History`; `ActionExecutor`, `FrameSetter`, `ArrangeExecution`, `LinkedResizeExecution`, `SwapExecution`, `WindowRecordStore`, `App/DebugArrangeCommands.swift`, `PiccoloSystem/Animation` | `(SingleWindowActions\|ArrangeGrid\|ColumnFirst\|LinkedResize\|SwapWindow\|CycleRestore\|WindowGap\|WindowAnimationAcceptance)` |
+  | Edge bounce only: `PiccoloCore/Animation/EdgeBounce.swift` (narrower than the frames row's `Animation`) | `(SwapWindow\|WindowAnimationAcceptance)` |
   | Shortcuts and holding them: `PiccoloCore/Shortcuts`, `PiccoloSystem/Hotkeys`, `PiccoloSystem/Preview`, `PiccoloSystem/Destinations`, `App/ConfigController.swift` | `(ConfigHotkeys\|DestinationPreviewAcceptance\|FailureNoticeAcceptance\|OnboardingAcceptance)` |
   | Config schema and settings: `PiccoloCore/Config`, `ActionSettings` | `(ConfigHotkeys\|SettingsWindow)`, plus the frames row when an action reads the new setting |
   | Settings window: `PiccoloUI/Model`, `Views`, `Window/SettingsWindowController.swift`, `App/SettingsController.swift`, `App/DebugSettingsCommands.swift` | `(SettingsWindow\|SettingsInFront)` |
-  | Failure notice: `Notice`, `NoticePanel`, `FailureNoticeText`, `App/NoticeController.swift` | `FailureNoticeAcceptance` |
+  | Failure notice: `Notice`, `NoticePanel`, `FailureNoticeText`, `FailureNotice+System.swift`, `App/NoticeController.swift` | `FailureNoticeAcceptance` |
   | Onboarding: `PiccoloUI/Onboarding`, `App/OnboardingController.swift` | `OnboardingAcceptance` |
   | Language and restart: `AppLanguage`, `LanguageDefaults`, `App/AppRestart.swift` | `Language` |
   | Login item: `LoginItem` | `LaunchAtLogin` |
