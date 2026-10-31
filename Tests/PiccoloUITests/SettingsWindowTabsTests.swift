@@ -45,15 +45,18 @@ struct SettingsWindowTabsTests {
     }
 
     /// Waits, on the main actor, until `reached` holds and the window's frame has stayed the same for three
-    /// polls in a row: a poll every 20 ms, and at most 5 s. The view of a tab is laid out and its size
+    /// polls in a row: a poll every 20 ms, and at most 250 polls. The view of a tab is laid out and its size
     /// reported on later turns of the main queue, so the window moves after the change that asked for it,
-    /// and when the machine is busy that can take longer than any fixed pause. A window that never gets
-    /// there does not fail the wait: the expectations after it do, and say what the window is.
+    /// and when the machine is busy that can take longer than any fixed pause. The budget counts the polls that
+    /// ran, not seconds: a full test run can block the main thread for seconds at a time, and the time spent
+    /// blocked must not use the budget up. A window that never gets there does not fail the wait: the
+    /// expectations after it do, and say what the window is. The wall-clock limit of 120 s only stops a hang.
     private func waitUntilSettled(_ window: NSWindow, reached: () -> Bool) async throws {
-        let deadline = ContinuousClock.now.advanced(by: .seconds(5))
+        let limit = ContinuousClock.now.advanced(by: .seconds(120))
         var previous: CGRect?
         var steady = 0
-        while ContinuousClock.now < deadline {
+        for _ in 0..<250 {
+            guard ContinuousClock.now < limit else { return }
             let frame = window.frame
             steady = (frame == previous && reached()) ? steady + 1 : 0
             previous = frame

@@ -61,6 +61,8 @@ Piccolo shows a menu bar icon and no Dock icon. Its menu shows, from top to bott
 
 Settings opens from the menu. It also opens when you launch Piccolo again while it is running, for example from Finder or with `open /Applications/Piccolo.app`. It does not open at launch.
 
+Every change you make in the Settings window can be undone with ⌘Z and redone with ⇧⌘Z, except Launch at login and Language, which macOS keeps.
+
 The guide is a small floating panel in the top-right corner of the display with the mouse. It does not take the focus, so the shortcuts it asks you to press act on the window you were working in. Closing it, Skip Guide and Finish all count as seen, and it is shown at launch only on a first launch that was never finished or skipped.
 
 ### Shortcuts tab

@@ -10,7 +10,7 @@ import SwiftUI
 final class SettingsContentController: NSViewController {
     private let shortcuts: NSHostingController<ShortcutsTab>
     private let general: NSHostingController<GeneralPane>
-    private let generalHeight = GeneralHeight()
+    let generalHeight = GeneralHeight()
 
     /// The tab whose view is in the window, if any has been shown.
     private(set) var tab: SettingsTab?

@@ -21,6 +21,11 @@ import PiccoloCore
 ///
 /// The keymap (``keymap``) is the row-centred view of the bindings that the Shortcuts tab shows; the
 /// methods that take a ``KeymapRowID`` are in `SettingsModel+Keymap.swift`.
+///
+/// Every accepted change to the config is a step of the history: ``undo()`` and ``redo()`` walk it, up to
+/// ``historyLimit`` steps back. Restoring the default shortcuts is one step, and so is a conflict that was
+/// replaced. A config replaced from outside (``reload()``) clears the history. Whether Piccolo launches at
+/// login and the language of the interface are not part of the config and not part of the history.
 @MainActor
 @Observable
 public final class SettingsModel {
@@ -81,6 +86,13 @@ public final class SettingsModel {
     public private(set) var language: AppLanguage
     /// Why the last restart could not be arranged, until the next one can. Shown next to the button.
     public private(set) var restartError: String?
+    /// The configs the accepted changes replaced, the oldest first: ``undo()`` applies the last one.
+    private var undoSteps: [Config] = []
+    /// The configs the undone changes replaced, the last undone first at the end: ``redo()`` applies the last one.
+    private var redoSteps: [Config] = []
+
+    /// How many changes ``undo()`` can take back at most. The oldest are forgotten.
+    public static let historyLimit = 100
 
     @ObservationIgnored let backend: any SettingsBackend
     @ObservationIgnored private let loginItem: any LoginItemBackend
@@ -264,7 +276,8 @@ public final class SettingsModel {
     public func restoreDefaultShortcuts() -> Bool {
         isConfirmingRestore = false
         backupName = nil
-        var candidate = config
+        let before = config
+        var candidate = before
         candidate.bindings = Config.defaultShortcuts.bindings
         do {
             try candidate.validate()
@@ -276,11 +289,12 @@ public final class SettingsModel {
         } catch {
             return reject(Self.message(for: error))
         }
-        reload()
+        takeConfigFromBackend()
         // A row of the keymap outlives the bindings, so its recording would go on without this.
         if isRecording {
             cancelRecording()
         }
+        recordStep(replacing: before)
         return true
     }
 
@@ -389,8 +403,16 @@ public final class SettingsModel {
 
     /// Takes the config in effect from the backend again, because it was replaced under the
     /// model (a reload from the menu, another file loaded). A recording of a row whose binding is
-    /// gone ends, and so does a request for the sheet of a binding that is gone.
+    /// gone ends, and so does a request for the sheet of a binding that is gone. The history of changes is
+    /// cleared: the configs in it belong to a file that is no longer the one in effect.
     public func reload() {
+        takeConfigFromBackend()
+        undoSteps.removeAll()
+        redoSteps.removeAll()
+    }
+
+    /// Makes the backend's config the model's, as ``reload()`` does but with the history left alone.
+    private func takeConfigFromBackend() {
         let snapshot = backend.current()
         bindings = snapshot.config.bindings
         resizeStep = snapshot.config.resizeStep
@@ -410,9 +432,19 @@ public final class SettingsModel {
 
     // MARK: Committing
 
-    /// Validates `candidate`, persists it and, only then, makes it the model's state. A change that is
-    /// accepted drops a pending conflict; one that is rejected shows its message at `rejection`.
+    /// Validates `candidate`, persists it and, only then, makes it the model's state, as one step of the
+    /// history. A change that is accepted drops a pending conflict; one that is rejected shows its message
+    /// at `rejection`. A candidate equal to the config in effect is accepted and is no step.
     func commit(_ candidate: Config, rejection: SettingsErrorTarget = .window) -> Bool {
+        let before = config
+        guard apply(candidate, rejection: rejection) else { return false }
+        recordStep(replacing: before)
+        return true
+    }
+
+    /// The part of ``commit(_:rejection:)`` that undo and redo share: validates `candidate`, persists it
+    /// and makes it the model's state, leaving the history to the caller.
+    private func apply(_ candidate: Config, rejection: SettingsErrorTarget) -> Bool {
         if candidate == config {
             resetError()
             pendingConflict = nil
@@ -441,6 +473,67 @@ public final class SettingsModel {
         pendingConflict = nil
         endRecordingIfTargetIsGone()
         return true
+    }
+
+    // MARK: Undo and redo
+
+    /// Whether ``undo()`` has a change to take back.
+    public var canUndo: Bool {
+        !undoSteps.isEmpty
+    }
+
+    /// Whether ``redo()`` has an undone change to apply again.
+    public var canRedo: Bool {
+        !redoSteps.isEmpty
+    }
+
+    /// Takes back the last change made to the config: the config it replaced is validated and saved as any
+    /// other change is. A recording ends and a pending conflict is dropped. Answers whether a change was taken
+    /// back. When there is nothing to take back it does nothing at all; when the backend cannot save, ``error``
+    /// says why (at the window), and nothing changes: not the config, the history, a recording or a conflict.
+    @discardableResult
+    public func undo() -> Bool {
+        guard let target = undoSteps.last else { return false }
+        let current = config
+        guard travel(to: target) else { return false }
+        undoSteps.removeLast()
+        redoSteps.append(current)
+        return true
+    }
+
+    /// Applies the change that ``undo()`` took back last, in the same way.
+    @discardableResult
+    public func redo() -> Bool {
+        guard let target = redoSteps.last else { return false }
+        let current = config
+        guard travel(to: target) else { return false }
+        redoSteps.removeLast()
+        undoSteps.append(current)
+        return true
+    }
+
+    /// Makes `target` the config through the usual validate-and-save path, then ends what the config
+    /// replaced may have left behind: a recording, and the request for the sheet of a layout that is gone.
+    private func travel(to target: Config) -> Bool {
+        guard apply(target, rejection: .window) else { return false }
+        if isRecording {
+            cancelRecording()
+        }
+        if case .edit(let id) = layoutEditor, binding(id) == nil {
+            layoutEditor = nil
+        }
+        return true
+    }
+
+    /// Adds the config that the change just made replaced to the history, forgetting the oldest steps beyond
+    /// ``historyLimit`` and the steps that could have been redone. No step when nothing changed.
+    private func recordStep(replacing before: Config) {
+        guard config != before else { return }
+        undoSteps.append(before)
+        if undoSteps.count > Self.historyLimit {
+            undoSteps.removeFirst(undoSteps.count - Self.historyLimit)
+        }
+        redoSteps.removeAll()
     }
 
     /// Records the message of a rejected change and where it shows. Always answers `false`.
