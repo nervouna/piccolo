@@ -44,9 +44,35 @@ struct SettingsWindowTabsTests {
         return (controller, model, window)
     }
 
-    /// Lets the main queue run: the model's tab is followed, and a hosted view's size reported, on a later turn.
-    private func settle() async throws {
-        try await Task.sleep(for: .milliseconds(400))
+    /// Waits, on the main actor, until `reached` holds and the window's frame has stayed the same for three
+    /// polls in a row: a poll every 20 ms, and at most 5 s. The view of a tab is laid out and its size
+    /// reported on later turns of the main queue, so the window moves after the change that asked for it,
+    /// and when the machine is busy that can take longer than any fixed pause. A window that never gets
+    /// there does not fail the wait: the expectations after it do, and say what the window is.
+    private func waitUntilSettled(_ window: NSWindow, reached: () -> Bool) async throws {
+        let deadline = ContinuousClock.now.advanced(by: .seconds(5))
+        var previous: CGRect?
+        var steady = 0
+        while ContinuousClock.now < deadline {
+            let frame = window.frame
+            steady = (frame == previous && reached()) ? steady + 1 : 0
+            previous = frame
+            if steady == 3 { return }
+            try await Task.sleep(for: .milliseconds(20))
+        }
+    }
+
+    /// Whether the General tab is the one shown and the window is as tall as the tab asks to be, or as tall
+    /// as `screen` allows when that is less. False until the tab has been laid out and its height reported.
+    private func isGeneralFitted(
+        _ controller: SettingsWindowController, _ window: NSWindow,
+        screen: CGRect = SettingsWindowTabsTests.bigScreen
+    ) -> Bool {
+        guard let content = controller.content, content.tab == .general else { return false }
+        let asked = content.generalFittingHeight
+        guard asked > 0 else { return false }
+        let room = window.contentRect(forFrameRect: screen).height
+        return abs(contentSize(of: window).height - min(asked, room)) < 1
     }
 
     private func contentSize(of window: NSWindow) -> CGSize {
@@ -89,13 +115,13 @@ struct SettingsWindowTabsTests {
         #expect(controller.content?.tab == .shortcuts)
 
         model.tab = .general
-        try await settle()
+        try await waitUntilSettled(window) { controller.content?.tab == .general }
         #expect(window.title == "General")
         #expect(toolbar.selectedItemIdentifier?.rawValue == "general")
         #expect(controller.content?.tab == .general)
 
         model.tab = .shortcuts
-        try await settle()
+        try await waitUntilSettled(window) { controller.content?.tab == .shortcuts }
         #expect(window.title == "Shortcuts")
         #expect(toolbar.selectedItemIdentifier?.rawValue == "shortcuts")
 
@@ -125,11 +151,11 @@ struct SettingsWindowTabsTests {
 
     @Test("changing the tab forgets the error of the tab it was made on")
     func tabChangeClearsTheError() async throws {
-        let (_, model, _) = makeController()
+        let (controller, model, window) = makeController()
         model.setShortcut(UIFixture.idB, to: UIFixture.f13)
         #expect(model.error != nil)
         model.tab = .general
-        try await settle()
+        try await waitUntilSettled(window) { controller.content?.tab == .general }
         #expect(model.error == nil)
     }
 
@@ -137,7 +163,7 @@ struct SettingsWindowTabsTests {
 
     @Test("the Shortcuts tab opens at 640 × 720, resizable down to 560 × 480; the General tab cannot be resized")
     func shortcutsSize() async throws {
-        let (_, model, window) = makeController()
+        let (controller, model, window) = makeController()
         #expect(contentSize(of: window) == CGSize(width: 640, height: 720))
         #expect(window.contentMinSize == CGSize(width: 560, height: 480))
         #expect(window.contentMaxSize.height > 10_000)
@@ -145,7 +171,7 @@ struct SettingsWindowTabsTests {
         #expect(window.standardWindowButton(.zoomButton)?.isEnabled == true)
 
         model.tab = .general
-        try await settle()
+        try await waitUntilSettled(window) { isGeneralFitted(controller, window) }
         #expect(window.contentMinSize == window.contentMaxSize, "the General tab can be resized")
         #expect(window.standardWindowButton(.zoomButton)?.isEnabled == false)
     }
@@ -154,7 +180,7 @@ struct SettingsWindowTabsTests {
     func generalSize() async throws {
         let (controller, model, window) = makeController()
         model.tab = .general
-        try await settle()
+        try await waitUntilSettled(window) { isGeneralFitted(controller, window) }
         let content = try #require(controller.content)
 
         let asked = content.generalFittingHeight
@@ -177,14 +203,16 @@ struct SettingsWindowTabsTests {
         defer { window.orderOut(nil) }
         window.setFrameTopLeftPoint(CGPoint(x: 300, y: 1400))
         model.tab = .general
-        try await settle()
+        try await waitUntilSettled(window) { isGeneralFitted(controller, window) }
         let content = try #require(controller.content)
         let plain = contentSize(of: window).height
         let top = window.frame.maxY
 
         model.setLanguage(.zhHans)
         #expect(model.restartRequired)
-        try await settle()
+        try await waitUntilSettled(window) {
+            contentSize(of: window).height > plain + 20 && isGeneralFitted(controller, window)
+        }
         let withRestart = contentSize(of: window).height
         #expect(withRestart > plain + 20, "the window is \(withRestart) pt high with the restart row, \(plain) without")
         #expect(abs(withRestart - content.generalFittingHeight) < 1)
@@ -192,39 +220,43 @@ struct SettingsWindowTabsTests {
         #expect(window.frame.maxY == top, "the top edge moved")
 
         model.setLanguage(.en)
-        try await settle()
+        try await waitUntilSettled(window) {
+            abs(contentSize(of: window).height - plain) < 1 && isGeneralFitted(controller, window)
+        }
         #expect(abs(contentSize(of: window).height - plain) < 1, "the window did not shrink back")
     }
 
     @Test("switching tabs keeps the top-left corner, and back gives the Shortcuts frame back")
     func topLeftStaysAndShortcutsFrameComesBack() async throws {
-        let (_, model, window) = makeController()
+        let (controller, model, window) = makeController()
         window.setFrameTopLeftPoint(CGPoint(x: 300, y: 1400))
         let shortcuts = window.frame
 
         model.tab = .general
-        try await settle()
+        try await waitUntilSettled(window) { isGeneralFitted(controller, window) }
         #expect(window.frame.maxY == shortcuts.maxY, "the top edge moved")
         #expect(window.frame.minX == shortcuts.minX, "the left edge moved")
         #expect(window.frame.height != shortcuts.height)
 
         model.tab = .shortcuts
-        try await settle()
+        try await waitUntilSettled(window) { controller.content?.tab == .shortcuts && window.frame == shortcuts }
         #expect(window.frame == shortcuts)
     }
 
     @Test("the size the person gives the Shortcuts tab is the one it comes back to")
     func shortcutsSizeIsRemembered() async throws {
-        let (_, model, window) = makeController()
+        let (controller, model, window) = makeController()
         window.setFrameTopLeftPoint(CGPoint(x: 300, y: 1400))
         window.setContentSize(CGSize(width: 700, height: 600))
         window.setFrameTopLeftPoint(CGPoint(x: 300, y: 1400))
         let shortcuts = window.frame
 
         model.tab = .general
-        try await settle()
+        try await waitUntilSettled(window) { isGeneralFitted(controller, window) }
         model.tab = .shortcuts
-        try await settle()
+        try await waitUntilSettled(window) {
+            controller.content?.tab == .shortcuts && window.frame == shortcuts
+        }
         #expect(contentSize(of: window) == CGSize(width: 700, height: 600))
         #expect(window.frame == shortcuts)
     }
@@ -259,19 +291,21 @@ struct SettingsWindowTabsTests {
     func generalFrameIsNotSaved() async throws {
         let name = "PiccoloSettingsTests.\(UUID().uuidString)"
         defer { NSWindow.removeFrame(usingName: name) }
-        let (_, model, window) = makeController(frameName: name)
+        let (controller, model, window) = makeController(frameName: name)
         window.setContentSize(CGSize(width: 720, height: 500))
         window.setFrameTopLeftPoint(CGPoint(x: 300, y: 1400))
         let saved = try #require(savedFrame(named: name))
 
         model.tab = .general
-        try await settle()
+        try await waitUntilSettled(window) { isGeneralFitted(controller, window) }
         window.setFrameTopLeftPoint(CGPoint(x: 500, y: 1200))
         #expect(window.frame.size != saved.size)
         #expect(savedFrame(named: name) == saved, "the General tab's frame was saved")
 
         model.tab = .shortcuts
-        try await settle()
+        try await waitUntilSettled(window) {
+            controller.content?.tab == .shortcuts && contentSize(of: window) == CGSize(width: 720, height: 500)
+        }
         #expect(contentSize(of: window) == CGSize(width: 720, height: 500))
     }
 
@@ -284,7 +318,7 @@ struct SettingsWindowTabsTests {
         #expect(small.contains(window.frame), "the Shortcuts window is not inside the screen: \(window.frame)")
 
         model.tab = .general
-        try await settle()
+        try await waitUntilSettled(window) { isGeneralFitted(controller, window, screen: small) }
         #expect(window.frame.height <= small.height)
         #expect(small.contains(window.frame), "the General window is not inside the screen: \(window.frame)")
         #expect(
@@ -292,7 +326,7 @@ struct SettingsWindowTabsTests {
         #expect(!content.contentFits, "a General tab taller than the window does not scroll")
 
         model.tab = .shortcuts
-        try await settle()
+        try await waitUntilSettled(window) { controller.content?.tab == .shortcuts }
         #expect(small.contains(window.frame))
     }
 
@@ -335,7 +369,7 @@ struct SettingsWindowTabsTests {
         #expect(controller.firstResponderKind == .textField)
 
         model.tab = .general
-        try await settle()
+        try await waitUntilSettled(window) { isGeneralFitted(controller, window) }
         #expect(controller.firstResponderKind == .none)
     }
 }
