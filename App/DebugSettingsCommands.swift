@@ -459,6 +459,7 @@ extension DebugControlServer {
             "effectiveLanguage": .string(model.effectiveLanguage.rawValue),
             "restartRequired": .bool(model.restartRequired),
         ]
+        state.merge(settingsWindowState()) { _, new in new }
         if let error = model.error {
             state["error"] = .string(error)
         }

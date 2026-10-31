@@ -51,6 +51,33 @@ final class SettingsController {
         windowController.close()
     }
 
+    // MARK: The window, as the debug control channel reports it
+
+    /// The frame of the window in AppKit space, when it is open.
+    var windowFrame: CGRect? {
+        windowController.windowFrame
+    }
+
+    /// The window's title: the name of the selected tab.
+    var windowTitle: String? {
+        windowController.windowTitle
+    }
+
+    /// What has the keyboard focus in the window.
+    var firstResponder: SettingsWindowController.FirstResponderKind {
+        windowController.firstResponderKind
+    }
+
+    /// Whether the selected tab's content fits without scrolling, when the window is open.
+    var contentFits: Bool? {
+        windowController.contentFits
+    }
+
+    /// Moves the open window onto the display at `index` (in `NSScreen.screens`), fitted to it.
+    func moveWindow(toDisplayAt index: Int) -> Bool {
+        windowController.moveWindow(toScreenAt: index)
+    }
+
     private static var appVersion: String {
         let info = Bundle.main.infoDictionary
         let version = info?["CFBundleShortVersionString"] as? String ?? "?"

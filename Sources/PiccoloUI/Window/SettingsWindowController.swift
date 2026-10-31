@@ -2,35 +2,62 @@ import AppKit
 import PiccoloCore
 import SwiftUI
 
-/// Owns the Settings window: an `NSWindow` that hosts ``SettingsView``, created on first use and
-/// kept for the rest of the run.
+/// Owns the Settings window: an `NSWindow` with toolbar tabs (Shortcuts and General) that hosts the
+/// views of the tabs, created on first use and kept for the rest of the run.
+///
+/// ``SettingsModel/tab`` is the source of truth for the tab: a click on a toolbar item sets it, and
+/// whatever sets it (the debug control channel) changes the tab of an open window. Each tab has its
+/// own window size (see ``SettingsWindowSizing``): the window animates to it when the tab changes,
+/// keeping its top edge, and is never taller than the visible frame of its screen. Opening the
+/// window and changing the tab leave no text field with the focus.
 ///
 /// It is also what keeps recording from outliving its window: closing the window, the window
 /// losing key status and the app being deactivated all cancel a recording, which restores the
 /// global hotkeys. While the window is open and a binding is recording, it catches the key
 /// press before the rest of the app sees it, so that shortcuts like ⌘Q or ⌘, can be recorded.
 @MainActor
-public final class SettingsWindowController: NSObject, NSWindowDelegate {
+public final class SettingsWindowController: NSObject, NSWindowDelegate, NSToolbarDelegate {
     public let model: SettingsModel
     private let host: SettingsHost
     private var window: NSWindow?
+    private(set) var content: SettingsContentController?
+    private var toolbar: NSToolbar?
+    /// The content size of the Shortcuts tab: the one the person gave it, restored from the saved frame.
+    private var shortcutsContentSize = SettingsWindowSizing.shortcutsDefaultContentSize
+    /// How many frame changes the controller itself is making. The person's moves and resizes are
+    /// those that come while it is zero.
+    private var ownFrameChanges = 0
+    /// Whether the next time the window becomes key it is being opened, so that no field keeps the focus.
+    private var clearsFocusWhenKey = false
+    /// The frame the window is animating to, if it is.
+    private var animationTarget: CGRect?
+    /// Whether the window animates to the size of a tab. A test turns it off, so that it need not wait.
+    var animatesFrameChanges = true
     private var keyMonitor: Any?
     private var deactivationObserver: (any NSObjectProtocol)?
     private var activationObserver: (any NSObjectProtocol)?
 
-    /// The name the frame is saved under. It changed with the taller default size, so that a frame
-    /// saved by an earlier version, too short for the General tab, is not restored.
-    private static let frameAutosaveName = "PiccoloSettings.v4"
-    /// Tall enough for the whole General tab without scrolling (its form is about 830 pt high, and the
-    /// tabs and the padding around it take about 60 pt). The restart note of the language picker, which
-    /// is there only after a change, makes the form about 80 pt higher; it scrolls then.
-    static let defaultContentSize = NSSize(width: 640, height: 940)
-    private static let minimumContentSize = NSSize(width: 560, height: 480)
+    /// The name the frame of the Shortcuts tab is saved under. Only that tab's frame is: the General
+    /// tab's size follows its content.
+    static let defaultFrameName = "PiccoloSettings.shortcuts"
+    private let frameName: String
 
-    public init(model: SettingsModel, host: SettingsHost) {
+    /// The visible frame of the screen a window is on, in AppKit space. A test sets another one.
+    var visibleFrameProvider: (NSWindow) -> CGRect? = { window in
+        (window.screen ?? NSScreen.main)?.visibleFrame
+    }
+
+    public convenience init(model: SettingsModel, host: SettingsHost) {
+        self.init(model: model, host: host, frameName: Self.defaultFrameName)
+    }
+
+    /// - Parameter frameName: The name the Shortcuts tab's frame is saved under. Tests give theirs.
+    init(model: SettingsModel, host: SettingsHost, frameName: String) {
         self.model = model
         self.host = host
+        self.frameName = frameName
         super.init()
+        observeTab()
         deactivationObserver = NotificationCenter.default.addObserver(
             forName: NSApplication.didResignActiveNotification, object: nil, queue: .main
         ) { [weak self] _ in
@@ -73,6 +100,40 @@ public final class SettingsWindowController: NSObject, NSWindowDelegate {
         return NSApp.isActive && window.isKeyWindow
     }
 
+    /// The frame of the window in AppKit space, when it is open.
+    public var windowFrame: CGRect? {
+        guard let window, isOpen else { return nil }
+        return window.frame
+    }
+
+    /// The title of the window: the name of the selected tab.
+    public var windowTitle: String? {
+        window?.title
+    }
+
+    /// What has the keyboard focus in the window.
+    public enum FirstResponderKind: String, Sendable {
+        /// The window itself, or nothing: no control has the focus.
+        case none
+        /// A text field, or the field editor that edits one.
+        case textField
+        case other
+    }
+
+    public var firstResponderKind: FirstResponderKind {
+        guard let responder = window?.firstResponder, responder !== window else { return .none }
+        if responder is NSTextField { return .textField }
+        if let text = responder as? NSTextView, text.isFieldEditor { return .textField }
+        return .other
+    }
+
+    /// Whether the selected tab's content fits its visible area without scrolling, when the window is
+    /// open.
+    public var contentFits: Bool? {
+        guard isOpen, let content else { return nil }
+        return content.contentFits
+    }
+
     // MARK: Showing and closing
 
     /// Opens the window, or brings it to the front, and makes Piccolo the active application, so
@@ -98,6 +159,14 @@ public final class SettingsWindowController: NSObject, NSWindowDelegate {
     /// already, only the window is brought forward.
     public func show() {
         let window = ensureWindow()
+        let opening = !window.isVisible
+        if opening {
+            // The tab may have changed, and the screen too, since the window was closed.
+            fitWindow(animated: false)
+        }
+        if opening || !window.isKeyWindow {
+            clearsFocusWhenKey = true
+        }
         if window.isMiniaturized {
             window.deminiaturize(nil)
         }
@@ -108,6 +177,11 @@ public final class SettingsWindowController: NSObject, NSWindowDelegate {
             NSRunningApplication.current.activate(options: [.activateAllWindows, Self.takeTheFront])
         }
         window.makeKeyAndOrderFront(nil)
+        if opening {
+            // The toolbar takes its height from the frame once the window is on screen: the size of the
+            // tab is fitted again with it, so that the window ends inside the visible frame.
+            fitWindow(animated: false)
+        }
     }
 
     /// The activation option that takes the front from the application that has it: the value of
@@ -124,28 +198,248 @@ public final class SettingsWindowController: NSObject, NSWindowDelegate {
         window?.close()
     }
 
-    private func ensureWindow() -> NSWindow {
+    func ensureWindow() -> NSWindow {
         if let window { return window }
+        // The window's first place is not one the person chose: nothing of it is saved.
+        ownFrameChanges += 1
+        defer { ownFrameChanges -= 1 }
 
-        let hosting = NSHostingController(rootView: SettingsView(model: model, host: host))
-        // The window decides its size, not the content: the content fills it.
-        hosting.sizingOptions = []
-        // The view has its size before the window exists: laid out at zero size first, the
-        // content's padding would make its width negative.
-        hosting.view.frame = NSRect(origin: .zero, size: Self.defaultContentSize)
-
-        let window = NSWindow(contentViewController: hosting)
-        window.title = String(localized: "Piccolo Settings", bundle: .module)
-        window.styleMask = [.titled, .closable, .miniaturizable, .resizable]
+        let content = SettingsContentController(model: model, host: host)
+        content.onGeneralFittingHeightChange = { [weak self] in
+            self?.generalFittingHeightChanged()
+        }
+        let window = NSWindow(
+            contentRect: NSRect(origin: .zero, size: SettingsWindowSizing.shortcutsDefaultContentSize),
+            styleMask: [.titled, .closable, .miniaturizable, .resizable], backing: .buffered, defer: true)
+        window.contentViewController = content
         window.isReleasedWhenClosed = false
         window.delegate = self
-        window.contentMinSize = Self.minimumContentSize
-        if !window.setFrameUsingName(Self.frameAutosaveName) {
+        window.toolbarStyle = .preference
+        window.toolbar = makeToolbar()
+        self.window = window
+        self.content = content
+
+        // The Shortcuts tab's size is the one it was left at, if any; the General tab's follows its content.
+        window.contentMinSize = SettingsWindowSizing.shortcutsMinimumContentSize
+        window.setContentSize(SettingsWindowSizing.shortcutsDefaultContentSize)
+        if window.setFrameUsingName(frameName) {
+            shortcutsContentSize = Self.limited(
+                window.contentRect(forFrameRect: window.frame).size,
+                atLeast: SettingsWindowSizing.shortcutsMinimumContentSize)
+        } else {
             window.center()
         }
-        window.setFrameAutosaveName(Self.frameAutosaveName)
-        self.window = window
+        showTab(model.tab, animated: false)
         return window
+    }
+
+    // MARK: Tabs
+
+    /// Follows ``SettingsModel/tab`` for as long as the controller lives.
+    private func observeTab() {
+        withObservationTracking {
+            _ = model.tab
+        } onChange: { [weak self] in
+            // Called before the tab has its new value: look at it after.
+            Task { @MainActor in
+                self?.tabChanged()
+                self?.observeTab()
+            }
+        }
+    }
+
+    private func tabChanged() {
+        guard let window, let content, content.tab != model.tab else { return }
+        // A rejected change belongs to the tab it was made on.
+        model.clearError()
+        showTab(model.tab, animated: window.isVisible)
+        if model.tab == .general {
+            // The user can change the login item and the language in System Settings at any time.
+            model.refreshLoginItem()
+            model.refreshLanguage()
+        }
+    }
+
+    /// Shows `tab`: its view, its name as the window title, its toolbar item highlighted and its size.
+    private func showTab(_ tab: SettingsTab, animated: Bool) {
+        guard let window, let content else { return }
+        content.show(tab)
+        window.title = SettingsTabText.title(of: tab)
+        toolbar?.selectedItemIdentifier = Self.itemIdentifier(of: tab)
+        // Only the Shortcuts tab can be resized, and so zoomed.
+        window.standardWindowButton(.zoomButton)?.isEnabled = tab == .shortcuts
+        fitWindow(animated: animated)
+        clearFocus()
+    }
+
+    /// Gives the window the size of the selected tab, with its top-left corner where it is and inside
+    /// `visibleFrame` (default: that of its screen).
+    private func fitWindow(animated: Bool, visibleFrame: CGRect? = nil) {
+        guard let window, let tab = content?.tab,
+            let visible = visibleFrame ?? visibleFrameProvider(window)
+        else { return }
+        let contentSize: CGSize
+        switch tab {
+        case .shortcuts:
+            contentSize = shortcutsContentSize
+        case .general:
+            // Zero when the tab has not been laid out yet: its form then scrolls until it has.
+            let height = content?.generalFittingHeight ?? 0
+            contentSize = CGSize(
+                width: SettingsWindowSizing.generalContentWidth,
+                height: height > 0 ? height : SettingsWindowSizing.shortcutsDefaultContentSize.height)
+        }
+        let windowSize = window.frameRect(forContentRect: CGRect(origin: .zero, size: contentSize)).size
+        let frame = SettingsWindowSizing.frame(replacing: window.frame, size: windowSize, visibleFrame: visible)
+
+        // The limits come first: a frame outside them would be pulled back.
+        let fitted = window.contentRect(forFrameRect: frame).size
+        switch tab {
+        case .shortcuts:
+            window.contentMinSize = Self.limited(
+                SettingsWindowSizing.shortcutsMinimumContentSize, atMost: fitted)
+            window.contentMaxSize = SettingsWindowSizing.unlimited
+        case .general:
+            window.contentMinSize = fitted
+            window.contentMaxSize = fitted
+        }
+        setFrame(frame, animated: animated)
+    }
+
+    private func generalFittingHeightChanged() {
+        guard content?.tab == .general else { return }
+        fitWindow(animated: window?.isVisible ?? false)
+    }
+
+    private func setFrame(_ frame: CGRect, animated: Bool) {
+        guard let window else { return }
+        if let target = animationTarget, Self.isSame(target, frame) { return }
+        guard !Self.isSame(frame, window.frame) else { return }
+        ownFrameChanges += 1
+        guard animated, animatesFrameChanges, window.isVisible,
+            !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+        else {
+            animationTarget = nil
+            window.setFrame(frame, display: window.isVisible)
+            ownFrameChanges -= 1
+            return
+        }
+        animationTarget = frame
+        NSAnimationContext.runAnimationGroup(
+            { context in
+                context.duration = window.animationResizeTime(frame)
+                context.allowsImplicitAnimation = true
+                window.animator().setFrame(frame, display: true)
+            },
+            completionHandler: { [weak self] in
+                MainActor.assumeIsolated {
+                    guard let self else { return }
+                    self.ownFrameChanges -= 1
+                    if let target = self.animationTarget, Self.isSame(target, frame) { self.animationTarget = nil }
+                }
+            })
+    }
+
+    private static func isSame(_ a: CGRect, _ b: CGRect) -> Bool {
+        abs(a.minX - b.minX) < 0.5 && abs(a.minY - b.minY) < 0.5 && abs(a.width - b.width) < 0.5
+            && abs(a.height - b.height) < 0.5
+    }
+
+    private static func limited(_ size: CGSize, atLeast minimum: CGSize) -> CGSize {
+        CGSize(width: max(size.width, minimum.width), height: max(size.height, minimum.height))
+    }
+
+    private static func limited(_ size: CGSize, atMost maximum: CGSize) -> CGSize {
+        CGSize(width: min(size.width, maximum.width), height: min(size.height, maximum.height))
+    }
+
+    /// Moves the window to the top-left corner of the visible frame of the screen at `index` in
+    /// `NSScreen.screens` (inset by 40 pt), and fits its size to that screen. Returns whether the window
+    /// is open and there is such a screen. The debug control channel uses it, so that a test can look at
+    /// the window on each screen.
+    @discardableResult
+    public func moveWindow(toScreenAt index: Int) -> Bool {
+        guard let window, isOpen, NSScreen.screens.indices.contains(index) else { return false }
+        let visible = NSScreen.screens[index].visibleFrame
+        ownFrameChanges += 1
+        window.setFrameTopLeftPoint(CGPoint(x: visible.minX + 40, y: visible.maxY - 40))
+        ownFrameChanges -= 1
+        fitWindow(animated: false, visibleFrame: visible)
+        return true
+    }
+
+    // MARK: Toolbar
+
+    private static func itemIdentifier(of tab: SettingsTab) -> NSToolbarItem.Identifier {
+        NSToolbarItem.Identifier(tab.rawValue)
+    }
+
+    private static func tab(of identifier: NSToolbarItem.Identifier) -> SettingsTab? {
+        SettingsTab(rawValue: identifier.rawValue)
+    }
+
+    private static var itemIdentifiers: [NSToolbarItem.Identifier] {
+        SettingsTab.allCases.map(itemIdentifier(of:))
+    }
+
+    private func makeToolbar() -> NSToolbar {
+        let toolbar = NSToolbar(identifier: "PiccoloSettings.tabs")
+        toolbar.delegate = self
+        toolbar.allowsUserCustomization = false
+        toolbar.displayMode = .iconAndLabel
+        toolbar.centeredItemIdentifiers = Set(Self.itemIdentifiers)
+        self.toolbar = toolbar
+        return toolbar
+    }
+
+    public func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
+        Self.itemIdentifiers
+    }
+
+    public func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
+        Self.itemIdentifiers
+    }
+
+    public func toolbarSelectableItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
+        Self.itemIdentifiers
+    }
+
+    public func toolbar(
+        _ toolbar: NSToolbar, itemForItemIdentifier itemIdentifier: NSToolbarItem.Identifier,
+        willBeInsertedIntoToolbar flag: Bool
+    ) -> NSToolbarItem? {
+        guard let tab = Self.tab(of: itemIdentifier) else { return nil }
+        let title = SettingsTabText.title(of: tab)
+        let item = NSToolbarItem(itemIdentifier: itemIdentifier)
+        item.label = title
+        item.paletteLabel = title
+        item.image = NSImage(systemSymbolName: SettingsTabText.symbolName(of: tab), accessibilityDescription: title)
+        item.target = self
+        item.action = #selector(selectTab(_:))
+        return item
+    }
+
+    @objc private func selectTab(_ sender: NSToolbarItem) {
+        guard let tab = Self.tab(of: sender.itemIdentifier) else { return }
+        model.tab = tab
+        // Not waiting for the observation, so that the click is answered at once.
+        tabChanged()
+    }
+
+    // MARK: Focus
+
+    /// Takes the keyboard focus from whatever has it, so that the window itself is the first
+    /// responder until the person clicks a field. The system, or SwiftUI, gives it to the first text
+    /// field when a window opens or a view is put in it, and the next pass of the run loop is
+    /// after both are done.
+    private func clearFocus() {
+        window?.makeFirstResponder(nil)
+        DispatchQueue.main.async { [weak self] in
+            MainActor.assumeIsolated {
+                guard let window = self?.window, window.isVisible else { return }
+                window.makeFirstResponder(nil)
+            }
+        }
     }
 
     // MARK: NSWindowDelegate
@@ -160,6 +454,32 @@ public final class SettingsWindowController: NSObject, NSWindowDelegate {
 
     public func windowDidResignKey(_ notification: Notification) {
         model.cancelRecording()
+    }
+
+    public func windowDidBecomeKey(_ notification: Notification) {
+        guard clearsFocusWhenKey else { return }
+        clearsFocusWhenKey = false
+        clearFocus()
+    }
+
+    /// Remembers where the person left the Shortcuts tab: its size and the window's place.
+    public func windowDidResize(_ notification: Notification) {
+        rememberShortcutsFrame()
+    }
+
+    public func windowDidMove(_ notification: Notification) {
+        rememberShortcutsFrame()
+    }
+
+    private func rememberShortcutsFrame() {
+        guard ownFrameChanges == 0, content?.tab == .shortcuts, let window else { return }
+        shortcutsContentSize = window.contentRect(forFrameRect: window.frame).size
+        window.saveFrame(usingName: frameName)
+    }
+
+    /// On another screen the window is fitted to that screen's visible frame.
+    public func windowDidChangeScreen(_ notification: Notification) {
+        fitWindow(animated: false)
     }
 
     // MARK: Key presses while recording

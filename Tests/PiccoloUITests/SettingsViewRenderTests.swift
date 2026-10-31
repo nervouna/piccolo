@@ -48,6 +48,52 @@ struct SettingsViewRenderTests {
         return bitmap
     }
 
+    /// Makes the Settings window for `model`, off screen, with a screen of its own so that the machine's
+    /// does not matter. Keep the controller as long as the window is used.
+    private func makeWindow(_ model: SettingsModel) -> (controller: SettingsWindowController, window: NSWindow) {
+        let controller = SettingsWindowController(
+            model: model, host: host, frameName: "PiccoloSettingsTests.\(UUID().uuidString)")
+        controller.visibleFrameProvider = { _ in CGRect(x: 0, y: 0, width: 2000, height: 1600) }
+        return (controller, controller.ensureWindow())
+    }
+
+    /// What the window shows in its content area, with the given appearance.
+    private func renderContent(of window: NSWindow, dark: Bool = false) throws -> NSBitmapImageRep {
+        window.appearance = NSAppearance(named: dark ? .darkAqua : .aqua)
+        let view = try #require(window.contentView)
+        view.layoutSubtreeIfNeeded()
+        let bitmap = try #require(view.bitmapImageRepForCachingDisplay(in: view.bounds))
+        view.cacheDisplay(in: view.bounds, to: bitmap)
+        return bitmap
+    }
+
+    /// Waits, on the main actor, until `reached` holds and the window's frame has stayed the same for three
+    /// polls in a row: a poll every 20 ms, and at most 5 s. The window follows the model's tab on a later
+    /// turn of the main queue and resizes in an animation, which when the machine is busy can take longer
+    /// than any fixed pause. A window that never gets there does not fail the wait: the expectations after
+    /// it do, and say what the window is.
+    private func waitUntilSettled(_ window: NSWindow, reached: () -> Bool) async throws {
+        let deadline = ContinuousClock.now.advanced(by: .seconds(5))
+        var previous: CGRect?
+        var steady = 0
+        while ContinuousClock.now < deadline {
+            let frame = window.frame
+            steady = (frame == previous && reached()) ? steady + 1 : 0
+            previous = frame
+            if steady == 3 { return }
+            try await Task.sleep(for: .milliseconds(20))
+        }
+    }
+
+    /// Whether the General tab is the one shown and the window is as tall as the tab asks to be. False until
+    /// the tab has been laid out and its height reported.
+    private func isGeneralFitted(_ controller: SettingsWindowController, _ window: NSWindow) -> Bool {
+        guard let content = controller.content, content.tab == .general else { return false }
+        let asked = content.generalFittingHeight
+        guard asked > 0 else { return false }
+        return abs(window.contentRect(forFrameRect: window.frame).size.height - asked) < 1
+    }
+
     /// Whether the bitmap shows more than one colour, which a view that failed to draw does not.
     private func hasContent(_ bitmap: NSBitmapImageRep) -> Bool {
         guard let first = bitmap.colorAt(x: 0, y: 0) else { return false }
@@ -87,28 +133,39 @@ struct SettingsViewRenderTests {
     private static let divider = KeyBinding(action: .moveDivider(.left))
     private static let swap = KeyBinding(action: .swapWindow(.right))
 
-    @Test("the whole window renders in light and dark appearance, with every kind of binding")
-    func wholeWindow() throws {
+    @Test("the whole window renders in light and dark appearance, on both tabs, with every kind of binding")
+    func wholeWindow() async throws {
         let all = [Self.leftHalf, Self.custom, Self.grid, Self.display, Self.divider, Self.swap]
         for (name, dark) in [("light", false), ("dark", true)] {
             let model = model(all, issues: ["bindings[4] shortcut was refused: taken by the system"])
-            let bitmap = try render(SettingsView(model: model, host: host), dark: dark)
-            #expect(hasContent(bitmap), "the window is blank in \(name) appearance")
-            keep(bitmap, as: "window-\(name)")
+            let (controller, window) = makeWindow(model)
+            for tab in SettingsTab.allCases {
+                model.tab = tab
+                try await waitUntilSettled(window) { controller.content?.tab == tab }
+                let bitmap = try renderContent(of: window, dark: dark)
+                #expect(hasContent(bitmap), "the \(tab) tab is blank in \(name) appearance")
+                keep(bitmap, as: "window-\(tab)-\(name)")
+            }
+            withExtendedLifetime(controller) {}
         }
     }
 
     @Test("the window shows the tab the model names")
-    func followsTheModel() throws {
+    func followsTheModel() async throws {
         let model = model([Self.leftHalf, Self.custom])
-        let shortcuts = try render(SettingsView(model: model, host: host))
+        let (controller, window) = makeWindow(model)
+        defer { withExtendedLifetime(controller) {} }
+        try await waitUntilSettled(window) { controller.content?.tab == .shortcuts }
+        let shortcuts = try renderContent(of: window)
 
         model.tab = .general
-        let general = try render(SettingsView(model: model, host: host))
+        try await waitUntilSettled(window) { isGeneralFitted(controller, window) }
+        let general = try renderContent(of: window)
         #expect(png(shortcuts) != png(general), "the window looks the same on the General tab as on the Shortcuts tab")
 
         model.tab = .shortcuts
-        let again = try render(SettingsView(model: model, host: host))
+        try await waitUntilSettled(window) { controller.content?.tab == .shortcuts }
+        let again = try renderContent(of: window)
         #expect(png(again) == png(shortcuts), "going back to the Shortcuts tab did not bring the same window back")
     }
 
@@ -157,16 +214,32 @@ struct SettingsViewRenderTests {
         keep(failed, as: "general-language-restart-error")
     }
 
-    @Test("the General tab fits the default size of the window without scrolling")
-    func generalTabFits() {
-        let hosting = NSHostingView(rootView: GeneralTab(model: model([]), host: host))
-        hosting.frame = NSRect(origin: .zero, size: Self.size)
-
-        // The tab strip and the padding around the tab take about 60 pt.
-        let needed = hosting.fittingSize.height + 70
-        #expect(
-            needed <= SettingsWindowController.defaultContentSize.height,
-            "the General tab needs about \(needed) pt, the window opens \(SettingsWindowController.defaultContentSize.height) pt high")
+    @Test("the General tab fits its window without scrolling in every state: plain, a restart row, a login item to approve, problems with the config")
+    func generalTabFits() async throws {
+        let states: [(String, SettingsModel)] = [
+            ("plain", model([])),
+            ("restart", {
+                let model = model([], language: FakeLanguage(stored: .system, running: .en, system: .en))
+                model.setLanguage(.zhHans)
+                return model
+            }()),
+            ("approval", model([], loginItem: FakeLoginItem(status: .requiresApproval))),
+            ("problems", model([], issues: ["bindings[1] shortcut was refused: taken by the system"])),
+        ]
+        var heights: [String: CGFloat] = [:]
+        for (name, model) in states {
+            model.tab = .general
+            let (controller, window) = makeWindow(model)
+            try await waitUntilSettled(window) { isGeneralFitted(controller, window) }
+            let content = try #require(controller.content)
+            let height = window.contentRect(forFrameRect: window.frame).size.height
+            heights[name] = height
+            #expect(content.contentFits, "the General tab scrolls in a window as tall as it asks for, state \(name)")
+            #expect(abs(height - content.generalFittingHeight) < 1, "state \(name): window \(height) pt, tab \(content.generalFittingHeight) pt")
+        }
+        let plain = try #require(heights["plain"])
+        #expect(try #require(heights["restart"]) > plain, "the restart row does not make the tab taller")
+        #expect(try #require(heights["approval"]) > plain, "the approval note does not make the tab taller")
     }
 
     @Test("the General tab renders every login item status, and the approval note and the error change what it shows")
