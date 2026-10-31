@@ -48,6 +48,7 @@ Non-goals: drag-to-snap with the mouse, automatic tiling of new windows, moving 
 ## Build, sign, run
 
 - `swift test` runs the package's unit tests.
+- `swift test --filter <regex>` matches type and function names (`followsTheModel`), not the `@Test("…")` display string.
 - `scripts/build.sh [debug|release]` builds `build/Piccolo.app` with xcodebuild. A Debug build also builds `build/PiccoloFixture.app`; a Release build (and so `release.sh`) never builds or ships the fixture.
 - `scripts/install.sh [debug|release]` (default `release`) builds, replaces `/Applications/Piccolo.app` and relaunches it. Only a Debug build hosts the control server.
 - `scripts/accept.sh [filter]` runs the desktop acceptance tests (see "Workflow" below and [docs/acceptance.md](docs/acceptance.md)).
@@ -82,6 +83,7 @@ Developed with the global `orchestrate` skill: the owner files issues and makes 
 - Who runs what. The implementer iterates with the filter of the suite they are writing, and before opening the PR runs the filter of every row the change touches once (a full run only when the table says so), and puts the `accept:` line and the filter in the PR. The reviewer does not re-run a run whose result cannot differ: when the PR head is the commit the implementer ran and `main` has not moved, the reviewer reads `build/accept-test.log` in the implementer's worktree (the filter, the test list, the summary) and the commit it was built from instead. The reviewer runs acceptance on the merged result only after merging `main` into the PR or after a rework, and then only the rows that the merge or the rework touches.
 - Release gate, pre-releases: [docs/releasing.md](docs/releasing.md). Reviewer UI captures and focus failures during a run: [docs/acceptance.md](docs/acceptance.md).
 - Parallel PRs that add catalog keys conflict in `Localizable.xcstrings` as adjacent insertions: keep both entries in key order, then check that the file parses as JSON and the key count is the sum.
+- Desktop runs leave a Debug build in `/Applications`. When the owner uses Piccolo day to day, end the session with `scripts/install.sh release` under the acceptance lock, and check that `~/Library/Application Support/Piccolo/config.json` and the stored language are untouched.
 
 ## Rules for implementers
 
@@ -89,4 +91,5 @@ Developed with the global `orchestrate` skill: the owner files issues and makes 
 - Never commit signing identities, key locations or machine-specific paths. Never read or print notarization key files.
 - Do not add third-party dependencies or install tools unless the issue says so.
 - Unit tests that wait for AppKit or SwiftUI (a window's frame, a render, a reported height) wait for the condition in polls that actually ran, with a wall-clock limit only against hangs: a full `swift test` blocks the main actor for 10 s and more at a time, so a deadline in seconds runs out before the window had its turn (#113, #114). A bitmap comparison renders a window ordered front invisibly (`alphaValue = 0`, `ignoresMouseEvents`).
+- Off-screen render tests miss some of what a real window draws (a custom fill under a borderless menu, a SwiftUI `Grid` squeezing flexible text to nothing): use the system's control styles over painted backgrounds, and leave every visual change to the reviewer's capture of the real window.
 - Comments and docs in English. Conventional Commits.
