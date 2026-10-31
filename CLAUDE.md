@@ -88,4 +88,5 @@ Developed with the global `orchestrate` skill: the owner files issues and makes 
 - Keep logic in `PiccoloCore` and write the tests for the specified behaviour before the implementation.
 - Never commit signing identities, key locations or machine-specific paths. Never read or print notarization key files.
 - Do not add third-party dependencies or install tools unless the issue says so.
+- Unit tests that wait for AppKit or SwiftUI (a window's frame, a render, a reported height) wait for the condition in polls that actually ran, with a wall-clock limit only against hangs: a full `swift test` blocks the main actor for 10 s and more at a time, so a deadline in seconds runs out before the window had its turn (#113, #114). A bitmap comparison renders a window ordered front invisibly (`alphaValue = 0`, `ignoresMouseEvents`).
 - Comments and docs in English. Conventional Commits.
