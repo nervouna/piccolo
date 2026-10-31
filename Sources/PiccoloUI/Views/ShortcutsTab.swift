@@ -34,6 +34,9 @@ struct ShortcutsTab: View {
                     "The current shortcuts will be replaced by the defaults. A copy of the config file is kept next to it."
             )
         }
+        .sheet(item: LayoutEditorSheet.presentation(of: model)) { presentation in
+            LayoutEditorSheet(model: model, request: presentation.request)
+        }
     }
 
     // MARK: Top bar
