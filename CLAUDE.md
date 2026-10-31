@@ -70,7 +70,7 @@ Developed with the global `orchestrate` skill: the owner files issues and makes 
   | Edge bounce only: `PiccoloCore/Animation/EdgeBounce.swift` (narrower than the frames row's `Animation`) | `(SwapWindow\|WindowAnimationAcceptance)` |
   | Shortcuts and holding them: `PiccoloCore/Shortcuts`, `PiccoloSystem/Hotkeys`, `PiccoloSystem/Preview`, `PiccoloSystem/Destinations`, `App/ConfigController.swift` | `(ConfigHotkeys\|DestinationPreviewAcceptance\|FailureNoticeAcceptance\|OnboardingAcceptance)` |
   | Config schema and settings: `PiccoloCore/Config`, `ActionSettings` | `(ConfigHotkeys\|SettingsWindow)`, plus the frames row when an action reads the new setting |
-  | Settings window: `PiccoloUI/Model`, `Views`, `Window/SettingsWindowController.swift`, `App/SettingsController.swift`, `App/DebugSettingsCommands.swift` | `(SettingsWindow\|SettingsInFront)` |
+  | Settings window: `PiccoloCore/Keymap`, `PiccoloUI/Model`, `Views`, `Window/SettingsWindowController.swift`, `App/SettingsController.swift`, `App/DebugSettingsCommands.swift` | `(SettingsWindow\|SettingsInFront\|KeymapSettings)` |
   | Failure notice: `Notice`, `NoticePanel`, `FailureNoticeText`, `FailureNotice+System.swift`, `App/NoticeController.swift` | `FailureNoticeAcceptance` |
   | Onboarding: `PiccoloUI/Onboarding`, `App/OnboardingController.swift` | `OnboardingAcceptance` |
   | Language and restart: `AppLanguage`, `LanguageDefaults`, `App/AppRestart.swift` | `Language` |
