@@ -52,6 +52,7 @@ final class DebugControlServer {
         var router = ControlRouter()
         registerConfigCommands(in: &router)
         registerSettingsCommands(in: &router)
+        registerSettingsWindowCommands(in: &router)
         registerPreviewCommands(in: &router)
         registerNoticeCommands(in: &router)
         registerOnboardingCommands(in: &router)
